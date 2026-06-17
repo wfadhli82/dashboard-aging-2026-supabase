@@ -28,8 +28,6 @@ const HOLIDAY_DATES_2026 = new Set([
 const monthLabels = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogos', 'Sept', 'Okt', 'Nov', 'Dis'];
 const typeLabels = { new: 'Baharu', renewal: 'Penyambungan', appeal: 'Rayuan', addrate: 'Tambah Kadar' };
 const ADMIN_EMAILS = new Set(['wfadhli@maiwp.gov.my']);
-const PUBLIC_APP_URL = 'https://wfadhli82.github.io/dashboard-aging-2026-supabase/';
-const LOGIN_COOLDOWN_SECONDS = 60;
 
 let headerMap = {};
 let rows = [];
@@ -44,14 +42,14 @@ let currentSummaryRows = [];
 let dataRange = { first: null, last: null };
 let supabaseClient = null;
 let latestRun = null;
-let loginCooldownTimer = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('workingDayCount').textContent = getWorkingDaysIn2026().length;
     document.getElementById('holidayCount').textContent = 365 - getWorkingDaysIn2026().length;
 
     document.getElementById('authForm').addEventListener('submit', handleLogin);
-    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+    document.getElementById('profileButton').addEventListener('click', toggleProfileMenu);
+    document.getElementById('profileLogoutBtn').addEventListener('click', handleLogout);
     document.getElementById('chooseFileBtn').addEventListener('click', () => document.getElementById('fileInput').click());
     document.getElementById('fileInput').addEventListener('change', event => {
         if (event.target.files[0]) handleFile(event.target.files[0]);
@@ -82,7 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedKey: 'table',
         toggleId: 'tableSchemeFilterToggle'
     });
-    document.addEventListener('click', closeMultiSelectMenus);
+    document.addEventListener('click', () => {
+        closeMultiSelectMenus();
+        closeProfileMenu();
+    });
 
     document.querySelectorAll('input[name="metricMode"]').forEach(input => {
         input.addEventListener('change', event => {
@@ -131,19 +132,25 @@ async function handleLogin(event) {
     }
 
     const email = document.getElementById('emailInput').value.trim();
-    if (!email) return;
+    const password = document.getElementById('passwordInput').value;
+    if (!email || !password) return;
 
-    const { error } = await supabaseClient.auth.signInWithOtp({
+    const loginButton = document.getElementById('loginBtn');
+    loginButton.disabled = true;
+    loginButton.textContent = 'Sedang Log Masuk...';
+
+    const { error } = await supabaseClient.auth.signInWithPassword({
         email,
-        options: { emailRedirectTo: PUBLIC_APP_URL }
+        password
     });
 
     if (error) {
-        showAuthMessage(error.message, true);
+        showAuthMessage('Log masuk gagal. Semak emel, kata laluan, dan akses yang dibenarkan.', true);
+        loginButton.disabled = false;
+        loginButton.textContent = 'Log Masuk';
         return;
     }
-    showAuthMessage('Link akses telah dihantar. Semak emel dan guna link terbaru sahaja.', false);
-    startLoginCooldown(LOGIN_COOLDOWN_SECONDS);
+    document.getElementById('passwordInput').value = '';
 }
 
 async function handleLogout() {
@@ -157,35 +164,8 @@ async function handleLogout() {
     document.getElementById('dateRangeText').textContent = '';
     document.getElementById('fileStatus').textContent = 'Belum ada fail dipilih.';
     updateAuthUi(null);
+    closeProfileMenu();
     showAuthMessage('Sesi telah ditamatkan.', false);
-}
-
-function startLoginCooldown(seconds) {
-    if (loginCooldownTimer) {
-        clearInterval(loginCooldownTimer);
-        loginCooldownTimer = null;
-    }
-
-    const button = document.getElementById('loginBtn');
-    let remaining = seconds;
-    setLoginButtonCooldown(button, remaining);
-
-    loginCooldownTimer = setInterval(() => {
-        remaining -= 1;
-        if (remaining <= 0) {
-            clearInterval(loginCooldownTimer);
-            loginCooldownTimer = null;
-            button.disabled = false;
-            button.textContent = 'Hantar Link Login';
-            return;
-        }
-        setLoginButtonCooldown(button, remaining);
-    }, 1000);
-}
-
-function setLoginButtonCooldown(button, remaining) {
-    button.disabled = true;
-    button.textContent = `Tunggu ${remaining}s`;
 }
 
 async function loadSupabaseData() {
@@ -293,11 +273,31 @@ function updateAuthUi(session) {
     const email = session?.user?.email?.toLowerCase() || '';
     const uploadCard = document.getElementById('uploadCard');
     const canUseCsvFallback = ADMIN_EMAILS.has(email);
-    document.getElementById('loginBtn').hidden = isLoggedIn;
-    document.getElementById('logoutBtn').hidden = !isLoggedIn;
-    document.getElementById('emailInput').disabled = isLoggedIn;
+    document.getElementById('loginView').hidden = isLoggedIn;
+    document.getElementById('appContent').hidden = !isLoggedIn;
+    document.getElementById('loginBtn').disabled = false;
+    document.getElementById('loginBtn').textContent = 'Log Masuk';
+    document.getElementById('profileEmail').textContent = email || '-';
+    document.getElementById('profileInitial').textContent = email ? email.charAt(0).toUpperCase() : '?';
     uploadCard.hidden = !canUseCsvFallback;
     uploadCard.style.display = canUseCsvFallback ? '' : 'none';
+}
+
+function toggleProfileMenu(event) {
+    event.stopPropagation();
+    const menu = document.getElementById('profileMenu');
+    const button = document.getElementById('profileButton');
+    const shouldOpen = menu.hidden;
+    menu.hidden = !shouldOpen;
+    button.setAttribute('aria-expanded', String(shouldOpen));
+}
+
+function closeProfileMenu() {
+    const menu = document.getElementById('profileMenu');
+    const button = document.getElementById('profileButton');
+    if (!menu || !button) return;
+    menu.hidden = true;
+    button.setAttribute('aria-expanded', 'false');
 }
 
 function showAuthMessage(message, isError) {

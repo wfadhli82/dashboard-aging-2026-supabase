@@ -42,6 +42,31 @@ body {
     border-radius: 8px;
 }
 
+.login-view {
+    display: grid;
+    gap: 16px;
+    width: min(520px, 100%);
+    margin: min(9vh, 72px) auto 0;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 12px 26px rgba(20, 35, 52, 0.08);
+}
+
+.login-brand {
+    padding: 18px;
+    color: #fff;
+    background: linear-gradient(135deg, #102f49 0%, #0f6bce 70%, #00a88f 100%);
+    border-radius: 8px;
+}
+
+.login-brand h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 7vw, 2.05rem);
+    line-height: 1.1;
+}
+
 .eyebrow,
 .section-kicker {
     margin: 0 0 7px;
@@ -84,6 +109,61 @@ body {
     gap: 12px;
 }
 
+.topbar-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.profile-menu {
+    position: relative;
+}
+
+.profile-button {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    min-height: 46px;
+    padding: 0;
+    border: 2px solid rgba(255, 255, 255, 0.75);
+    border-radius: 999px;
+    color: var(--brand);
+    background: #fff;
+}
+
+.profile-button:hover {
+    color: var(--brand);
+    background: #e8f1f7;
+}
+
+.profile-button span {
+    font-weight: 900;
+}
+
+.profile-dropdown {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + 8px);
+    right: 0;
+    display: grid;
+    gap: 10px;
+    min-width: 230px;
+    padding: 12px;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 18px 40px rgba(20, 35, 52, 0.18);
+}
+
+.profile-dropdown p {
+    margin: 0;
+    color: var(--ink);
+    font-size: 0.86rem;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
 .auth-card,
 .upload-card,
 .filter-card,
@@ -120,7 +200,7 @@ body {
 
 .auth-form {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: 1fr;
     gap: 10px;
     align-items: end;
 }
@@ -254,7 +334,8 @@ label {
 }
 
 select,
-input[type="email"] {
+input[type="email"],
+input[type="password"] {
     width: 100%;
     min-height: 42px;
     border: 1px solid #cbd8e1;
@@ -573,7 +654,6 @@ tfoot td {
     }
 
     .topbar,
-    .auth-card,
     .upload-card,
     .filter-card,
     .panel-heading {
@@ -581,7 +661,6 @@ tfoot td {
     }
 
     .topbar,
-    .auth-card,
     .upload-card,
     .filter-card,
     .chart-card,
@@ -595,8 +674,19 @@ tfoot td {
         justify-items: stretch;
     }
 
-    .auth-form {
-        grid-template-columns: 1fr;
+    .topbar-actions {
+        align-items: stretch;
+        justify-content: space-between;
+    }
+
+    .calendar-chip {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .profile-dropdown {
+        right: 0;
+        width: min(280px, 82vw);
     }
 
     .filters,

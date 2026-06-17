@@ -26,13 +26,20 @@ window.DASHBOARD_SUPABASE_CONFIG = {
 
 `anonKey`/publishable key boleh berada di frontend. Jangan letak `service_role` key di sini.
 
-## Aliran Data
+## Aliran Login dan Data
 
-- Pengguna login melalui Supabase magic link.
+- Pengguna login menggunakan emel dan kata laluan Supabase Auth.
+- Emel pengguna juga mesti wujud dalam `dashboard_allowed_users`.
 - Browser baca run terkini daripada `dashboard_aging_runs`.
 - Browser baca agregat daripada `dashboard_aging_aggregates`.
 - Paparan akan tunjuk teks `Dikemaskini pada ...`.
 - CSV upload lokal kekal sebagai fallback sahaja.
+
+Untuk tambah pengguna:
+
+1. Supabase Dashboard > Authentication > Users > Add user.
+2. Tetapkan emel dan kata laluan.
+3. Masukkan emel sama ke `dashboard_allowed_users`.
 
 ## Keselamatan Data
 
