@@ -151,7 +151,7 @@ async function handleLogout() {
     currentSummaryRows = [];
     latestRun = null;
     document.getElementById('dashboard').hidden = true;
-    document.getElementById('dateRangeText').textContent = 'Log masuk untuk memaparkan data Supabase.';
+    document.getElementById('dateRangeText').textContent = '';
     document.getElementById('fileStatus').textContent = 'Belum ada fail dipilih.';
     updateAuthUi(null);
     showAuthMessage('Sesi telah ditamatkan.', false);
