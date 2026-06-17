@@ -88,6 +88,7 @@
                                         Semua skim
                                     </button>
                                     <div class="multi-select-menu" id="schemeFilterMenu" hidden>
+                                        <input type="search" class="select-search" id="schemeFilterSearch" placeholder="Cari skim...">
                                         <div class="multi-select-actions">
                                             <button type="button" id="schemeSelectAllBtn">Pilih Semua</button>
                                             <button type="button" id="schemeClearBtn">Kosongkan</button>
@@ -98,7 +99,15 @@
                             </label>
                             <label>
                                 <span>Jenis</span>
-                                <select id="typeFilter"></select>
+                                <div class="single-select" id="typeFilter">
+                                    <button type="button" class="single-select-toggle" id="typeFilterToggle" aria-expanded="false" aria-controls="typeFilterMenu">
+                                        Semua jenis
+                                    </button>
+                                    <div class="single-select-menu" id="typeFilterMenu" hidden>
+                                        <input type="search" class="select-search" id="typeFilterSearch" placeholder="Cari jenis...">
+                                        <div class="single-select-options" id="typeFilterOptions"></div>
+                                    </div>
+                                </div>
                             </label>
                         </div>
                     </section>
@@ -185,6 +194,7 @@
                                         Semua skim
                                     </button>
                                     <div class="multi-select-menu" id="tableSchemeFilterMenu" hidden>
+                                        <input type="search" class="select-search" id="tableSchemeFilterSearch" placeholder="Cari skim...">
                                         <div class="multi-select-actions">
                                             <button type="button" id="tableSchemeSelectAllBtn">Pilih Semua</button>
                                             <button type="button" id="tableSchemeClearBtn">Kosongkan</button>
@@ -195,7 +205,15 @@
                             </label>
                             <label>
                                 <span>Jenis</span>
-                                <select id="tableTypeFilter"></select>
+                                <div class="single-select" id="tableTypeFilter">
+                                    <button type="button" class="single-select-toggle" id="tableTypeFilterToggle" aria-expanded="false" aria-controls="tableTypeFilterMenu">
+                                        Semua jenis
+                                    </button>
+                                    <div class="single-select-menu" id="tableTypeFilterMenu" hidden>
+                                        <input type="search" class="select-search" id="tableTypeFilterSearch" placeholder="Cari jenis...">
+                                        <div class="single-select-options" id="tableTypeFilterOptions"></div>
+                                    </div>
+                                </div>
                             </label>
                             <button type="button" id="downloadSummaryBtn">Download CSV</button>
                         </div>

@@ -37,6 +37,10 @@ let schemeOptions = [];
 let tableSchemeOptions = [];
 let selectedSchemes = [];
 let selectedTableSchemes = [];
+let selectedType = 'all';
+let selectedTableType = 'all';
+let typeOptions = [];
+let tableTypeOptions = [];
 let metricMode = 'count';
 let currentSummaryRows = [];
 let dataRange = { first: null, last: null };
@@ -59,9 +63,22 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', () => switchTab(button.dataset.tab));
     });
 
-    document.getElementById('typeFilter').addEventListener('change', updateDashboard);
-
-    document.getElementById('tableTypeFilter').addEventListener('change', updateSummaryTable);
+    setupSingleSelectEvents({
+        menuId: 'typeFilterMenu',
+        onChange: updateDashboard,
+        optionsId: 'typeFilterOptions',
+        searchId: 'typeFilterSearch',
+        selectedKey: 'dashboardType',
+        toggleId: 'typeFilterToggle'
+    });
+    setupSingleSelectEvents({
+        menuId: 'tableTypeFilterMenu',
+        onChange: updateSummaryTable,
+        optionsId: 'tableTypeFilterOptions',
+        searchId: 'tableTypeFilterSearch',
+        selectedKey: 'tableType',
+        toggleId: 'tableTypeFilterToggle'
+    });
     setupMultiSelectEvents({
         clearButtonId: 'schemeClearBtn',
         menuId: 'schemeFilterMenu',
@@ -82,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.addEventListener('click', () => {
         closeMultiSelectMenus();
+        closeSingleSelectMenus();
         closeProfileMenu();
     });
 
@@ -437,6 +455,10 @@ function setupFilters() {
     tableSchemeOptions = [...schemeOptions];
     selectedSchemes = [...schemeOptions];
     selectedTableSchemes = [...tableSchemeOptions];
+    typeOptions = getUniqueValues(rows.map(row => row.applicationTypeLabel));
+    tableTypeOptions = [...typeOptions];
+    selectedType = 'all';
+    selectedTableType = 'all';
     renderMultiSelect({
         allLabel: 'Semua skim',
         onChange: updateDashboard,
@@ -455,16 +477,26 @@ function setupFilters() {
         selectedKey: 'table',
         toggleId: 'tableSchemeFilterToggle'
     });
-    populateSelect('typeFilter', rows.map(row => row.applicationTypeLabel), 'Semua jenis');
-    populateSelect('tableTypeFilter', rows.map(row => row.applicationTypeLabel), 'Semua jenis');
+    renderSingleSelect({
+        allLabel: 'Semua jenis',
+        options: typeOptions,
+        optionsId: 'typeFilterOptions',
+        selectedKey: 'dashboardType',
+        toggleId: 'typeFilterToggle'
+    });
+    renderSingleSelect({
+        allLabel: 'Semua jenis',
+        options: tableTypeOptions,
+        optionsId: 'tableTypeFilterOptions',
+        selectedKey: 'tableType',
+        toggleId: 'tableTypeFilterToggle'
+    });
 }
 
 function updateDashboard() {
-    const type = document.getElementById('typeFilter').value;
-
     filteredRows = rows.filter(row => {
         const schemeMatch = selectedSchemes.includes(row.scheme);
-        const typeMatch = type === 'all' || row.applicationTypeLabel === type;
+        const typeMatch = selectedType === 'all' || row.applicationTypeLabel === selectedType;
         return schemeMatch && typeMatch;
     });
     approvedFilteredRows = filteredRows.filter(row => row.isApproved);
@@ -544,10 +576,9 @@ function updateRankingTable(approvedRows) {
 function updateSummaryTable() {
     if (!rows.length) return;
 
-    const type = document.getElementById('tableTypeFilter').value;
     const approvedRows = rows.filter(row => {
         const schemeMatch = selectedTableSchemes.includes(row.scheme);
-        const typeMatch = type === 'all' || row.applicationTypeLabel === type;
+        const typeMatch = selectedTableType === 'all' || row.applicationTypeLabel === selectedTableType;
         return row.isApproved && schemeMatch && typeMatch;
     });
 
@@ -714,15 +745,6 @@ function switchTab(panelId) {
     if (panelId === 'fiveDayPanel') updateTrendChart(approvedFilteredRows);
 }
 
-function populateSelect(id, values, allLabel) {
-    const select = document.getElementById(id);
-    const unique = getUniqueValues(values);
-    select.innerHTML = [
-        `<option value="all">${escapeHtml(allLabel)}</option>`,
-        ...unique.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(toProperCaps(value))}</option>`)
-    ].join('');
-}
-
 function getUniqueValues(values) {
     return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
 }
@@ -745,6 +767,10 @@ function setupMultiSelectEvents(config) {
         config.onChange();
     });
     document.getElementById(config.menuId).addEventListener('click', event => event.stopPropagation());
+    const searchInput = getMultiSelectSearchInput(config.optionsId);
+    if (searchInput) {
+        searchInput.addEventListener('input', () => filterSelectOptions(config.optionsId, searchInput.value));
+    }
 }
 
 function renderMultiSelect(config) {
@@ -774,6 +800,8 @@ function renderMultiSelect(config) {
         });
     });
     updateMultiSelectToggle(config.toggleId, config.selected, config.options, config.allLabel);
+    const searchInput = getMultiSelectSearchInput(config.optionsId);
+    if (searchInput) filterSelectOptions(config.optionsId, searchInput.value);
 }
 
 function refreshMultiSelect(config) {
@@ -832,6 +860,106 @@ function closeMultiSelectMenus() {
             toggle.setAttribute('aria-expanded', 'false');
         }
     });
+}
+
+function setupSingleSelectEvents(config) {
+    document.getElementById(config.toggleId).addEventListener('click', event => {
+        event.stopPropagation();
+        toggleSingleSelectMenu(config.menuId, config.toggleId, config.searchId);
+    });
+    document.getElementById(config.menuId).addEventListener('click', event => event.stopPropagation());
+    document.getElementById(config.searchId).addEventListener('input', event => {
+        filterSelectOptions(config.optionsId, event.target.value);
+    });
+}
+
+function renderSingleSelect(config) {
+    const optionsElement = document.getElementById(config.optionsId);
+    const options = [
+        { value: 'all', label: config.allLabel },
+        ...config.options.map(option => ({ value: option, label: toProperCaps(option) }))
+    ];
+
+    optionsElement.innerHTML = options.map((option, index) => {
+        const selected = getSingleSelectValue(config.selectedKey) === option.value;
+        return `
+            <button type="button" class="single-select-option ${selected ? 'selected' : ''}" data-value="${escapeHtml(option.value)}">
+                ${escapeHtml(option.label)}
+            </button>
+        `;
+    }).join('');
+
+    optionsElement.querySelectorAll('.single-select-option').forEach(button => {
+        button.addEventListener('click', () => {
+            setSingleSelectValue(config.selectedKey, button.dataset.value);
+            updateSingleSelectToggle(config.toggleId, config.selectedKey, config.allLabel);
+            closeSingleSelectMenus();
+            config.selectedKey === 'tableType' ? updateSummaryTable() : updateDashboard();
+        });
+    });
+    updateSingleSelectToggle(config.toggleId, config.selectedKey, config.allLabel);
+}
+
+function getSingleSelectValue(key) {
+    return key === 'tableType' ? selectedTableType : selectedType;
+}
+
+function setSingleSelectValue(key, value) {
+    if (key === 'tableType') selectedTableType = value;
+    else selectedType = value;
+}
+
+function updateSingleSelectToggle(toggleId, selectedKey, allLabel) {
+    const value = getSingleSelectValue(selectedKey);
+    document.getElementById(toggleId).textContent = value === 'all' ? allLabel : toProperCaps(value);
+}
+
+function toggleSingleSelectMenu(menuId, toggleId, searchId) {
+    const menu = document.getElementById(menuId);
+    const toggle = document.getElementById(toggleId);
+    const shouldOpen = menu.hidden;
+    closeMultiSelectMenus();
+    closeSingleSelectMenus();
+    menu.hidden = !shouldOpen;
+    toggle.setAttribute('aria-expanded', String(shouldOpen));
+    if (shouldOpen) {
+        const search = document.getElementById(searchId);
+        search.value = '';
+        filterSelectOptions(menu.querySelector('.single-select-options').id, '');
+        search.focus();
+    }
+}
+
+function closeSingleSelectMenus() {
+    [
+        ['typeFilterMenu', 'typeFilterToggle'],
+        ['tableTypeFilterMenu', 'tableTypeFilterToggle']
+    ].forEach(([menuId, toggleId]) => {
+        const menu = document.getElementById(menuId);
+        const toggle = document.getElementById(toggleId);
+        if (menu && toggle) {
+            menu.hidden = true;
+            toggle.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+function getMultiSelectSearchInput(optionsId) {
+    if (optionsId === 'schemeFilterOptions') return document.getElementById('schemeFilterSearch');
+    if (optionsId === 'tableSchemeFilterOptions') return document.getElementById('tableSchemeFilterSearch');
+    return null;
+}
+
+function filterSelectOptions(optionsId, query) {
+    const optionsElement = document.getElementById(optionsId);
+    const needle = normalizeSearch(query);
+    [...optionsElement.children].forEach(option => {
+        option.hidden = needle && !normalizeSearch(option.textContent).includes(needle);
+    });
+}
+
+function normalizeSearch(value) {
+    return String(value || '').toLocaleLowerCase('ms-MY').trim();
 }
 
 function parseAppDate(value) {
