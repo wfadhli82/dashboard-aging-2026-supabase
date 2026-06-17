@@ -28,6 +28,7 @@ const HOLIDAY_DATES_2026 = new Set([
 const monthLabels = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogos', 'Sept', 'Okt', 'Nov', 'Dis'];
 const typeLabels = { new: 'Baharu', renewal: 'Penyambungan', appeal: 'Rayuan', addrate: 'Tambah Kadar' };
 const ADMIN_EMAILS = new Set(['wfadhli@maiwp.gov.my']);
+const PUBLIC_APP_URL = 'https://wfadhli82.github.io/dashboard-aging-2026-supabase/';
 
 let headerMap = {};
 let rows = [];
@@ -130,10 +131,9 @@ async function handleLogin(event) {
     const email = document.getElementById('emailInput').value.trim();
     if (!email) return;
 
-    const redirectTo = window.location.href.split('#')[0].split('?')[0];
     const { error } = await supabaseClient.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: redirectTo }
+        options: { emailRedirectTo: PUBLIC_APP_URL }
     });
 
     if (error) {
