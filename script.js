@@ -260,10 +260,13 @@ function appendSyntheticRows(target, count, row) {
 function updateAuthUi(session) {
     const isLoggedIn = Boolean(session);
     const email = session?.user?.email?.toLowerCase() || '';
+    const uploadCard = document.getElementById('uploadCard');
+    const canUseCsvFallback = ADMIN_EMAILS.has(email);
     document.getElementById('loginBtn').hidden = isLoggedIn;
     document.getElementById('logoutBtn').hidden = !isLoggedIn;
     document.getElementById('emailInput').disabled = isLoggedIn;
-    document.getElementById('uploadCard').hidden = !ADMIN_EMAILS.has(email);
+    uploadCard.hidden = !canUseCsvFallback;
+    uploadCard.style.display = canUseCsvFallback ? '' : 'none';
 }
 
 function showAuthMessage(message, isError) {
