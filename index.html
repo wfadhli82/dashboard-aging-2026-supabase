@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Aging Kelulusan 2026</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">MAIWP Santuni Asnaf</p>
+                <h1>Dashboard Aging Kelulusan 2026</h1>
+                <p id="dateRangeText">Log masuk untuk memaparkan data Supabase.</p>
+            </div>
+            <div class="calendar-chip" aria-label="Ringkasan kalendar 2026">
+                <span><strong id="workingDayCount">246</strong> hari bekerja</span>
+                <span><strong id="holidayCount">119</strong> hari cuti</span>
+            </div>
+        </header>
+
+        <section class="auth-card" id="authCard">
+            <div class="auth-copy">
+                <h2>Akses Dashboard</h2>
+                <p>Masukkan emel yang dibenarkan. Link login akan dihantar melalui Supabase Auth.</p>
+            </div>
+            <form class="auth-form" id="authForm">
+                <label>
+                    <span>Emel</span>
+                    <input type="email" id="emailInput" autocomplete="email" placeholder="nama@maiwp.gov.my" required>
+                </label>
+                <button type="submit" id="loginBtn">Hantar Link Login</button>
+                <button type="button" id="logoutBtn" class="secondary-button" hidden>Log Keluar</button>
+            </form>
+            <p class="message info" id="authMessage" hidden></p>
+        </section>
+
+        <section class="upload-card" id="uploadCard" hidden>
+            <div class="upload-copy">
+                <h2>Fallback CSV Lokal</h2>
+                <p>Jika Supabase belum tersedia, pilih CSV lokal untuk semakan sementara. Fail tidak dimuat naik ke server.</p>
+            </div>
+            <div class="upload-actions">
+                <input type="file" id="fileInput" accept=".csv,text/csv" hidden>
+                <button type="button" id="chooseFileBtn">Pilih CSV</button>
+                <p id="fileStatus">Belum ada fail dipilih.</p>
+            </div>
+            <p class="message error" id="errorMessage" hidden></p>
+        </section>
+
+        <main id="dashboard" class="dashboard" hidden>
+            <nav class="tabs" aria-label="Tab dashboard">
+                <button type="button" class="tab-button active" data-tab="fiveDayPanel">Dashboard Kelulusan 5 Hari</button>
+                <button type="button" class="tab-button" data-tab="performancePanel">Jadual Prestasi Keseluruhan</button>
+            </nav>
+
+            <section class="tab-panel active" id="fiveDayPanel">
+                <section class="filter-card">
+                    <div>
+                        <p class="section-kicker">Prestasi 5 hari</p>
+                        <h2>Dashboard Kelulusan 5 Hari</h2>
+                    </div>
+                    <div class="filters">
+                        <label class="field-label">
+                            <span>Skim</span>
+                            <div class="multi-select" id="schemeFilter">
+                                <button type="button" class="multi-select-toggle" id="schemeFilterToggle" aria-expanded="false" aria-controls="schemeFilterMenu">
+                                    Semua skim
+                                </button>
+                                <div class="multi-select-menu" id="schemeFilterMenu" hidden>
+                                    <div class="multi-select-actions">
+                                        <button type="button" id="schemeSelectAllBtn">Pilih Semua</button>
+                                        <button type="button" id="schemeClearBtn">Kosongkan</button>
+                                    </div>
+                                    <div class="multi-select-options" id="schemeFilterOptions"></div>
+                                </div>
+                            </div>
+                        </label>
+                        <label>
+                            <span>Jenis</span>
+                            <select id="typeFilter"></select>
+                        </label>
+                    </div>
+                </section>
+
+                <section class="kpi-grid" aria-label="Ringkasan KPI">
+                    <article class="kpi-card">
+                        <span>Jumlah Permohonan</span>
+                        <strong id="totalApplications">0</strong>
+                    </article>
+                    <article class="kpi-card approved">
+                        <span>Telah Diluluskan</span>
+                        <strong id="approvedApplications">0</strong>
+                    </article>
+                    <article class="kpi-card pending">
+                        <span>Belum Diluluskan</span>
+                        <strong id="pendingApplications">0</strong>
+                    </article>
+                    <article class="kpi-card good">
+                        <span>5 Hari Ke Bawah</span>
+                        <strong id="onTimeApplications">0</strong>
+                    </article>
+                    <article class="kpi-card risk">
+                        <span>6 Hari Ke Atas</span>
+                        <strong id="lateApplications">0</strong>
+                    </article>
+                    <article class="kpi-card percent">
+                        <span>Peratus 5 Hari</span>
+                        <strong id="onTimePercent">0%</strong>
+                    </article>
+                </section>
+
+                <section class="chart-card">
+                    <div class="panel-heading">
+                        <div>
+                            <h2>Trend Kelulusan Dalam Tempoh 5 Hari Bekerja</h2>
+                        </div>
+                        <div class="segmented" role="radiogroup" aria-label="Metrik carta">
+                            <label>
+                                <input type="radio" name="metricMode" value="count" checked>
+                                <span>Bilangan</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="metricMode" value="percent">
+                                <span>Peratus</span>
+                            </label>
+                        </div>
+                    </div>
+                    <canvas id="trendChart"></canvas>
+                </section>
+
+                <section class="table-card">
+                    <div class="panel-heading">
+                        <div>
+                            <h2>Ranking Prestasi Skim Bantuan</h2>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="ranking-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Skim Bantuan</th>
+                                    <th>% Purata Kelulusan 5 Hari</th>
+                                    <th>Bilangan Kelulusan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rankingTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </section>
+
+            <section class="tab-panel" id="performancePanel">
+                <section class="filter-card">
+                    <div>
+                        <p class="section-kicker">Jadual agregat</p>
+                        <h2>Jadual Prestasi Keseluruhan</h2>
+                    </div>
+                    <div class="filters table-filters">
+                        <label class="field-label">
+                            <span>Skim</span>
+                            <div class="multi-select" id="tableSchemeFilter">
+                                <button type="button" class="multi-select-toggle" id="tableSchemeFilterToggle" aria-expanded="false" aria-controls="tableSchemeFilterMenu">
+                                    Semua skim
+                                </button>
+                                <div class="multi-select-menu" id="tableSchemeFilterMenu" hidden>
+                                    <div class="multi-select-actions">
+                                        <button type="button" id="tableSchemeSelectAllBtn">Pilih Semua</button>
+                                        <button type="button" id="tableSchemeClearBtn">Kosongkan</button>
+                                    </div>
+                                    <div class="multi-select-options" id="tableSchemeFilterOptions"></div>
+                                </div>
+                            </div>
+                        </label>
+                        <label>
+                            <span>Jenis</span>
+                            <select id="tableTypeFilter"></select>
+                        </label>
+                        <button type="button" id="downloadSummaryBtn">Download CSV</button>
+                    </div>
+                </section>
+
+                <section class="table-card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Bulan</th>
+                                    <th>Jumlah</th>
+                                    <th>5 Hari Ke Bawah</th>
+                                    <th>6 Hari Ke Atas</th>
+                                    <th>% Purata Kelulusan 5 Hari</th>
+                                    <th>% 6 Hari</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summaryTableBody"></tbody>
+                            <tfoot id="summaryTableFoot"></tfoot>
+                        </table>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

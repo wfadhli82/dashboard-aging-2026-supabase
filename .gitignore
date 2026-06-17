@@ -1,0 +1,10 @@
+# Data sebenar jangan commit ke GitHub
+*.csv
+*.xlsx
+*.xls
+*.xlsm
+
+# Fail sementara sistem/editor
+.DS_Store
+Thumbs.db
+~$*
