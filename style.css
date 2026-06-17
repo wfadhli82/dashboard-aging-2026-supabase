@@ -161,6 +161,11 @@ button:hover {
     background: #0e5fae;
 }
 
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+}
+
 .message {
     grid-column: 1 / -1;
     padding: 11px 12px;

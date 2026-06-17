@@ -29,6 +29,7 @@ const monthLabels = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogos', 'S
 const typeLabels = { new: 'Baharu', renewal: 'Penyambungan', appeal: 'Rayuan', addrate: 'Tambah Kadar' };
 const ADMIN_EMAILS = new Set(['wfadhli@maiwp.gov.my']);
 const PUBLIC_APP_URL = 'https://wfadhli82.github.io/dashboard-aging-2026-supabase/';
+const LOGIN_COOLDOWN_SECONDS = 60;
 
 let headerMap = {};
 let rows = [];
@@ -43,6 +44,7 @@ let currentSummaryRows = [];
 let dataRange = { first: null, last: null };
 let supabaseClient = null;
 let latestRun = null;
+let loginCooldownTimer = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('workingDayCount').textContent = getWorkingDaysIn2026().length;
@@ -140,7 +142,8 @@ async function handleLogin(event) {
         showAuthMessage(error.message, true);
         return;
     }
-    showAuthMessage('Link login telah dihantar. Buka emel ini pada peranti yang sama.', false);
+    showAuthMessage('Link akses telah dihantar. Semak emel dan guna link terbaru sahaja.', false);
+    startLoginCooldown(LOGIN_COOLDOWN_SECONDS);
 }
 
 async function handleLogout() {
@@ -155,6 +158,34 @@ async function handleLogout() {
     document.getElementById('fileStatus').textContent = 'Belum ada fail dipilih.';
     updateAuthUi(null);
     showAuthMessage('Sesi telah ditamatkan.', false);
+}
+
+function startLoginCooldown(seconds) {
+    if (loginCooldownTimer) {
+        clearInterval(loginCooldownTimer);
+        loginCooldownTimer = null;
+    }
+
+    const button = document.getElementById('loginBtn');
+    let remaining = seconds;
+    setLoginButtonCooldown(button, remaining);
+
+    loginCooldownTimer = setInterval(() => {
+        remaining -= 1;
+        if (remaining <= 0) {
+            clearInterval(loginCooldownTimer);
+            loginCooldownTimer = null;
+            button.disabled = false;
+            button.textContent = 'Hantar Link Login';
+            return;
+        }
+        setLoginButtonCooldown(button, remaining);
+    }, 1000);
+}
+
+function setLoginButtonCooldown(button, remaining) {
+    button.disabled = true;
+    button.textContent = `Tunggu ${remaining}s`;
 }
 
 async function loadSupabaseData() {
