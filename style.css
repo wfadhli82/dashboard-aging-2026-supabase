@@ -270,7 +270,7 @@ button:disabled {
     top: 0;
     z-index: 10;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
     margin-top: 14px;
     padding: 6px;
@@ -280,19 +280,22 @@ button:disabled {
 
 .tab-button {
     min-height: 46px;
+    border: 1px solid #b9cad7;
     color: #254258;
     background: transparent;
     white-space: normal;
 }
 
 .tab-button:hover {
-    color: #fff;
-    background: var(--brand-2);
+    color: var(--brand);
+    background: #f7fbfe;
+    border-color: var(--brand-2);
 }
 
 .tab-button.active {
     color: #fff;
     background: var(--brand);
+    border-color: var(--brand);
 }
 
 .tab-panel {
@@ -322,7 +325,7 @@ button:disabled {
 }
 
 .table-filters {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 label {

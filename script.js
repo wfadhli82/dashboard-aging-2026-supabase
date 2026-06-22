@@ -3,6 +3,7 @@ const HEADER_ALIASES = {
     approvedAt: ['Tarikh Kelulusan'],
     scheme: ['Schemes â†’ Name', 'Schemes -> Name', 'Schemes → Name'],
     applicationType: ['Application Type'],
+    subBranch: ['Sub Branches → Name', 'Sub Branches -> Name'],
     branch: ['Branches â†’ Name', 'Branches -> Name', 'Branches → Name']
 };
 
@@ -27,7 +28,6 @@ const HOLIDAY_DATES_2026 = new Set([
 
 const monthLabels = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogos', 'Sept', 'Okt', 'Nov', 'Dis'];
 const typeLabels = { new: 'Baharu', renewal: 'Penyambungan', appeal: 'Rayuan', addrate: 'Tambah Kadar' };
-const ADMIN_EMAILS = new Set(['wfadhli@maiwp.gov.my']);
 
 let headerMap = {};
 let rows = [];
@@ -35,17 +35,30 @@ let filteredRows = [];
 let approvedFilteredRows = [];
 let schemeOptions = [];
 let tableSchemeOptions = [];
+let branchOptions = [];
+let tableBranchOptions = [];
 let selectedSchemes = [];
 let selectedTableSchemes = [];
-let selectedType = 'all';
-let selectedTableType = 'all';
+let selectedBranches = [];
+let selectedTableBranches = [];
+let selectedTypes = [];
+let selectedTableTypes = [];
 let typeOptions = [];
 let tableTypeOptions = [];
+let officialBranchOptions = [];
+let officialSchemeOptions = [];
+let officialTypeOptions = [];
+let selectedOfficialBranches = [];
+let selectedOfficialSchemes = [];
+let selectedOfficialTypes = [];
 let metricMode = 'count';
+let officialMetricMode = 'count';
 let currentSummaryRows = [];
 let dataRange = { first: null, last: null };
 let supabaseClient = null;
 let latestRun = null;
+let officialSchemes = [];
+let mappingsBySystemScheme = new Map();
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('workingDayCount').textContent = getWorkingDaysIn2026().length;
@@ -63,43 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', () => switchTab(button.dataset.tab));
     });
 
-    setupSingleSelectEvents({
-        menuId: 'typeFilterMenu',
-        onChange: updateDashboard,
-        optionsId: 'typeFilterOptions',
-        searchId: 'typeFilterSearch',
-        selectedKey: 'dashboardType',
-        toggleId: 'typeFilterToggle'
-    });
-    setupSingleSelectEvents({
-        menuId: 'tableTypeFilterMenu',
-        onChange: updateSummaryTable,
-        optionsId: 'tableTypeFilterOptions',
-        searchId: 'tableTypeFilterSearch',
-        selectedKey: 'tableType',
-        toggleId: 'tableTypeFilterToggle'
-    });
-    setupMultiSelectEvents({
-        clearButtonId: 'schemeClearBtn',
-        menuId: 'schemeFilterMenu',
-        onChange: updateDashboard,
-        optionsId: 'schemeFilterOptions',
-        selectAllButtonId: 'schemeSelectAllBtn',
-        selectedKey: 'dashboard',
-        toggleId: 'schemeFilterToggle'
-    });
-    setupMultiSelectEvents({
-        clearButtonId: 'tableSchemeClearBtn',
-        menuId: 'tableSchemeFilterMenu',
-        onChange: updateSummaryTable,
-        optionsId: 'tableSchemeFilterOptions',
-        selectAllButtonId: 'tableSchemeSelectAllBtn',
-        selectedKey: 'table',
-        toggleId: 'tableSchemeFilterToggle'
-    });
+    getMultiSelectConfigs().forEach(setupMultiSelectEvents);
     document.addEventListener('click', () => {
         closeMultiSelectMenus();
-        closeSingleSelectMenus();
         closeProfileMenu();
     });
 
@@ -107,6 +86,12 @@ document.addEventListener('DOMContentLoaded', () => {
         input.addEventListener('change', event => {
             metricMode = event.target.value;
             updateTrendChart(approvedFilteredRows);
+        });
+    });
+    document.querySelectorAll('input[name="officialMetricMode"]').forEach(input => {
+        input.addEventListener('change', event => {
+            officialMetricMode = event.target.value;
+            updateOfficialDashboard();
         });
     });
 
@@ -207,17 +192,31 @@ async function loadSupabaseData() {
     }
 
     latestRun = runRows[0];
-    const { data: aggregates, error: aggregateError } = await supabaseClient
-        .from('dashboard_aging_aggregates')
-        .select('year,month,scheme,application_type,total_applications,approved_count,pending_count,approved_5_days_count,approved_over_5_days_count')
-        .eq('run_id', latestRun.run_id);
+    const [aggregateResult, officialResult, mappingResult] = await Promise.all([
+        fetchAllAggregates(latestRun.run_id),
+        supabaseClient
+            .from('dashboard_official_schemes')
+            .select('name,cluster,display_order')
+            .order('display_order'),
+        supabaseClient
+            .from('dashboard_scheme_mappings')
+            .select('system_scheme,official_scheme,division')
+    ]);
+    const { data: aggregates, error: aggregateError } = aggregateResult;
 
     if (aggregateError) {
         showAuthMessage(`Agregat tidak dapat dibaca: ${aggregateError.message}`, true);
         return;
     }
+    if (officialResult.error || mappingResult.error) {
+        showAuthMessage(`Mapping skim tidak dapat dibaca: ${(officialResult.error || mappingResult.error).message}`, true);
+        return;
+    }
 
-    rows = expandAggregateRows(aggregates || []);
+    officialSchemes = officialResult.data || [];
+    mappingsBySystemScheme = new Map((mappingResult.data || []).map(item => [item.system_scheme, item]));
+
+    rows = applySchemeMappings(expandAggregateRows(aggregates || []));
     if (!rows.length) {
         showAuthMessage('Agregat Supabase kosong untuk run terkini.', true);
         return;
@@ -228,13 +227,36 @@ async function loadSupabaseData() {
         last: parseAppDate(latestRun.data_end_date) || getDateRange(rows).last
     };
     setupFilters();
+    setupOfficialFilters();
     updateDashboard();
     updateSummaryTable();
+    updateOfficialDashboard();
 
     document.getElementById('fileStatus').textContent = `Data Supabase dimuatkan (${Number(latestRun.source_record_count || rows.length).toLocaleString('ms-MY')} rekod sumber).`;
     document.getElementById('dateRangeText').textContent = `Data permohonan: ${formatShortDate(dataRange.first)} hingga ${formatShortDate(dataRange.last)}. Dikemaskini pada ${formatDateTime(latestRun.generated_at)}.`;
     document.getElementById('dashboard').hidden = false;
     showAuthMessage('Data Supabase berjaya dimuatkan.', false);
+}
+
+async function fetchAllAggregates(runId) {
+    const pageSize = 1000;
+    const data = [];
+
+    for (let start = 0; ; start += pageSize) {
+        const { data: page, error } = await supabaseClient
+            .from('dashboard_aging_aggregates')
+            .select('year,month,branch,scheme,application_type,total_applications,approved_count,pending_count,approved_5_days_count,approved_over_5_days_count')
+            .eq('run_id', runId)
+            .order('year')
+            .order('month')
+            .order('branch')
+            .order('scheme')
+            .range(start, start + pageSize - 1);
+
+        if (error) return { data: null, error };
+        data.push(...(page || []));
+        if (!page || page.length < pageSize) return { data, error: null };
+    }
 }
 
 function expandAggregateRows(aggregates) {
@@ -249,7 +271,7 @@ function expandAggregateRows(aggregates) {
         const applicationTypeLabel = typeLabels[applicationType] || titleCase(applicationType);
         const base = {
             scheme,
-            branch: '(Agregat Supabase)',
+            branch: item.branch || '(Tiada cawangan)',
             applicationType,
             applicationTypeLabel
         };
@@ -279,6 +301,20 @@ function expandAggregateRows(aggregates) {
     return expanded;
 }
 
+function applySchemeMappings(sourceRows) {
+    return sourceRows.map(row => {
+        const mapping = mappingsBySystemScheme.get(row.scheme);
+        if (!mapping) return null;
+        const official = officialSchemes.find(item => item.name === mapping.official_scheme);
+        if (!official) return null;
+        return {
+            ...row,
+            officialScheme: official.name,
+            cluster: official.cluster
+        };
+    }).filter(Boolean);
+}
+
 function appendSyntheticRows(target, count, row) {
     const total = Math.max(0, Number(count || 0));
     for (let index = 0; index < total; index++) {
@@ -290,15 +326,14 @@ function updateAuthUi(session) {
     const isLoggedIn = Boolean(session);
     const email = session?.user?.email?.toLowerCase() || '';
     const uploadCard = document.getElementById('uploadCard');
-    const canUseCsvFallback = ADMIN_EMAILS.has(email);
     document.getElementById('loginView').hidden = isLoggedIn;
     document.getElementById('appContent').hidden = !isLoggedIn;
     document.getElementById('loginBtn').disabled = false;
     document.getElementById('loginBtn').textContent = 'Log Masuk';
     document.getElementById('profileEmail').textContent = email || '-';
     document.getElementById('profileInitial').textContent = email ? email.charAt(0).toUpperCase() : '?';
-    uploadCard.hidden = !canUseCsvFallback;
-    uploadCard.style.display = canUseCsvFallback ? '' : 'none';
+    uploadCard.hidden = true;
+    uploadCard.style.display = 'none';
 }
 
 function toggleProfileMenu(event) {
@@ -337,13 +372,15 @@ function handleFile(file) {
         try {
             const parsed = parseCsv(event.target.result);
             headerMap = resolveHeaders(parsed.headers);
-            rows = normalizeRows(parsed.records);
+            rows = applySchemeMappings(normalizeRows(parsed.records));
             if (!rows.length) throw new Error('Tiada rekod tarikh permohonan yang sah dijumpai.');
 
             dataRange = getDateRange(rows);
             setupFilters();
+            setupOfficialFilters();
             updateDashboard();
             updateSummaryTable();
+            updateOfficialDashboard();
 
             document.getElementById('fileStatus').textContent = `${file.name} dimuatkan (${rows.length.toLocaleString('ms-MY')} rekod).`;
             document.getElementById('dateRangeText').textContent = `Data permohonan: ${formatShortDate(dataRange.first)} hingga ${formatShortDate(dataRange.last)}.`;
@@ -417,6 +454,9 @@ function resolveHeaders(headers) {
     if (!map.branch) {
         map.branch = headers.find(header => /^branches\b.*name$/i.test(normalizeHeader(header)));
     }
+    if (!map.subBranch) {
+        map.subBranch = headers.find(header => /^sub\s+branches\b.*name$/i.test(normalizeHeader(header)));
+    }
 
     const missing = REQUIRED_FIELDS.filter(field => !map[field]).map(field => HEADER_ALIASES[field][0]);
     if (missing.length) {
@@ -443,7 +483,9 @@ function normalizeRows(records) {
             aging: isApproved ? calculateWorkingDays(appliedDate, approvedDate) : null,
             isApproved,
             scheme: record[headerMap.scheme] || '(Tiada skim)',
-            branch: headerMap.branch ? (record[headerMap.branch] || '(Tiada cawangan)') : '(Tiada cawangan)',
+            branch: headerMap.subBranch
+                ? (record[headerMap.subBranch] || '(Tiada cawangan)')
+                : (headerMap.branch ? (record[headerMap.branch] || '(Tiada cawangan)') : '(Tiada cawangan)'),
             applicationType: type,
             applicationTypeLabel: typeLabels[type] || titleCase(type || 'Lain-lain')
         };
@@ -451,59 +493,88 @@ function normalizeRows(records) {
 }
 
 function setupFilters() {
+    branchOptions = getUniqueValues(rows.map(row => row.branch));
+    tableBranchOptions = [...branchOptions];
     schemeOptions = getUniqueValues(rows.map(row => row.scheme));
     tableSchemeOptions = [...schemeOptions];
-    selectedSchemes = [...schemeOptions];
-    selectedTableSchemes = [...tableSchemeOptions];
     typeOptions = getUniqueValues(rows.map(row => row.applicationTypeLabel));
     tableTypeOptions = [...typeOptions];
-    selectedType = 'all';
-    selectedTableType = 'all';
-    renderMultiSelect({
-        allLabel: 'Semua skim',
-        onChange: updateDashboard,
-        options: schemeOptions,
-        optionsId: 'schemeFilterOptions',
-        selected: selectedSchemes,
-        selectedKey: 'dashboard',
-        toggleId: 'schemeFilterToggle'
-    });
-    renderMultiSelect({
-        allLabel: 'Semua skim',
-        onChange: updateSummaryTable,
-        options: tableSchemeOptions,
-        optionsId: 'tableSchemeFilterOptions',
-        selected: selectedTableSchemes,
-        selectedKey: 'table',
-        toggleId: 'tableSchemeFilterToggle'
-    });
-    renderSingleSelect({
-        allLabel: 'Semua jenis',
-        options: typeOptions,
-        optionsId: 'typeFilterOptions',
-        selectedKey: 'dashboardType',
-        toggleId: 'typeFilterToggle'
-    });
-    renderSingleSelect({
-        allLabel: 'Semua jenis',
-        options: tableTypeOptions,
-        optionsId: 'tableTypeFilterOptions',
-        selectedKey: 'tableType',
-        toggleId: 'tableTypeFilterToggle'
-    });
+    selectedBranches = [...branchOptions];
+    selectedTableBranches = [...tableBranchOptions];
+    selectedSchemes = [...schemeOptions];
+    selectedTableSchemes = [...tableSchemeOptions];
+    selectedTypes = [...typeOptions];
+    selectedTableTypes = [...tableTypeOptions];
+}
+
+function setupOfficialFilters() {
+    officialBranchOptions = getUniqueValues(rows.map(row => row.branch));
+    officialSchemeOptions = officialSchemes.map(item => item.name);
+    officialTypeOptions = getUniqueValues(rows.map(row => row.applicationTypeLabel));
+    selectedOfficialBranches = [...officialBranchOptions];
+    selectedOfficialSchemes = [...officialSchemeOptions];
+    selectedOfficialTypes = [...officialTypeOptions];
+    getMultiSelectConfigs().forEach(renderMultiSelect);
+}
+
+function getMultiSelectConfigs() {
+    return [
+        multiConfig('dashboardBranch', 'Semua cawangan', 'branchFilter', updateDashboard),
+        multiConfig('dashboardScheme', 'Semua skim', 'schemeFilter', updateDashboard),
+        multiConfig('dashboardType', 'Semua jenis', 'typeFilter', updateDashboard),
+        multiConfig('tableBranch', 'Semua cawangan', 'tableBranchFilter', updateSummaryTable),
+        multiConfig('tableScheme', 'Semua skim', 'tableSchemeFilter', updateSummaryTable),
+        multiConfig('tableType', 'Semua jenis', 'tableTypeFilter', updateSummaryTable),
+        multiConfig('officialBranch', 'Semua cawangan', 'officialBranchFilter', updateOfficialDashboard),
+        multiConfig('officialScheme', 'Semua skim rasmi', 'officialSchemeFilter', updateOfficialDashboard, true),
+        multiConfig('officialType', 'Semua jenis', 'officialTypeFilter', updateOfficialDashboard)
+    ];
+}
+
+function multiConfig(selectedKey, allLabel, prefix, onChange, preserveCase = false) {
+    return {
+        allLabel,
+        clearButtonId: `${prefix}ClearBtn`,
+        menuId: `${prefix}Menu`,
+        onChange,
+        options: getMultiSelectOptions(selectedKey),
+        optionsId: `${prefix}Options`,
+        emptyLabel: allLabel.includes('cawangan')
+            ? 'Tiada cawangan dipilih'
+            : (allLabel.includes('jenis') ? 'Tiada jenis dipilih' : 'Tiada skim dipilih'),
+        preserveCase,
+        selectAllButtonId: `${prefix}SelectAllBtn`,
+        selected: getMultiSelectSelection(selectedKey),
+        selectedKey,
+        toggleId: `${prefix}Toggle`
+    };
 }
 
 function updateDashboard() {
     filteredRows = rows.filter(row => {
+        const branchMatch = selectedBranches.includes(row.branch);
         const schemeMatch = selectedSchemes.includes(row.scheme);
-        const typeMatch = selectedType === 'all' || row.applicationTypeLabel === selectedType;
-        return schemeMatch && typeMatch;
+        const typeMatch = selectedTypes.includes(row.applicationTypeLabel);
+        return branchMatch && schemeMatch && typeMatch;
     });
     approvedFilteredRows = filteredRows.filter(row => row.isApproved);
 
     updateKpis(filteredRows, approvedFilteredRows);
     updateTrendChart(approvedFilteredRows);
     updateRankingTable(approvedFilteredRows);
+}
+
+function updateOfficialDashboard() {
+    if (!rows.length) return;
+    const activeRows = rows.filter(row => {
+        return selectedOfficialBranches.includes(row.branch)
+            && selectedOfficialSchemes.includes(row.officialScheme)
+            && selectedOfficialTypes.includes(row.applicationTypeLabel);
+    });
+    const approvedRows = activeRows.filter(row => row.isApproved);
+    updateOfficialKpis(activeRows, approvedRows);
+    updateTrendChart(approvedRows, 'officialTrendChart', officialMetricMode);
+    updateRankingTable(approvedRows, 'officialRankingTableBody', 'officialScheme');
 }
 
 function updateKpis(activeRows, approvedRows) {
@@ -521,7 +592,20 @@ function updateKpis(activeRows, approvedRows) {
     document.getElementById('onTimePercent').textContent = approved ? `${((onTime / approved) * 100).toFixed(1)}%` : '0%';
 }
 
-function updateTrendChart(approvedRows) {
+function updateOfficialKpis(activeRows, approvedRows) {
+    const total = activeRows.length;
+    const approved = approvedRows.length;
+    const onTime = approvedRows.filter(row => row.aging <= 5).length;
+    const late = approved - onTime;
+    document.getElementById('officialTotalApplications').textContent = total.toLocaleString('ms-MY');
+    document.getElementById('officialApprovedApplications').textContent = approved.toLocaleString('ms-MY');
+    document.getElementById('officialPendingApplications').textContent = (total - approved).toLocaleString('ms-MY');
+    document.getElementById('officialOnTimeApplications').textContent = onTime.toLocaleString('ms-MY');
+    document.getElementById('officialLateApplications').textContent = late.toLocaleString('ms-MY');
+    document.getElementById('officialOnTimePercent').textContent = approved ? `${((onTime / approved) * 100).toFixed(1)}%` : '0%';
+}
+
+function updateTrendChart(approvedRows, canvasId = 'trendChart', mode = metricMode) {
     const denominator = Array(12).fill(0);
     const numerator = Array(12).fill(0);
 
@@ -531,20 +615,21 @@ function updateTrendChart(approvedRows) {
         if (row.aging <= 5) numerator[month]++;
     });
 
-    const data = metricMode === 'percent'
+    const data = mode === 'percent'
         ? numerator.map((value, index) => denominator[index] ? (value / denominator[index]) * 100 : 0)
         : numerator;
 
-    renderLineChart('trendChart', monthLabels, data, metricMode === 'percent');
+    renderLineChart(canvasId, monthLabels, data, mode === 'percent');
 }
 
-function updateRankingTable(approvedRows) {
+function updateRankingTable(approvedRows, bodyId = 'rankingTableBody', schemeKey = 'scheme') {
     const grouped = new Map();
     approvedRows.forEach(row => {
-        if (!grouped.has(row.scheme)) {
-            grouped.set(row.scheme, { scheme: row.scheme, approved: 0, onTime: 0 });
+        const scheme = row[schemeKey];
+        if (!grouped.has(scheme)) {
+            grouped.set(scheme, { scheme, approved: 0, onTime: 0 });
         }
-        const item = grouped.get(row.scheme);
+        const item = grouped.get(scheme);
         item.approved++;
         if (row.aging <= 5) item.onTime++;
     });
@@ -557,7 +642,7 @@ function updateRankingTable(approvedRows) {
         }))
         .sort((a, b) => b.percent - a.percent || b.approved - a.approved || a.scheme.localeCompare(b.scheme));
 
-    const tbody = document.getElementById('rankingTableBody');
+    const tbody = document.getElementById(bodyId);
     if (!rankingRows.length) {
         tbody.innerHTML = '<tr><td class="empty-state" colspan="4">Tiada kelulusan untuk filter ini.</td></tr>';
         return;
@@ -566,7 +651,7 @@ function updateRankingTable(approvedRows) {
     tbody.innerHTML = rankingRows.map((row, index) => `
         <tr>
             <td>${index + 1}</td>
-            <td>${escapeHtml(toProperCaps(row.scheme))}</td>
+            <td>${escapeHtml(schemeKey === 'officialScheme' ? row.scheme : toProperCaps(row.scheme))}</td>
             <td><span class="${getPerformanceBadgeClass(row.percent)}">${formatPercent(row.percent)}</span></td>
             <td>${row.approved.toLocaleString('ms-MY')}</td>
         </tr>
@@ -577,9 +662,10 @@ function updateSummaryTable() {
     if (!rows.length) return;
 
     const approvedRows = rows.filter(row => {
+        const branchMatch = selectedTableBranches.includes(row.branch);
         const schemeMatch = selectedTableSchemes.includes(row.scheme);
-        const typeMatch = selectedTableType === 'all' || row.applicationTypeLabel === selectedTableType;
-        return row.isApproved && schemeMatch && typeMatch;
+        const typeMatch = selectedTableTypes.includes(row.applicationTypeLabel);
+        return row.isApproved && branchMatch && schemeMatch && typeMatch;
     });
 
     const grouped = monthLabels.map((month, index) => ({ month, monthIndex: index, underFive: 0, overFive: 0 }));
@@ -710,7 +796,7 @@ function renderLineChart(canvasId, labels, data, isPercent) {
         if (point.value > 0) {
             ctx.fillStyle = '#142334';
             ctx.font = '800 12px Segoe UI, Arial';
-            ctx.fillText(isPercent ? `${point.value.toFixed(1)}%` : String(point.value), point.x, Math.max(chart.top, point.y - 22));
+            ctx.fillText(isPercent ? `${point.value.toFixed(1)}%` : formatChartValue(point.value), point.x, Math.max(chart.top, point.y - 22));
         }
 
         ctx.fillStyle = '#64748b';
@@ -724,7 +810,7 @@ function renderLineChart(canvasId, labels, data, isPercent) {
     for (let index = 0; index <= 4; index++) {
         const value = Math.round((max / 4) * index);
         const y = chart.bottom - (index / 4) * chart.height;
-        ctx.fillText(isPercent ? `${value}%` : String(value), chart.left - 8, y);
+        ctx.fillText(isPercent ? `${value}%` : formatChartValue(value), chart.left - 8, y);
     }
 
     if (!data.some(value => value > 0)) {
@@ -776,8 +862,8 @@ function setupMultiSelectEvents(config) {
 function renderMultiSelect(config) {
     const optionsElement = document.getElementById(config.optionsId);
     if (!config.options.length) {
-        optionsElement.innerHTML = '<div class="empty-state">Tiada skim dijumpai.</div>';
-        updateMultiSelectToggle(config.toggleId, config.selected, config.options, config.allLabel);
+        optionsElement.innerHTML = '<div class="empty-state">Tiada pilihan dijumpai.</div>';
+        updateMultiSelectToggle(config.toggleId, config.selected, config.options, config.allLabel, config.preserveCase, config.emptyLabel);
         return;
     }
 
@@ -786,7 +872,7 @@ function renderMultiSelect(config) {
         return `
             <label for="${inputId}">
                 <input type="checkbox" id="${inputId}" value="${escapeHtml(option)}" ${config.selected.includes(option) ? 'checked' : ''}>
-                <span>${escapeHtml(toProperCaps(option))}</span>
+                <span>${escapeHtml(formatMultiSelectLabel(option, config.preserveCase))}</span>
             </label>
         `;
     }).join('');
@@ -799,7 +885,7 @@ function renderMultiSelect(config) {
             config.onChange();
         });
     });
-    updateMultiSelectToggle(config.toggleId, config.selected, config.options, config.allLabel);
+    updateMultiSelectToggle(config.toggleId, config.selected, config.options, config.allLabel, config.preserveCase, config.emptyLabel);
     const searchInput = getMultiSelectSearchInput(config.optionsId);
     if (searchInput) filterSelectOptions(config.optionsId, searchInput.value);
 }
@@ -807,33 +893,62 @@ function renderMultiSelect(config) {
 function refreshMultiSelect(config) {
     renderMultiSelect({
         ...config,
-        allLabel: 'Semua skim',
         options: getMultiSelectOptions(config.selectedKey),
         selected: getMultiSelectSelection(config.selectedKey)
     });
 }
 
 function getMultiSelectOptions(key) {
-    return key === 'table' ? tableSchemeOptions : schemeOptions;
+    const options = {
+        dashboardBranch: branchOptions,
+        dashboardScheme: schemeOptions,
+        dashboardType: typeOptions,
+        tableBranch: tableBranchOptions,
+        tableScheme: tableSchemeOptions,
+        tableType: tableTypeOptions,
+        officialBranch: officialBranchOptions,
+        officialScheme: officialSchemeOptions,
+        officialType: officialTypeOptions
+    };
+    return options[key] || [];
 }
 
 function getMultiSelectSelection(key) {
-    return key === 'table' ? selectedTableSchemes : selectedSchemes;
+    const selections = {
+        dashboardBranch: selectedBranches,
+        dashboardScheme: selectedSchemes,
+        dashboardType: selectedTypes,
+        tableBranch: selectedTableBranches,
+        tableScheme: selectedTableSchemes,
+        tableType: selectedTableTypes,
+        officialBranch: selectedOfficialBranches,
+        officialScheme: selectedOfficialSchemes,
+        officialType: selectedOfficialTypes
+    };
+    return selections[key] || [];
 }
 
 function setMultiSelectSelection(key, selected) {
-    if (key === 'table') selectedTableSchemes = [...selected];
-    else selectedSchemes = [...selected];
+    const values = [...selected];
+    if (key === 'dashboardBranch') selectedBranches = values;
+    else if (key === 'dashboardScheme') selectedSchemes = values;
+    else if (key === 'dashboardType') selectedTypes = values;
+    else if (key === 'tableBranch') selectedTableBranches = values;
+    else if (key === 'tableScheme') selectedTableSchemes = values;
+    else if (key === 'tableType') selectedTableTypes = values;
+    else if (key === 'officialBranch') selectedOfficialBranches = values;
+    else if (key === 'officialScheme') selectedOfficialSchemes = values;
+    else if (key === 'officialType') selectedOfficialTypes = values;
 }
 
-function updateMultiSelectToggle(toggleId, selected, options, allLabel) {
+function updateMultiSelectToggle(toggleId, selected, options, allLabel, preserveCase = false, emptyLabel = 'Tiada skim dipilih') {
     const toggle = document.getElementById(toggleId);
     if (!selected.length) {
-        toggle.textContent = 'Tiada skim dipilih';
+        toggle.textContent = emptyLabel;
     } else if (selected.length === options.length) {
         toggle.textContent = `${allLabel} (${options.length})`;
     } else if (selected.length === 1) {
-        toggle.textContent = toProperCaps(selected[0]);
+        toggle.textContent = formatMultiSelectLabel(selected[0], preserveCase);
     } else {
         toggle.textContent = `${selected.length} skim dipilih`;
     }
@@ -850,90 +965,15 @@ function toggleMultiSelectMenu(menuId, toggleId) {
 
 function closeMultiSelectMenus() {
     [
+        ['branchFilterMenu', 'branchFilterToggle'],
         ['schemeFilterMenu', 'schemeFilterToggle'],
-        ['tableSchemeFilterMenu', 'tableSchemeFilterToggle']
-    ].forEach(([menuId, toggleId]) => {
-        const menu = document.getElementById(menuId);
-        const toggle = document.getElementById(toggleId);
-        if (menu && toggle) {
-            menu.hidden = true;
-            toggle.setAttribute('aria-expanded', 'false');
-        }
-    });
-}
-
-function setupSingleSelectEvents(config) {
-    document.getElementById(config.toggleId).addEventListener('click', event => {
-        event.stopPropagation();
-        toggleSingleSelectMenu(config.menuId, config.toggleId, config.searchId);
-    });
-    document.getElementById(config.menuId).addEventListener('click', event => event.stopPropagation());
-    document.getElementById(config.searchId).addEventListener('input', event => {
-        filterSelectOptions(config.optionsId, event.target.value);
-    });
-}
-
-function renderSingleSelect(config) {
-    const optionsElement = document.getElementById(config.optionsId);
-    const options = [
-        { value: 'all', label: config.allLabel },
-        ...config.options.map(option => ({ value: option, label: toProperCaps(option) }))
-    ];
-
-    optionsElement.innerHTML = options.map((option, index) => {
-        const selected = getSingleSelectValue(config.selectedKey) === option.value;
-        return `
-            <button type="button" class="single-select-option ${selected ? 'selected' : ''}" data-value="${escapeHtml(option.value)}">
-                ${escapeHtml(option.label)}
-            </button>
-        `;
-    }).join('');
-
-    optionsElement.querySelectorAll('.single-select-option').forEach(button => {
-        button.addEventListener('click', () => {
-            setSingleSelectValue(config.selectedKey, button.dataset.value);
-            updateSingleSelectToggle(config.toggleId, config.selectedKey, config.allLabel);
-            closeSingleSelectMenus();
-            config.selectedKey === 'tableType' ? updateSummaryTable() : updateDashboard();
-        });
-    });
-    updateSingleSelectToggle(config.toggleId, config.selectedKey, config.allLabel);
-}
-
-function getSingleSelectValue(key) {
-    return key === 'tableType' ? selectedTableType : selectedType;
-}
-
-function setSingleSelectValue(key, value) {
-    if (key === 'tableType') selectedTableType = value;
-    else selectedType = value;
-}
-
-function updateSingleSelectToggle(toggleId, selectedKey, allLabel) {
-    const value = getSingleSelectValue(selectedKey);
-    document.getElementById(toggleId).textContent = value === 'all' ? allLabel : toProperCaps(value);
-}
-
-function toggleSingleSelectMenu(menuId, toggleId, searchId) {
-    const menu = document.getElementById(menuId);
-    const toggle = document.getElementById(toggleId);
-    const shouldOpen = menu.hidden;
-    closeMultiSelectMenus();
-    closeSingleSelectMenus();
-    menu.hidden = !shouldOpen;
-    toggle.setAttribute('aria-expanded', String(shouldOpen));
-    if (shouldOpen) {
-        const search = document.getElementById(searchId);
-        search.value = '';
-        filterSelectOptions(menu.querySelector('.single-select-options').id, '');
-        search.focus();
-    }
-}
-
-function closeSingleSelectMenus() {
-    [
         ['typeFilterMenu', 'typeFilterToggle'],
-        ['tableTypeFilterMenu', 'tableTypeFilterToggle']
+        ['tableBranchFilterMenu', 'tableBranchFilterToggle'],
+        ['tableSchemeFilterMenu', 'tableSchemeFilterToggle'],
+        ['tableTypeFilterMenu', 'tableTypeFilterToggle'],
+        ['officialBranchFilterMenu', 'officialBranchFilterToggle'],
+        ['officialSchemeFilterMenu', 'officialSchemeFilterToggle'],
+        ['officialTypeFilterMenu', 'officialTypeFilterToggle']
     ].forEach(([menuId, toggleId]) => {
         const menu = document.getElementById(menuId);
         const toggle = document.getElementById(toggleId);
@@ -945,9 +985,7 @@ function closeSingleSelectMenus() {
 }
 
 function getMultiSelectSearchInput(optionsId) {
-    if (optionsId === 'schemeFilterOptions') return document.getElementById('schemeFilterSearch');
-    if (optionsId === 'tableSchemeFilterOptions') return document.getElementById('tableSchemeFilterSearch');
-    return null;
+    return document.getElementById(optionsId.replace(/Options$/, 'Search'));
 }
 
 function filterSelectOptions(optionsId, query) {
@@ -1063,16 +1101,29 @@ function getPerformanceBadgeClass(percent) {
 
 function toProperCaps(value) {
     const smallWords = new Set(['dan', 'di', 'ke', 'dalam', 'serta', 'atau']);
+    const acronyms = new Set(['IPT', 'MAIWP', 'KPBKL', 'PICOMS', 'NGO', 'NPO', 'OKU', 'SMA', 'PAZA', 'JAWI', 'UCMI']);
     return String(value || '')
         .toLocaleLowerCase('ms-MY')
         .split(/\s+/)
         .map((word, index) => {
             if (index > 0 && smallWords.has(word)) return word;
-            return word.split(/([-/()])/).map(part => /^[a-z]/i.test(part)
-                ? part.charAt(0).toLocaleUpperCase('ms-MY') + part.slice(1)
-                : part).join('');
+            return word.split(/([-/()])/).map(part => {
+                const upper = part.toLocaleUpperCase('ms-MY');
+                if (acronyms.has(upper)) return upper;
+                return /^[a-z]/i.test(part)
+                    ? part.charAt(0).toLocaleUpperCase('ms-MY') + part.slice(1)
+                    : part;
+            }).join('');
         })
         .join(' ');
+}
+
+function formatMultiSelectLabel(value, preserveCase = false) {
+    return preserveCase ? String(value || '') : toProperCaps(value);
+}
+
+function formatChartValue(value) {
+    return Number(value || 0).toLocaleString('ms-MY');
 }
 
 function titleCase(value) {

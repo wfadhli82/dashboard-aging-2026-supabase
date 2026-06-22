@@ -72,6 +72,7 @@
                 <nav class="tabs" aria-label="Tab dashboard">
                     <button type="button" class="tab-button active" data-tab="fiveDayPanel">Dashboard Kelulusan 5 Hari</button>
                     <button type="button" class="tab-button" data-tab="performancePanel">Jadual Prestasi Keseluruhan</button>
+                    <button type="button" class="tab-button" data-tab="officialPanel">Dashboard Skim Rasmi</button>
                 </nav>
 
                 <section class="tab-panel active" id="fiveDayPanel">
@@ -82,6 +83,17 @@
                         </div>
                         <div class="filters">
                             <label class="field-label">
+                                <span>Cawangan</span>
+                                <div class="multi-select" id="branchFilter">
+                                    <button type="button" class="multi-select-toggle" id="branchFilterToggle" aria-expanded="false" aria-controls="branchFilterMenu">Semua cawangan</button>
+                                    <div class="multi-select-menu" id="branchFilterMenu" hidden>
+                                        <input type="search" class="select-search" id="branchFilterSearch" placeholder="Cari cawangan...">
+                                        <div class="multi-select-actions"><button type="button" id="branchFilterSelectAllBtn">Pilih Semua</button><button type="button" id="branchFilterClearBtn">Kosongkan</button></div>
+                                        <div class="multi-select-options" id="branchFilterOptions"></div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="field-label">
                                 <span>Skim</span>
                                 <div class="multi-select" id="schemeFilter">
                                     <button type="button" class="multi-select-toggle" id="schemeFilterToggle" aria-expanded="false" aria-controls="schemeFilterMenu">
@@ -90,22 +102,21 @@
                                     <div class="multi-select-menu" id="schemeFilterMenu" hidden>
                                         <input type="search" class="select-search" id="schemeFilterSearch" placeholder="Cari skim...">
                                         <div class="multi-select-actions">
-                                            <button type="button" id="schemeSelectAllBtn">Pilih Semua</button>
-                                            <button type="button" id="schemeClearBtn">Kosongkan</button>
+                                            <button type="button" id="schemeFilterSelectAllBtn">Pilih Semua</button>
+                                            <button type="button" id="schemeFilterClearBtn">Kosongkan</button>
                                         </div>
                                         <div class="multi-select-options" id="schemeFilterOptions"></div>
                                     </div>
                                 </div>
                             </label>
-                            <label>
+                            <label class="field-label">
                                 <span>Jenis</span>
-                                <div class="single-select" id="typeFilter">
-                                    <button type="button" class="single-select-toggle" id="typeFilterToggle" aria-expanded="false" aria-controls="typeFilterMenu">
-                                        Semua jenis
-                                    </button>
-                                    <div class="single-select-menu" id="typeFilterMenu" hidden>
+                                <div class="multi-select" id="typeFilter">
+                                    <button type="button" class="multi-select-toggle" id="typeFilterToggle" aria-expanded="false" aria-controls="typeFilterMenu">Semua jenis</button>
+                                    <div class="multi-select-menu" id="typeFilterMenu" hidden>
                                         <input type="search" class="select-search" id="typeFilterSearch" placeholder="Cari jenis...">
-                                        <div class="single-select-options" id="typeFilterOptions"></div>
+                                        <div class="multi-select-actions"><button type="button" id="typeFilterSelectAllBtn">Pilih Semua</button><button type="button" id="typeFilterClearBtn">Kosongkan</button></div>
+                                        <div class="multi-select-options" id="typeFilterOptions"></div>
                                     </div>
                                 </div>
                             </label>
@@ -188,6 +199,17 @@
                         </div>
                         <div class="filters table-filters">
                             <label class="field-label">
+                                <span>Cawangan</span>
+                                <div class="multi-select" id="tableBranchFilter">
+                                    <button type="button" class="multi-select-toggle" id="tableBranchFilterToggle" aria-expanded="false" aria-controls="tableBranchFilterMenu">Semua cawangan</button>
+                                    <div class="multi-select-menu" id="tableBranchFilterMenu" hidden>
+                                        <input type="search" class="select-search" id="tableBranchFilterSearch" placeholder="Cari cawangan...">
+                                        <div class="multi-select-actions"><button type="button" id="tableBranchFilterSelectAllBtn">Pilih Semua</button><button type="button" id="tableBranchFilterClearBtn">Kosongkan</button></div>
+                                        <div class="multi-select-options" id="tableBranchFilterOptions"></div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="field-label">
                                 <span>Skim</span>
                                 <div class="multi-select" id="tableSchemeFilter">
                                     <button type="button" class="multi-select-toggle" id="tableSchemeFilterToggle" aria-expanded="false" aria-controls="tableSchemeFilterMenu">
@@ -196,22 +218,21 @@
                                     <div class="multi-select-menu" id="tableSchemeFilterMenu" hidden>
                                         <input type="search" class="select-search" id="tableSchemeFilterSearch" placeholder="Cari skim...">
                                         <div class="multi-select-actions">
-                                            <button type="button" id="tableSchemeSelectAllBtn">Pilih Semua</button>
-                                            <button type="button" id="tableSchemeClearBtn">Kosongkan</button>
+                                            <button type="button" id="tableSchemeFilterSelectAllBtn">Pilih Semua</button>
+                                            <button type="button" id="tableSchemeFilterClearBtn">Kosongkan</button>
                                         </div>
                                         <div class="multi-select-options" id="tableSchemeFilterOptions"></div>
                                     </div>
                                 </div>
                             </label>
-                            <label>
+                            <label class="field-label">
                                 <span>Jenis</span>
-                                <div class="single-select" id="tableTypeFilter">
-                                    <button type="button" class="single-select-toggle" id="tableTypeFilterToggle" aria-expanded="false" aria-controls="tableTypeFilterMenu">
-                                        Semua jenis
-                                    </button>
-                                    <div class="single-select-menu" id="tableTypeFilterMenu" hidden>
+                                <div class="multi-select" id="tableTypeFilter">
+                                    <button type="button" class="multi-select-toggle" id="tableTypeFilterToggle" aria-expanded="false" aria-controls="tableTypeFilterMenu">Semua jenis</button>
+                                    <div class="multi-select-menu" id="tableTypeFilterMenu" hidden>
                                         <input type="search" class="select-search" id="tableTypeFilterSearch" placeholder="Cari jenis...">
-                                        <div class="single-select-options" id="tableTypeFilterOptions"></div>
+                                        <div class="multi-select-actions"><button type="button" id="tableTypeFilterSelectAllBtn">Pilih Semua</button><button type="button" id="tableTypeFilterClearBtn">Kosongkan</button></div>
+                                        <div class="multi-select-options" id="tableTypeFilterOptions"></div>
                                     </div>
                                 </div>
                             </label>
@@ -238,12 +259,86 @@
                         </div>
                     </section>
                 </section>
+
+                <section class="tab-panel" id="officialPanel">
+                    <section class="filter-card">
+                        <div>
+                            <p class="section-kicker">Skim rasmi</p>
+                            <h2>Dashboard Kelulusan 5 Hari Mengikut Skim Rasmi</h2>
+                        </div>
+                        <div class="filters">
+                            <label class="field-label">
+                                <span>Cawangan</span>
+                                <div class="multi-select" id="officialBranchFilter">
+                                    <button type="button" class="multi-select-toggle" id="officialBranchFilterToggle" aria-expanded="false" aria-controls="officialBranchFilterMenu">Semua cawangan</button>
+                                    <div class="multi-select-menu" id="officialBranchFilterMenu" hidden>
+                                        <input type="search" class="select-search" id="officialBranchFilterSearch" placeholder="Cari cawangan...">
+                                        <div class="multi-select-actions"><button type="button" id="officialBranchFilterSelectAllBtn">Pilih Semua</button><button type="button" id="officialBranchFilterClearBtn">Kosongkan</button></div>
+                                        <div class="multi-select-options" id="officialBranchFilterOptions"></div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="field-label">
+                                <span>Skim</span>
+                                <div class="multi-select" id="officialSchemeFilter">
+                                    <button type="button" class="multi-select-toggle" id="officialSchemeFilterToggle" aria-expanded="false" aria-controls="officialSchemeFilterMenu">Semua skim rasmi</button>
+                                    <div class="multi-select-menu" id="officialSchemeFilterMenu" hidden>
+                                        <input type="search" class="select-search" id="officialSchemeFilterSearch" placeholder="Cari skim...">
+                                        <div class="multi-select-actions"><button type="button" id="officialSchemeFilterSelectAllBtn">Pilih Semua</button><button type="button" id="officialSchemeFilterClearBtn">Kosongkan</button></div>
+                                        <div class="multi-select-options" id="officialSchemeFilterOptions"></div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="field-label">
+                                <span>Jenis</span>
+                                <div class="multi-select" id="officialTypeFilter">
+                                    <button type="button" class="multi-select-toggle" id="officialTypeFilterToggle" aria-expanded="false" aria-controls="officialTypeFilterMenu">Semua jenis</button>
+                                    <div class="multi-select-menu" id="officialTypeFilterMenu" hidden>
+                                        <input type="search" class="select-search" id="officialTypeFilterSearch" placeholder="Cari jenis...">
+                                        <div class="multi-select-actions"><button type="button" id="officialTypeFilterSelectAllBtn">Pilih Semua</button><button type="button" id="officialTypeFilterClearBtn">Kosongkan</button></div>
+                                        <div class="multi-select-options" id="officialTypeFilterOptions"></div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </section>
+
+                    <section class="kpi-grid" aria-label="Ringkasan KPI skim rasmi">
+                        <article class="kpi-card"><span>Jumlah Permohonan</span><strong id="officialTotalApplications">0</strong></article>
+                        <article class="kpi-card approved"><span>Telah Diluluskan</span><strong id="officialApprovedApplications">0</strong></article>
+                        <article class="kpi-card pending"><span>Belum Diluluskan</span><strong id="officialPendingApplications">0</strong></article>
+                        <article class="kpi-card good"><span>5 Hari Ke Bawah</span><strong id="officialOnTimeApplications">0</strong></article>
+                        <article class="kpi-card risk"><span>6 Hari Ke Atas</span><strong id="officialLateApplications">0</strong></article>
+                        <article class="kpi-card percent"><span>Peratus 5 Hari</span><strong id="officialOnTimePercent">0%</strong></article>
+                    </section>
+
+                    <section class="chart-card">
+                        <div class="panel-heading">
+                            <div><h2>Trend Kelulusan Dalam Tempoh 5 Hari Bekerja</h2></div>
+                            <div class="segmented" role="radiogroup" aria-label="Metrik carta skim rasmi">
+                                <label><input type="radio" name="officialMetricMode" value="count" checked><span>Bilangan</span></label>
+                                <label><input type="radio" name="officialMetricMode" value="percent"><span>Peratus</span></label>
+                            </div>
+                        </div>
+                        <canvas id="officialTrendChart"></canvas>
+                    </section>
+
+                    <section class="table-card">
+                        <div class="panel-heading"><div><h2>Ranking Prestasi Skim Rasmi</h2></div></div>
+                        <div class="table-wrap">
+                            <table class="ranking-table">
+                                <thead><tr><th>Rank</th><th>Skim Rasmi</th><th>% Purata Kelulusan 5 Hari</th><th>Bilangan Kelulusan</th></tr></thead>
+                                <tbody id="officialRankingTableBody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </section>
             </main>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js?v=20260622-6"></script>
 </body>
 </html>
