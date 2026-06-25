@@ -731,16 +731,25 @@ function updateApplicationCharts(activeRows) {
         ? `${formatDateFromIso(slicedDaily.keys[0])} hingga ${formatDateFromIso(slicedDaily.keys[slicedDaily.keys.length - 1])}`
         : 'Tiada data';
 
-    renderMultiSeriesLineChart('applicationDailyChart', slicedDaily.labels, slicedDaily.series, { labelEvery: getDailyLabelStep(slicedDaily.labels.length), large: true });
+    renderMultiSeriesLineChart('applicationDailyChart', slicedDaily.labels, slicedDaily.series, {
+        labelEvery: getDailyLabelStep(slicedDaily.labels.length),
+        large: true,
+        valueLabels: 'peak'
+    });
 
     const weekly = buildGroupedApplicationSeries(activeRows, getWeekKey, formatWeekLabel);
-    renderMultiSeriesLineChart('applicationWeeklyChart', weekly.labels, weekly.series, { labelEvery: Math.max(1, Math.ceil(weekly.labels.length / 8)) });
+    renderMultiSeriesLineChart('applicationWeeklyChart', weekly.labels, weekly.series, {
+        labelEvery: getGroupedLabelStep(weekly.labels.length),
+        valueLabels: 'peak'
+    });
 
     const monthly = buildGroupedApplicationSeries(activeRows, row => `${row.appliedDate.getFullYear()}-${String(row.appliedDate.getMonth() + 1).padStart(2, '0')}`, key => {
         const month = Number(key.split('-')[1]);
         return monthLabels[month - 1];
     });
-    renderMultiSeriesLineChart('applicationMonthlyChart', monthly.labels, monthly.series);
+    renderMultiSeriesLineChart('applicationMonthlyChart', monthly.labels, monthly.series, {
+        valueLabels: 'all'
+    });
 }
 
 function updateApplicationLeaderboards(activeRows) {
@@ -877,10 +886,17 @@ function resetDailyZoom() {
 }
 
 function getDailyLabelStep(count) {
-    if (count <= 14) return 1;
-    if (count <= 45) return 3;
-    if (count <= 90) return 7;
-    return 14;
+    const mobile = window.innerWidth < 820;
+    if (count <= (mobile ? 8 : 14)) return 1;
+    if (count <= (mobile ? 30 : 45)) return mobile ? 5 : 3;
+    if (count <= (mobile ? 75 : 90)) return mobile ? 10 : 7;
+    return mobile ? 21 : 14;
+}
+
+function getGroupedLabelStep(count) {
+    const mobile = window.innerWidth < 820;
+    const target = mobile ? 5 : 8;
+    return Math.max(1, Math.ceil(count / target));
 }
 
 function updateKpis(activeRows, approvedRows) {
@@ -1145,9 +1161,10 @@ function renderMultiSeriesLineChart(canvasId, labels, series, options = {}) {
     chart.width = chart.right - chart.left;
     chart.height = chart.bottom - chart.top;
     const values = series.flatMap(item => item.data);
-    const max = Math.max(...values, 1);
+    const scale = getNiceYAxisScale(Math.max(...values, 0));
     const step = chart.width / Math.max(labels.length - 1, 1);
     const labelEvery = options.labelEvery || 1;
+    const valueLabels = options.valueLabels || 'peak';
 
     ctx.strokeStyle = '#d7e1ea';
     ctx.lineWidth = 1;
@@ -1159,10 +1176,10 @@ function renderMultiSeriesLineChart(canvasId, labels, series, options = {}) {
 
     drawMultiSeriesLegend(ctx, chart, series);
 
-    series.forEach(item => {
+    series.forEach((item, seriesIndex) => {
         const points = item.data.map((value, index) => ({
             x: chart.left + index * step,
-            y: chart.bottom - (value / max) * chart.height,
+            y: chart.bottom - (value / scale.axisMax) * chart.height,
             value
         }));
         if (!points.length) return;
@@ -1181,13 +1198,7 @@ function renderMultiSeriesLineChart(canvasId, labels, series, options = {}) {
             ctx.fill();
         });
 
-        const peak = points.reduce((best, point) => point.value > best.value ? point : best, points[0]);
-        if (peak?.value > 0) {
-            ctx.fillStyle = '#142334';
-            ctx.font = '800 11px Segoe UI, Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(formatChartValue(peak.value), peak.x, Math.max(chart.top, peak.y - 18));
-        }
+        drawPointValueLabels(ctx, chart, points, valueLabels, seriesIndex);
     });
 
     ctx.font = '11px Segoe UI, Arial';
@@ -1202,11 +1213,10 @@ function renderMultiSeriesLineChart(canvasId, labels, series, options = {}) {
 
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
-    for (let index = 0; index <= 4; index++) {
-        const value = Math.round((max / 4) * index);
-        const y = chart.bottom - (index / 4) * chart.height;
+    scale.ticks.forEach(value => {
+        const y = chart.bottom - (value / scale.axisMax) * chart.height;
         ctx.fillText(formatChartValue(value), chart.left - 8, y);
-    }
+    });
 
     if (!values.some(value => value > 0)) {
         ctx.fillStyle = '#64748b';
@@ -1214,6 +1224,52 @@ function renderMultiSeriesLineChart(canvasId, labels, series, options = {}) {
         ctx.font = '800 14px Segoe UI, Arial';
         ctx.fillText('Tiada data untuk filter ini', chart.left + chart.width / 2, chart.top + chart.height / 2);
     }
+}
+
+function drawPointValueLabels(ctx, chart, points, mode, seriesIndex) {
+    if (mode === 'none') return;
+    const candidates = mode === 'all'
+        ? points.filter(point => point.value > 0)
+        : [points.reduce((best, point) => point.value > best.value ? point : best, points[0])].filter(point => point?.value > 0);
+
+    ctx.fillStyle = '#142334';
+    ctx.font = '800 11px Segoe UI, Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+
+    candidates.forEach((point, index) => {
+        const offset = mode === 'all' ? 16 + ((seriesIndex + index) % 2) * 10 : 18;
+        ctx.fillText(formatChartValue(point.value), point.x, Math.max(chart.top + 2, point.y - offset));
+    });
+}
+
+function getNiceYAxisScale(maxValue) {
+    const targetTicks = 6;
+    const value = Math.max(0, Number(maxValue || 0));
+    if (!value) {
+        return { axisMax: 1, tickStep: 1, ticks: [0, 1] };
+    }
+
+    const rawStep = value / Math.max(targetTicks - 1, 1);
+    const tickStep = getNiceTickStep(rawStep);
+    const axisMax = Math.max(tickStep, Math.ceil(value / tickStep) * tickStep);
+    const ticks = [];
+
+    for (let tick = 0; tick <= axisMax + tickStep * 0.5; tick += tickStep) {
+        ticks.push(Math.round(tick));
+    }
+
+    return { axisMax, tickStep, ticks };
+}
+
+function getNiceTickStep(rawStep) {
+    const exponent = Math.floor(Math.log10(Math.max(rawStep, 1)));
+    const magnitude = 10 ** exponent;
+    const fraction = rawStep / magnitude;
+    const niceFraction = fraction <= 1
+        ? 1
+        : (fraction <= 2 ? 2 : (fraction <= 5 ? 5 : 10));
+    return niceFraction * magnitude;
 }
 
 function drawMultiSeriesLegend(ctx, chart, series) {
