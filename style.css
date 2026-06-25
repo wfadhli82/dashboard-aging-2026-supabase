@@ -828,12 +828,25 @@ tfoot td {
         width: min(320px, 86vw);
         height: 100vh;
         margin: 0;
-        padding: 14px;
+        align-content: start;
+        grid-auto-rows: min-content;
+        padding: 12px;
         border-radius: 0;
         box-shadow: 18px 0 40px rgba(20, 35, 52, 0.24);
         transform: translateX(-105%);
         transition: transform 180ms ease;
         overflow-y: auto;
+    }
+
+    .tabs::before {
+        content: "Menu Dashboard";
+        display: block;
+        padding: 8px 6px 10px;
+        color: var(--brand);
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
     }
 
     .tabs.open {
@@ -845,8 +858,11 @@ tfoot td {
     }
 
     .tab-button {
-        padding-inline: 8px;
-        font-size: 0.88rem;
+        min-height: 48px;
+        padding: 10px 12px;
+        border-radius: 7px;
+        font-size: 0.9rem;
+        line-height: 1.25;
     }
 
     .chart-split,
