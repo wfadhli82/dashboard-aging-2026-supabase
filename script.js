@@ -28,6 +28,14 @@ const HOLIDAY_DATES_2026 = new Set([
 
 const monthLabels = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogos', 'Sept', 'Okt', 'Nov', 'Dis'];
 const typeLabels = { new: 'Baharu', renewal: 'Penyambungan', appeal: 'Rayuan', addrate: 'Tambah Kadar' };
+const applicationTypeOrder = ['new', 'renewal', 'appeal', 'addrate'];
+const applicationTypeColors = {
+    new: '#0f6bce',
+    renewal: '#00a88f',
+    appeal: '#d72657',
+    addrate: '#f4b400',
+    other: '#64748b'
+};
 
 let headerMap = {};
 let rows = [];
@@ -48,13 +56,22 @@ let tableTypeOptions = [];
 let officialBranchOptions = [];
 let officialSchemeOptions = [];
 let officialTypeOptions = [];
+let applicationRows = [];
+let applicationBranchOptions = [];
+let applicationSchemeOptions = [];
+let applicationTypeOptions = [];
 let selectedOfficialBranches = [];
 let selectedOfficialSchemes = [];
 let selectedOfficialTypes = [];
+let selectedApplicationBranches = [];
+let selectedApplicationSchemes = [];
+let selectedApplicationTypes = [];
 let metricMode = 'count';
 let officialMetricMode = 'count';
 let currentSummaryRows = [];
 let dataRange = { first: null, last: null };
+let dailyZoom = { start: 0, end: 0 };
+let dailyLabels = [];
 let supabaseClient = null;
 let latestRun = null;
 let officialSchemes = [];
@@ -75,11 +92,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.tab-button').forEach(button => {
         button.addEventListener('click', () => switchTab(button.dataset.tab));
     });
+    document.getElementById('drawerToggle').addEventListener('click', toggleDashboardDrawer);
 
     getMultiSelectConfigs().forEach(setupMultiSelectEvents);
     document.addEventListener('click', () => {
         closeMultiSelectMenus();
         closeProfileMenu();
+        closeDashboardDrawer();
     });
 
     document.querySelectorAll('input[name="metricMode"]').forEach(input => {
@@ -95,6 +114,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    document.getElementById('dailyStartRange').addEventListener('input', updateDailyZoomFromInputs);
+    document.getElementById('dailyEndRange').addEventListener('input', updateDailyZoomFromInputs);
+    document.getElementById('dailyZoomResetBtn').addEventListener('click', resetDailyZoom);
     document.getElementById('downloadSummaryBtn').addEventListener('click', downloadSummaryTable);
 
     initializeSupabase();
@@ -192,8 +214,9 @@ async function loadSupabaseData() {
     }
 
     latestRun = runRows[0];
-    const [aggregateResult, officialResult, mappingResult] = await Promise.all([
+    const [aggregateResult, dailyAggregateResult, officialResult, mappingResult] = await Promise.all([
         fetchAllAggregates(latestRun.run_id),
+        fetchAllDailyApplicationAggregates(latestRun.run_id),
         supabaseClient
             .from('dashboard_official_schemes')
             .select('name,cluster,display_order')
@@ -203,6 +226,7 @@ async function loadSupabaseData() {
             .select('system_scheme,official_scheme,division')
     ]);
     const { data: aggregates, error: aggregateError } = aggregateResult;
+    const { data: dailyAggregates, error: dailyAggregateError } = dailyAggregateResult;
 
     if (aggregateError) {
         showAuthMessage(`Agregat tidak dapat dibaca: ${aggregateError.message}`, true);
@@ -217,6 +241,7 @@ async function loadSupabaseData() {
     mappingsBySystemScheme = new Map((mappingResult.data || []).map(item => [item.system_scheme, item]));
 
     rows = applySchemeMappings(expandAggregateRows(aggregates || []));
+    applicationRows = applySchemeMappingsToApplicationRows(normalizeDailyApplicationRows(dailyAggregates || []));
     if (!rows.length) {
         showAuthMessage('Agregat Supabase kosong untuk run terkini.', true);
         return;
@@ -228,14 +253,18 @@ async function loadSupabaseData() {
     };
     setupFilters();
     setupOfficialFilters();
+    setupApplicationFilters();
     updateDashboard();
     updateSummaryTable();
     updateOfficialDashboard();
+    updateApplicationDashboard();
 
     document.getElementById('fileStatus').textContent = `Data Supabase dimuatkan (${Number(latestRun.source_record_count || rows.length).toLocaleString('ms-MY')} rekod sumber).`;
     document.getElementById('dateRangeText').textContent = `Data permohonan: ${formatShortDate(dataRange.first)} hingga ${formatShortDate(dataRange.last)}. Dikemaskini pada ${formatDateTime(latestRun.generated_at)}.`;
     document.getElementById('dashboard').hidden = false;
-    showAuthMessage('Data Supabase berjaya dimuatkan.', false);
+    showAuthMessage(dailyAggregateError
+        ? `Data Supabase berjaya dimuatkan. Nota: agregat harian belum tersedia (${dailyAggregateError.message}).`
+        : 'Data Supabase berjaya dimuatkan.', false);
 }
 
 async function fetchAllAggregates(runId) {
@@ -254,6 +283,26 @@ async function fetchAllAggregates(runId) {
             .range(start, start + pageSize - 1);
 
         if (error) return { data: null, error };
+        data.push(...(page || []));
+        if (!page || page.length < pageSize) return { data, error: null };
+    }
+}
+
+async function fetchAllDailyApplicationAggregates(runId) {
+    const pageSize = 1000;
+    const data = [];
+
+    for (let start = 0; ; start += pageSize) {
+        const { data: page, error } = await supabaseClient
+            .from('dashboard_application_daily_aggregates')
+            .select('application_date,branch,scheme,application_type,total_applications,approved_count,pending_count')
+            .eq('run_id', runId)
+            .order('application_date')
+            .order('branch')
+            .order('scheme')
+            .range(start, start + pageSize - 1);
+
+        if (error) return { data, error };
         data.push(...(page || []));
         if (!page || page.length < pageSize) return { data, error: null };
     }
@@ -302,6 +351,41 @@ function expandAggregateRows(aggregates) {
 }
 
 function applySchemeMappings(sourceRows) {
+    return sourceRows.map(row => {
+        const mapping = mappingsBySystemScheme.get(row.scheme);
+        if (!mapping) return null;
+        const official = officialSchemes.find(item => item.name === mapping.official_scheme);
+        if (!official) return null;
+        return {
+            ...row,
+            officialScheme: official.name,
+            cluster: official.cluster
+        };
+    }).filter(Boolean);
+}
+
+function normalizeDailyApplicationRows(aggregates) {
+    return aggregates.map(item => {
+        const appliedDate = parseAppDate(item.application_date);
+        if (!appliedDate) return null;
+
+        const applicationType = item.application_type || 'lain-lain';
+        const applicationTypeLabel = typeLabels[applicationType] || titleCase(applicationType);
+        return {
+            appliedDate,
+            dateKey: toIsoDate(appliedDate),
+            branch: item.branch || '(Tiada cawangan)',
+            scheme: item.scheme || '(Tiada skim)',
+            applicationType,
+            applicationTypeLabel,
+            totalApplications: Number(item.total_applications || 0),
+            approvedCount: Number(item.approved_count || 0),
+            pendingCount: Number(item.pending_count || 0)
+        };
+    }).filter(Boolean);
+}
+
+function applySchemeMappingsToApplicationRows(sourceRows) {
     return sourceRows.map(row => {
         const mapping = mappingsBySystemScheme.get(row.scheme);
         if (!mapping) return null;
@@ -517,6 +601,16 @@ function setupOfficialFilters() {
     getMultiSelectConfigs().forEach(renderMultiSelect);
 }
 
+function setupApplicationFilters() {
+    applicationBranchOptions = getUniqueValues(applicationRows.map(row => row.branch));
+    applicationSchemeOptions = officialSchemes.map(item => item.name).filter(name => applicationRows.some(row => row.officialScheme === name));
+    applicationTypeOptions = getUniqueValues(applicationRows.map(row => row.applicationTypeLabel));
+    selectedApplicationBranches = [...applicationBranchOptions];
+    selectedApplicationSchemes = [...applicationSchemeOptions];
+    selectedApplicationTypes = [...applicationTypeOptions];
+    getMultiSelectConfigs().forEach(renderMultiSelect);
+}
+
 function getMultiSelectConfigs() {
     return [
         multiConfig('dashboardBranch', 'Semua cawangan', 'branchFilter', updateDashboard),
@@ -525,6 +619,9 @@ function getMultiSelectConfigs() {
         multiConfig('tableBranch', 'Semua cawangan', 'tableBranchFilter', updateSummaryTable),
         multiConfig('tableScheme', 'Semua skim', 'tableSchemeFilter', updateSummaryTable),
         multiConfig('tableType', 'Semua jenis', 'tableTypeFilter', updateSummaryTable),
+        multiConfig('applicationBranch', 'Semua cawangan', 'applicationBranchFilter', updateApplicationDashboard),
+        multiConfig('applicationScheme', 'Semua skim rasmi', 'applicationSchemeFilter', updateApplicationDashboard, true),
+        multiConfig('applicationType', 'Semua jenis', 'applicationTypeFilter', updateApplicationDashboard),
         multiConfig('officialBranch', 'Semua cawangan', 'officialBranchFilter', updateOfficialDashboard),
         multiConfig('officialScheme', 'Semua skim rasmi', 'officialSchemeFilter', updateOfficialDashboard, true),
         multiConfig('officialType', 'Semua jenis', 'officialTypeFilter', updateOfficialDashboard)
@@ -575,6 +672,215 @@ function updateOfficialDashboard() {
     updateOfficialKpis(activeRows, approvedRows);
     updateTrendChart(approvedRows, 'officialTrendChart', officialMetricMode);
     updateRankingTable(approvedRows, 'officialRankingTableBody', 'officialScheme');
+}
+
+function updateApplicationDashboard() {
+    const activeRows = applicationRows.filter(row => {
+        return selectedApplicationBranches.includes(row.branch)
+            && selectedApplicationSchemes.includes(row.officialScheme)
+            && selectedApplicationTypes.includes(row.applicationTypeLabel);
+    });
+
+    const range = getApplicationAggregateRange(activeRows);
+    document.getElementById('applicationDateRange').textContent = range.first && range.last
+        ? `Data permohonan: ${formatShortDate(range.first)} hingga ${formatShortDate(range.last)}`
+        : 'Data agregat harian belum tersedia.';
+
+    updateApplicationKpis(activeRows, range);
+    updateApplicationCharts(activeRows);
+    updateApplicationLeaderboards(activeRows);
+}
+
+function updateApplicationKpis(activeRows, range) {
+    const totals = getApplicationTypeTotals(activeRows);
+    const total = Object.values(totals).reduce((sum, value) => sum + value, 0);
+    const workingDays = range.first && range.last
+        ? getWorkingDaysIn2026().filter(date => date >= toIsoDate(range.first) && date <= toIsoDate(range.last)).length
+        : 0;
+
+    document.getElementById('applicationTotal').textContent = total.toLocaleString('ms-MY');
+    document.getElementById('applicationNewTotal').textContent = (totals.new || 0).toLocaleString('ms-MY');
+    document.getElementById('applicationRenewalTotal').textContent = (totals.renewal || 0).toLocaleString('ms-MY');
+    document.getElementById('applicationAppealTotal').textContent = (totals.appeal || 0).toLocaleString('ms-MY');
+    document.getElementById('applicationAddrateTotal').textContent = (totals.addrate || 0).toLocaleString('ms-MY');
+    document.getElementById('applicationWorkingAverage').textContent = workingDays ? (total / workingDays).toFixed(1) : '0';
+}
+
+function getApplicationTypeTotals(activeRows) {
+    return activeRows.reduce((totals, row) => {
+        totals[row.applicationType] = (totals[row.applicationType] || 0) + row.totalApplications;
+        return totals;
+    }, {});
+}
+
+function updateApplicationCharts(activeRows) {
+    const daily = buildDailyApplicationSeries(activeRows);
+    dailyLabels = daily.keys;
+    syncDailyZoomInputs(dailyLabels.length);
+
+    const start = Math.min(dailyZoom.start, Math.max(dailyLabels.length - 1, 0));
+    const end = Math.min(Math.max(dailyZoom.end, start), Math.max(dailyLabels.length - 1, 0));
+    dailyZoom = { start, end };
+    const slicedDaily = {
+        labels: daily.labels.slice(start, end + 1),
+        keys: daily.keys.slice(start, end + 1),
+        series: daily.series.map(item => ({ ...item, data: item.data.slice(start, end + 1) }))
+    };
+
+    document.getElementById('dailyZoomLabel').textContent = slicedDaily.keys.length
+        ? `${formatDateFromIso(slicedDaily.keys[0])} hingga ${formatDateFromIso(slicedDaily.keys[slicedDaily.keys.length - 1])}`
+        : 'Tiada data';
+
+    renderMultiSeriesLineChart('applicationDailyChart', slicedDaily.labels, slicedDaily.series, { labelEvery: getDailyLabelStep(slicedDaily.labels.length), large: true });
+
+    const weekly = buildGroupedApplicationSeries(activeRows, getWeekKey, formatWeekLabel);
+    renderMultiSeriesLineChart('applicationWeeklyChart', weekly.labels, weekly.series, { labelEvery: Math.max(1, Math.ceil(weekly.labels.length / 8)) });
+
+    const monthly = buildGroupedApplicationSeries(activeRows, row => `${row.appliedDate.getFullYear()}-${String(row.appliedDate.getMonth() + 1).padStart(2, '0')}`, key => {
+        const month = Number(key.split('-')[1]);
+        return monthLabels[month - 1];
+    });
+    renderMultiSeriesLineChart('applicationMonthlyChart', monthly.labels, monthly.series);
+}
+
+function updateApplicationLeaderboards(activeRows) {
+    renderLeaderboard('applicationTopSchemes', getTopAggregateCounts(activeRows, row => row.officialScheme, 5));
+    renderLeaderboard('applicationTopDays', getTopAggregateCounts(activeRows, row => row.dateKey, 5).map(item => ({ ...item, label: formatDateFromIso(item.label) })));
+    renderLeaderboard('applicationTopWeeks', getTopAggregateCounts(activeRows, getWeekKey, 5).map(item => ({ ...item, label: formatWeekLabel(item.label) })));
+}
+
+function buildDailyApplicationSeries(activeRows) {
+    const range = getApplicationAggregateRange(activeRows);
+    if (!range.first || !range.last) {
+        return { keys: [], labels: [], series: getApplicationSeriesMeta(activeRows).map(item => ({ ...item, data: [] })) };
+    }
+
+    const keys = [];
+    const current = toDateOnly(range.first);
+    const end = toDateOnly(range.last);
+    while (current <= end) {
+        keys.push(toIsoDate(current));
+        current.setDate(current.getDate() + 1);
+    }
+
+    const grouped = groupApplicationAggregates(activeRows, row => row.dateKey);
+    return {
+        keys,
+        labels: keys.map(key => {
+            const [, month, day] = key.split('-');
+            return `${Number(day)}/${Number(month)}`;
+        }),
+        series: getApplicationSeriesMeta(activeRows).map(item => ({
+            ...item,
+            data: keys.map(key => grouped.get(key)?.get(item.type) || 0)
+        }))
+    };
+}
+
+function buildGroupedApplicationSeries(activeRows, keyGetter, labelFormatter) {
+    const keys = [...new Set(activeRows.map(keyGetter))].sort();
+    const grouped = groupApplicationAggregates(activeRows, keyGetter);
+    return {
+        labels: keys.map(labelFormatter),
+        series: getApplicationSeriesMeta(activeRows).map(item => ({
+            ...item,
+            data: keys.map(key => grouped.get(key)?.get(item.type) || 0)
+        }))
+    };
+}
+
+function groupApplicationAggregates(activeRows, keyGetter) {
+    const grouped = new Map();
+    activeRows.forEach(row => {
+        const key = keyGetter(row);
+        if (!grouped.has(key)) grouped.set(key, new Map());
+        const typeMap = grouped.get(key);
+        typeMap.set(row.applicationType, (typeMap.get(row.applicationType) || 0) + row.totalApplications);
+    });
+    return grouped;
+}
+
+function getApplicationSeriesMeta(activeRows) {
+    const types = applicationTypeOrder.filter(type => activeRows.some(row => row.applicationType === type));
+    const extras = getUniqueValues(activeRows.map(row => row.applicationType)).filter(type => !types.includes(type));
+    return [...types, ...extras].map(type => ({
+        type,
+        label: typeLabels[type] || titleCase(type),
+        color: applicationTypeColors[type] || applicationTypeColors.other
+    }));
+}
+
+function getApplicationAggregateRange(activeRows) {
+    const dates = activeRows.map(row => row.appliedDate).sort((a, b) => a - b);
+    return { first: dates[0] || null, last: dates[dates.length - 1] || null };
+}
+
+function getTopAggregateCounts(activeRows, getter, limit) {
+    const counts = new Map();
+    activeRows.forEach(row => {
+        const label = getter(row);
+        counts.set(label, (counts.get(label) || 0) + row.totalApplications);
+    });
+    return [...counts.entries()]
+        .sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0])))
+        .slice(0, limit)
+        .map(([label, count]) => ({ label, count }));
+}
+
+function renderLeaderboard(id, items) {
+    const element = document.getElementById(id);
+    if (!items.length) {
+        element.innerHTML = '<li><span>Tiada data</span><strong>0</strong></li>';
+        return;
+    }
+    element.innerHTML = items.map(item => `
+        <li>
+            <span>${escapeHtml(item.label)}</span>
+            <strong>${item.count.toLocaleString('ms-MY')}</strong>
+        </li>
+    `).join('');
+}
+
+function syncDailyZoomInputs(length) {
+    const startInput = document.getElementById('dailyStartRange');
+    const endInput = document.getElementById('dailyEndRange');
+    const max = Math.max(length - 1, 0);
+    if (dailyZoom.end > max || dailyZoom.start > max || dailyZoom.end === 0) {
+        dailyZoom = { start: 0, end: max };
+    }
+    [startInput, endInput].forEach(input => {
+        input.max = String(max);
+        input.disabled = length <= 1;
+    });
+    startInput.value = String(dailyZoom.start);
+    endInput.value = String(dailyZoom.end);
+}
+
+function updateDailyZoomFromInputs() {
+    const startInput = document.getElementById('dailyStartRange');
+    const endInput = document.getElementById('dailyEndRange');
+    let start = Number(startInput.value);
+    let end = Number(endInput.value);
+    if (start > end) {
+        if (document.activeElement === startInput) end = start;
+        else start = end;
+    }
+    dailyZoom = { start, end };
+    startInput.value = String(start);
+    endInput.value = String(end);
+    updateApplicationDashboard();
+}
+
+function resetDailyZoom() {
+    dailyZoom = { start: 0, end: Math.max(dailyLabels.length - 1, 0) };
+    updateApplicationDashboard();
+}
+
+function getDailyLabelStep(count) {
+    if (count <= 14) return 1;
+    if (count <= 45) return 3;
+    if (count <= 90) return 7;
+    return 14;
 }
 
 function updateKpis(activeRows, approvedRows) {
@@ -821,6 +1127,112 @@ function renderLineChart(canvasId, labels, data, isPercent) {
     }
 }
 
+function renderMultiSeriesLineChart(canvasId, labels, series, options = {}) {
+    const canvas = document.getElementById(canvasId);
+    const rect = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    const width = Math.max(460, Math.floor(rect.width || canvas.parentElement.clientWidth || 640));
+    const height = options.large ? (window.innerWidth < 820 ? 340 : 410) : (window.innerWidth < 820 ? 280 : 310);
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+    canvas.style.height = `${height}px`;
+
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+
+    const chart = { left: 48, top: 44, right: width - 14, bottom: height - 52 };
+    chart.width = chart.right - chart.left;
+    chart.height = chart.bottom - chart.top;
+    const values = series.flatMap(item => item.data);
+    const max = Math.max(...values, 1);
+    const step = chart.width / Math.max(labels.length - 1, 1);
+    const labelEvery = options.labelEvery || 1;
+
+    ctx.strokeStyle = '#d7e1ea';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(chart.left, chart.top);
+    ctx.lineTo(chart.left, chart.bottom);
+    ctx.lineTo(chart.right, chart.bottom);
+    ctx.stroke();
+
+    drawMultiSeriesLegend(ctx, chart, series);
+
+    series.forEach(item => {
+        const points = item.data.map((value, index) => ({
+            x: chart.left + index * step,
+            y: chart.bottom - (value / max) * chart.height,
+            value
+        }));
+        if (!points.length) return;
+
+        ctx.beginPath();
+        points.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
+        ctx.strokeStyle = item.color;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        points.forEach(point => {
+            if (point.value <= 0) return;
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = item.color;
+            ctx.fill();
+        });
+
+        const peak = points.reduce((best, point) => point.value > best.value ? point : best, points[0]);
+        if (peak?.value > 0) {
+            ctx.fillStyle = '#142334';
+            ctx.font = '800 11px Segoe UI, Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(formatChartValue(peak.value), peak.x, Math.max(chart.top, peak.y - 18));
+        }
+    });
+
+    ctx.font = '11px Segoe UI, Arial';
+    ctx.fillStyle = '#64748b';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    labels.forEach((label, index) => {
+        if (index % labelEvery === 0 || index === labels.length - 1) {
+            ctx.fillText(label, chart.left + index * step, chart.bottom + 12);
+        }
+    });
+
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    for (let index = 0; index <= 4; index++) {
+        const value = Math.round((max / 4) * index);
+        const y = chart.bottom - (index / 4) * chart.height;
+        ctx.fillText(formatChartValue(value), chart.left - 8, y);
+    }
+
+    if (!values.some(value => value > 0)) {
+        ctx.fillStyle = '#64748b';
+        ctx.textAlign = 'center';
+        ctx.font = '800 14px Segoe UI, Arial';
+        ctx.fillText('Tiada data untuk filter ini', chart.left + chart.width / 2, chart.top + chart.height / 2);
+    }
+}
+
+function drawMultiSeriesLegend(ctx, chart, series) {
+    let x = chart.left;
+    const y = chart.top - 24;
+    ctx.font = '800 12px Segoe UI, Arial';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    series.forEach(item => {
+        const width = ctx.measureText(item.label).width;
+        if (x + width + 34 > chart.right) x = chart.left;
+        ctx.fillStyle = item.color;
+        ctx.fillRect(x, y - 5, 10, 10);
+        ctx.fillStyle = '#334155';
+        ctx.fillText(item.label, x + 16, y);
+        x += width + 42;
+    });
+}
+
 function switchTab(panelId) {
     document.querySelectorAll('.tab-button').forEach(button => {
         button.classList.toggle('active', button.dataset.tab === panelId);
@@ -828,7 +1240,25 @@ function switchTab(panelId) {
     document.querySelectorAll('.tab-panel').forEach(panel => {
         panel.classList.toggle('active', panel.id === panelId);
     });
+    closeDashboardDrawer();
     if (panelId === 'fiveDayPanel') updateTrendChart(approvedFilteredRows);
+    if (panelId === 'applicationPanel') updateApplicationDashboard();
+}
+
+function toggleDashboardDrawer(event) {
+    event.stopPropagation();
+    const tabs = document.getElementById('dashboardTabs');
+    const toggle = document.getElementById('drawerToggle');
+    const isOpen = tabs.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(isOpen));
+}
+
+function closeDashboardDrawer() {
+    const tabs = document.getElementById('dashboardTabs');
+    const toggle = document.getElementById('drawerToggle');
+    if (!tabs || !toggle) return;
+    tabs.classList.remove('open');
+    toggle.setAttribute('aria-expanded', 'false');
 }
 
 function getUniqueValues(values) {
@@ -906,6 +1336,9 @@ function getMultiSelectOptions(key) {
         tableBranch: tableBranchOptions,
         tableScheme: tableSchemeOptions,
         tableType: tableTypeOptions,
+        applicationBranch: applicationBranchOptions,
+        applicationScheme: applicationSchemeOptions,
+        applicationType: applicationTypeOptions,
         officialBranch: officialBranchOptions,
         officialScheme: officialSchemeOptions,
         officialType: officialTypeOptions
@@ -921,6 +1354,9 @@ function getMultiSelectSelection(key) {
         tableBranch: selectedTableBranches,
         tableScheme: selectedTableSchemes,
         tableType: selectedTableTypes,
+        applicationBranch: selectedApplicationBranches,
+        applicationScheme: selectedApplicationSchemes,
+        applicationType: selectedApplicationTypes,
         officialBranch: selectedOfficialBranches,
         officialScheme: selectedOfficialSchemes,
         officialType: selectedOfficialTypes
@@ -936,6 +1372,9 @@ function setMultiSelectSelection(key, selected) {
     else if (key === 'tableBranch') selectedTableBranches = values;
     else if (key === 'tableScheme') selectedTableSchemes = values;
     else if (key === 'tableType') selectedTableTypes = values;
+    else if (key === 'applicationBranch') selectedApplicationBranches = values;
+    else if (key === 'applicationScheme') selectedApplicationSchemes = values;
+    else if (key === 'applicationType') selectedApplicationTypes = values;
     else if (key === 'officialBranch') selectedOfficialBranches = values;
     else if (key === 'officialScheme') selectedOfficialSchemes = values;
     else if (key === 'officialType') selectedOfficialTypes = values;
@@ -971,6 +1410,9 @@ function closeMultiSelectMenus() {
         ['tableBranchFilterMenu', 'tableBranchFilterToggle'],
         ['tableSchemeFilterMenu', 'tableSchemeFilterToggle'],
         ['tableTypeFilterMenu', 'tableTypeFilterToggle'],
+        ['applicationBranchFilterMenu', 'applicationBranchFilterToggle'],
+        ['applicationSchemeFilterMenu', 'applicationSchemeFilterToggle'],
+        ['applicationTypeFilterMenu', 'applicationTypeFilterToggle'],
         ['officialBranchFilterMenu', 'officialBranchFilterToggle'],
         ['officialSchemeFilterMenu', 'officialSchemeFilterToggle'],
         ['officialTypeFilterMenu', 'officialTypeFilterToggle']
@@ -1058,6 +1500,34 @@ function getWorkingDaysIn2026() {
 function getDateRange(activeRows) {
     const dates = activeRows.map(row => row.appliedDate).filter(Boolean).sort((a, b) => a - b);
     return { first: dates[0] || null, last: dates[dates.length - 1] || null };
+}
+
+function getWeekKey(row) {
+    const date = row.appliedDate ? row.appliedDate : parseIsoDate(row);
+    return toIsoDate(getMonday(date));
+}
+
+function getMonday(date) {
+    const result = toDateOnly(date);
+    const day = result.getDay();
+    result.setDate(result.getDate() + (day === 0 ? -6 : 1 - day));
+    return result;
+}
+
+function formatWeekLabel(key) {
+    const start = parseIsoDate(key);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    return `${formatShortDate(start)} - ${formatShortDate(end)}`;
+}
+
+function parseIsoDate(value) {
+    const [year, month, day] = String(value).split('-').map(Number);
+    return new Date(year, month - 1, day);
+}
+
+function formatDateFromIso(value) {
+    return formatShortDate(parseIsoDate(value));
 }
 
 function toDateOnly(date) {

@@ -69,11 +69,15 @@
             </section>
 
             <main id="dashboard" class="dashboard" hidden>
-                <nav class="tabs" aria-label="Tab dashboard">
+                <button type="button" class="drawer-toggle" id="drawerToggle" aria-expanded="false" aria-controls="dashboardTabs">Menu</button>
+                <div class="dashboard-layout">
+                <nav class="tabs" id="dashboardTabs" aria-label="Tab dashboard">
                     <button type="button" class="tab-button active" data-tab="fiveDayPanel">Dashboard Kelulusan 5 Hari</button>
+                    <button type="button" class="tab-button" data-tab="applicationPanel">Analisis Permohonan</button>
                     <button type="button" class="tab-button" data-tab="performancePanel">Jadual Prestasi Keseluruhan</button>
                     <button type="button" class="tab-button" data-tab="officialPanel">Dashboard Skim Rasmi</button>
                 </nav>
+                <div class="dashboard-content">
 
                 <section class="tab-panel active" id="fiveDayPanel">
                     <section class="filter-card">
@@ -188,6 +192,92 @@
                                 <tbody id="rankingTableBody"></tbody>
                             </table>
                         </div>
+                    </section>
+                </section>
+
+                <section class="tab-panel" id="applicationPanel">
+                    <section class="filter-card">
+                        <div>
+                            <p class="section-kicker">Volume permohonan</p>
+                            <h2>Analisis Permohonan Masuk</h2>
+                            <p class="muted" id="applicationDateRange">Data permohonan: -</p>
+                        </div>
+                        <div class="filters">
+                            <label class="field-label">
+                                <span>Cawangan</span>
+                                <div class="multi-select" id="applicationBranchFilter">
+                                    <button type="button" class="multi-select-toggle" id="applicationBranchFilterToggle" aria-expanded="false" aria-controls="applicationBranchFilterMenu">Semua cawangan</button>
+                                    <div class="multi-select-menu" id="applicationBranchFilterMenu" hidden>
+                                        <input type="search" class="select-search" id="applicationBranchFilterSearch" placeholder="Cari cawangan...">
+                                        <div class="multi-select-actions"><button type="button" id="applicationBranchFilterSelectAllBtn">Pilih Semua</button><button type="button" id="applicationBranchFilterClearBtn">Kosongkan</button></div>
+                                        <div class="multi-select-options" id="applicationBranchFilterOptions"></div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="field-label">
+                                <span>Skim Rasmi</span>
+                                <div class="multi-select" id="applicationSchemeFilter">
+                                    <button type="button" class="multi-select-toggle" id="applicationSchemeFilterToggle" aria-expanded="false" aria-controls="applicationSchemeFilterMenu">Semua skim rasmi</button>
+                                    <div class="multi-select-menu" id="applicationSchemeFilterMenu" hidden>
+                                        <input type="search" class="select-search" id="applicationSchemeFilterSearch" placeholder="Cari skim...">
+                                        <div class="multi-select-actions"><button type="button" id="applicationSchemeFilterSelectAllBtn">Pilih Semua</button><button type="button" id="applicationSchemeFilterClearBtn">Kosongkan</button></div>
+                                        <div class="multi-select-options" id="applicationSchemeFilterOptions"></div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="field-label">
+                                <span>Jenis</span>
+                                <div class="multi-select" id="applicationTypeFilter">
+                                    <button type="button" class="multi-select-toggle" id="applicationTypeFilterToggle" aria-expanded="false" aria-controls="applicationTypeFilterMenu">Semua jenis</button>
+                                    <div class="multi-select-menu" id="applicationTypeFilterMenu" hidden>
+                                        <input type="search" class="select-search" id="applicationTypeFilterSearch" placeholder="Cari jenis...">
+                                        <div class="multi-select-actions"><button type="button" id="applicationTypeFilterSelectAllBtn">Pilih Semua</button><button type="button" id="applicationTypeFilterClearBtn">Kosongkan</button></div>
+                                        <div class="multi-select-options" id="applicationTypeFilterOptions"></div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </section>
+
+                    <section class="kpi-grid" aria-label="Ringkasan permohonan masuk">
+                        <article class="kpi-card"><span>Jumlah Permohonan</span><strong id="applicationTotal">0</strong></article>
+                        <article class="kpi-card approved"><span>Baharu</span><strong id="applicationNewTotal">0</strong></article>
+                        <article class="kpi-card pending"><span>Penyambungan</span><strong id="applicationRenewalTotal">0</strong></article>
+                        <article class="kpi-card risk"><span>Rayuan</span><strong id="applicationAppealTotal">0</strong></article>
+                        <article class="kpi-card percent"><span>Tambah Kadar</span><strong id="applicationAddrateTotal">0</strong></article>
+                        <article class="kpi-card"><span>Purata Hari Bekerja</span><strong id="applicationWorkingAverage">0</strong></article>
+                    </section>
+
+                    <section class="chart-card chart-card-large">
+                        <div class="panel-heading">
+                            <div>
+                                <h2>Carta Harian Permohonan</h2>
+                                <p id="dailyZoomLabel">Julat penuh</p>
+                            </div>
+                            <button type="button" id="dailyZoomResetBtn">Reset</button>
+                        </div>
+                        <div class="range-zoom" aria-label="Kawalan zoom tarikh carta harian">
+                            <label><span>Mula</span><input type="range" id="dailyStartRange" min="0" max="0" value="0"></label>
+                            <label><span>Akhir</span><input type="range" id="dailyEndRange" min="0" max="0" value="0"></label>
+                        </div>
+                        <canvas id="applicationDailyChart"></canvas>
+                    </section>
+
+                    <section class="chart-split">
+                        <section class="chart-card">
+                            <div class="panel-heading"><div><h2>Carta Mingguan Permohonan</h2></div></div>
+                            <canvas id="applicationWeeklyChart"></canvas>
+                        </section>
+                        <section class="chart-card">
+                            <div class="panel-heading"><div><h2>Carta Bulanan Permohonan</h2></div></div>
+                            <canvas id="applicationMonthlyChart"></canvas>
+                        </section>
+                    </section>
+
+                    <section class="leaderboard-grid">
+                        <article class="table-card"><h2>Top Skim Rasmi</h2><ol id="applicationTopSchemes"></ol></article>
+                        <article class="table-card"><h2>Hari Tertinggi</h2><ol id="applicationTopDays"></ol></article>
+                        <article class="table-card"><h2>Minggu Tertinggi</h2><ol id="applicationTopWeeks"></ol></article>
                     </section>
                 </section>
 
@@ -333,12 +423,14 @@
                         </div>
                     </section>
                 </section>
+                </div>
+                </div>
             </main>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="script.js?v=20260622-6"></script>
+    <script src="script.js?v=20260625-application-analysis"></script>
 </body>
 </html>

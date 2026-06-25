@@ -265,14 +265,29 @@ button:disabled {
     border: 1px solid #c9deec;
 }
 
+.drawer-toggle {
+    display: none;
+    margin-top: 14px;
+}
+
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+    margin-top: 14px;
+}
+
+.dashboard-content {
+    min-width: 0;
+}
+
 .tabs {
     position: sticky;
-    top: 0;
+    top: 14px;
     z-index: 10;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
-    margin-top: 14px;
     padding: 6px;
     background: #dce7ef;
     border-radius: 8px;
@@ -283,6 +298,7 @@ button:disabled {
     border: 1px solid #b9cad7;
     color: #254258;
     background: transparent;
+    text-align: left;
     white-space: normal;
 }
 
@@ -547,6 +563,67 @@ input[type="password"] {
     padding: 16px;
 }
 
+.chart-card-large {
+    min-height: 520px;
+}
+
+.chart-split,
+.leaderboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.leaderboard-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.range-zoom {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 10px 0 8px;
+    padding: 12px;
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.range-zoom input {
+    width: 100%;
+    accent-color: var(--brand-2);
+}
+
+.leaderboard-grid ol {
+    display: grid;
+    gap: 8px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.leaderboard-grid li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: start;
+    padding: 10px;
+    background: var(--soft);
+    border-radius: 6px;
+}
+
+.leaderboard-grid li span {
+    color: #334155;
+    font-size: 0.88rem;
+    font-weight: 750;
+    line-height: 1.25;
+}
+
+.leaderboard-grid li strong {
+    color: var(--brand);
+    font-weight: 900;
+}
+
 .panel-heading {
     display: flex;
     justify-content: space-between;
@@ -732,18 +809,50 @@ tfoot td {
         grid-template-columns: 1fr;
     }
 
-    .kpi-grid {
-        grid-template-columns: 1fr 1fr;
+    .drawer-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dashboard-layout {
+        display: block;
+        margin-top: 10px;
     }
 
     .tabs {
-        margin-inline: -4px;
-        border-radius: 0 0 8px 8px;
+        position: fixed;
+        z-index: 60;
+        top: 0;
+        left: 0;
+        width: min(320px, 86vw);
+        height: 100vh;
+        margin: 0;
+        padding: 14px;
+        border-radius: 0;
+        box-shadow: 18px 0 40px rgba(20, 35, 52, 0.24);
+        transform: translateX(-105%);
+        transition: transform 180ms ease;
+        overflow-y: auto;
+    }
+
+    .tabs.open {
+        transform: translateX(0);
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr 1fr;
     }
 
     .tab-button {
         padding-inline: 8px;
         font-size: 0.88rem;
+    }
+
+    .chart-split,
+    .leaderboard-grid,
+    .range-zoom {
+        grid-template-columns: 1fr;
     }
 
     .segmented {
