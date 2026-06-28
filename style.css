@@ -109,6 +109,14 @@ body {
     gap: 12px;
 }
 
+.tab-calendar-chip {
+    width: fit-content;
+    min-width: 210px;
+    margin-top: 10px;
+    padding: 10px 12px;
+    font-size: 0.86rem;
+}
+
 .topbar-actions {
     display: flex;
     gap: 12px;
@@ -558,6 +566,15 @@ input[type="password"] {
     line-height: 0.95;
 }
 
+.kpi-card small {
+    display: block;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
 .chart-card,
 .table-card {
     padding: 16px;
@@ -632,6 +649,59 @@ input[type="password"] {
     margin-bottom: 12px;
 }
 
+.table-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.table-search {
+    width: min(320px, 34vw);
+    min-height: 38px;
+    padding: 8px 11px;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font: inherit;
+}
+
+.table-search:focus {
+    outline: 2px solid rgba(15, 107, 206, 0.18);
+    border-color: var(--brand-2);
+}
+
+.checkbox-control {
+    display: flex;
+    grid-template-columns: none;
+    gap: 8px;
+    align-items: center;
+    min-height: 38px;
+    padding: 8px 10px;
+    color: var(--ink);
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.checkbox-control input {
+    accent-color: var(--brand-2);
+}
+
+.scroll-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.scroll-buttons button {
+    min-width: 42px;
+    min-height: 38px;
+    padding: 8px 10px;
+}
+
 .segmented {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -697,6 +767,73 @@ table {
 .ranking-table th:nth-child(2),
 .ranking-table td:nth-child(2) {
     text-align: left;
+}
+
+.pending-validation-wrap {
+    max-height: min(68vh, 640px);
+    overflow: auto;
+    position: relative;
+    background: #fff;
+    scrollbar-gutter: stable both-edges;
+}
+
+.pending-validation-wrap table {
+    min-width: 1180px;
+}
+
+.pending-validation-table {
+    table-layout: fixed;
+}
+
+.pending-validation-table th,
+.pending-validation-table td {
+    padding: 6px 8px;
+    font-size: 0.72rem;
+    line-height: 1.25;
+    vertical-align: top;
+}
+
+.pending-validation-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    white-space: nowrap;
+}
+
+.pending-validation-table th:nth-child(1),
+.pending-validation-table td:nth-child(1) {
+    width: 96px;
+    text-align: left;
+}
+
+.pending-validation-table th:nth-child(2),
+.pending-validation-table td:nth-child(2) {
+    width: 40px;
+    text-align: center;
+}
+
+.pending-validation-table th:nth-child(3),
+.pending-validation-table td:nth-child(3) {
+    width: 170px;
+    text-align: left;
+}
+
+.pending-validation-table th:nth-child(4),
+.pending-validation-table td:nth-child(4) {
+    width: 210px;
+    text-align: left;
+}
+
+.pending-validation-table th:nth-child(n+5),
+.pending-validation-table td:nth-child(n+5) {
+    width: 48px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.pending-validation-table th:last-child,
+.pending-validation-table td:last-child {
+    width: 64px;
 }
 
 th,
@@ -773,6 +910,26 @@ tfoot td {
     .filter-card,
     .panel-heading {
         grid-template-columns: 1fr;
+    }
+
+    .panel-heading {
+        align-items: stretch;
+    }
+
+    .table-tools {
+        justify-content: stretch;
+    }
+
+    .table-search {
+        width: 100%;
+    }
+
+    .pending-validation-wrap {
+        max-height: 62vh;
+    }
+
+    .pending-validation-wrap table {
+        min-width: 1120px;
     }
 
     .topbar,
@@ -890,4 +1047,9 @@ tfoot td {
     .kpi-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* Pending validation table: sticky header only; data rows stay in normal flow. */
+.pending-validation-table td {
+    position: static;
 }

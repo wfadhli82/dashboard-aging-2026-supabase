@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Aging Kelulusan 2026</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Dashboard Bahagian Agihan Zakat</title>
+    <link rel="stylesheet" href="style.css?v=20260628-pending-top-scheme">
 </head>
 <body>
     <div class="app-shell">
         <section class="login-view" id="loginView">
             <div class="login-brand">
                 <p class="eyebrow">MAIWP Santuni Asnaf</p>
-                <h1>Dashboard Aging Kelulusan 2026</h1>
+                <h1>Dashboard Bahagian Agihan Zakat</h1>
             </div>
             <div class="auth-copy">
                 <h2>Akses Dashboard</h2>
@@ -35,14 +35,10 @@
             <header class="topbar">
                 <div>
                     <p class="eyebrow">MAIWP Santuni Asnaf</p>
-                    <h1>Dashboard Aging Kelulusan 2026</h1>
-                    <p id="dateRangeText"></p>
+                    <h1>Dashboard Bahagian Agihan Zakat</h1>
+                    <p id="dateRangeText">Paparan prestasi kelulusan, permohonan masuk dan perakuan bantuan.</p>
                 </div>
                 <div class="topbar-actions">
-                    <div class="calendar-chip" aria-label="Ringkasan kalendar 2026">
-                        <span><strong id="workingDayCount">246</strong> hari bekerja</span>
-                        <span><strong id="holidayCount">119</strong> hari cuti</span>
-                    </div>
                     <div class="profile-menu">
                         <button type="button" class="profile-button" id="profileButton" aria-expanded="false" aria-controls="profileMenu">
                             <span id="profileInitial">?</span>
@@ -72,18 +68,24 @@
                 <button type="button" class="drawer-toggle" id="drawerToggle" aria-expanded="false" aria-controls="dashboardTabs">Menu</button>
                 <div class="dashboard-layout">
                 <nav class="tabs" id="dashboardTabs" aria-label="Tab dashboard">
-                    <button type="button" class="tab-button active" data-tab="fiveDayPanel">Dashboard Kelulusan 5 Hari</button>
-                    <button type="button" class="tab-button" data-tab="applicationPanel">Analisis Permohonan</button>
-                    <button type="button" class="tab-button" data-tab="performancePanel">Jadual Prestasi Keseluruhan</button>
+                    <button type="button" class="tab-button active" data-tab="applicationPanel">Analisis Permohonan</button>
+                    <button type="button" class="tab-button" data-tab="fiveDayPanel">Dashboard Kelulusan 5 Hari</button>
                     <button type="button" class="tab-button" data-tab="officialPanel">Dashboard Skim Rasmi</button>
+                    <button type="button" class="tab-button" data-tab="performancePanel">Jadual Prestasi Keseluruhan</button>
+                    <button type="button" class="tab-button" data-tab="pendingValidationPanel">Permohonan Belum Diperaku</button>
                 </nav>
                 <div class="dashboard-content">
 
-                <section class="tab-panel active" id="fiveDayPanel">
+                <section class="tab-panel" id="fiveDayPanel">
                     <section class="filter-card">
                         <div>
                             <p class="section-kicker">Prestasi 5 hari</p>
                             <h2>Dashboard Kelulusan 5 Hari</h2>
+                            <p class="muted tab-data-range" id="fiveDayDateRange" data-range-prefix="Data permohonan">Data permohonan: -</p>
+                            <div class="calendar-chip tab-calendar-chip" aria-label="Ringkasan kalendar 2026">
+                                <span><strong class="working-day-count">246</strong> hari bekerja</span>
+                                <span><strong class="holiday-count">119</strong> hari cuti</span>
+                            </div>
                         </div>
                         <div class="filters">
                             <label class="field-label">
@@ -195,12 +197,12 @@
                     </section>
                 </section>
 
-                <section class="tab-panel" id="applicationPanel">
+                <section class="tab-panel active" id="applicationPanel">
                     <section class="filter-card">
                         <div>
                             <p class="section-kicker">Volume permohonan</p>
                             <h2>Analisis Permohonan Masuk</h2>
-                            <p class="muted" id="applicationDateRange">Data permohonan: -</p>
+                            <p class="muted tab-data-range" id="applicationDateRange" data-range-prefix="Data permohonan">Data permohonan: -</p>
                         </div>
                         <div class="filters">
                             <label class="field-label">
@@ -281,11 +283,115 @@
                     </section>
                 </section>
 
+                <section class="tab-panel" id="pendingValidationPanel">
+                    <section class="filter-card">
+                        <div>
+                            <p class="section-kicker">Perakuan permohonan</p>
+                            <h2>Permohonan Belum Diperaku</h2>
+                            <p class="muted tab-data-range" id="pendingValidationDateRange" data-range-prefix="Data belum diperaku">Data belum diperaku: -</p>
+                        </div>
+                        <div class="filters">
+                            <label class="field-label">
+                                <span>Cawangan</span>
+                                <div class="multi-select" id="pendingValidationBranchFilter">
+                                    <button type="button" class="multi-select-toggle" id="pendingValidationBranchFilterToggle" aria-expanded="false" aria-controls="pendingValidationBranchFilterMenu">Semua cawangan</button>
+                                    <div class="multi-select-menu" id="pendingValidationBranchFilterMenu" hidden>
+                                        <input type="search" class="select-search" id="pendingValidationBranchFilterSearch" placeholder="Cari cawangan...">
+                                        <div class="multi-select-actions"><button type="button" id="pendingValidationBranchFilterSelectAllBtn">Pilih Semua</button><button type="button" id="pendingValidationBranchFilterClearBtn">Kosongkan</button></div>
+                                        <div class="multi-select-options" id="pendingValidationBranchFilterOptions"></div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="field-label">
+                                <span>Download Cawangan</span>
+                                <select id="pendingValidationDownloadBranch"></select>
+                            </label>
+                            <button type="button" id="downloadPendingValidationBtn">Download Excel</button>
+                        </div>
+                    </section>
+
+                    <section class="kpi-grid" aria-label="Ringkasan belum diperaku">
+                        <article class="kpi-card pending"><span>Belum Diperaku</span><strong id="pendingValidationTotal">0</strong></article>
+                        <article class="kpi-card"><span>Skim Paling Tinggi Belum Diperaku</span><strong id="pendingValidationTopSchemeTotal">0</strong><small id="pendingValidationTopSchemeName">(Tiada data)</small></article>
+                        <article class="kpi-card risk"><span>Unmapped</span><strong id="pendingValidationUnmapped">0</strong></article>
+                    </section>
+
+                    <section class="table-card">
+                        <div class="panel-heading">
+                            <div>
+                                <h2>Format Report Belum Diperaku</h2>
+                                <p>Susunan mengikut template Excel; <span id="pendingValidationVisibleRows">0 row dipapar</span>.</p>
+                            </div>
+                            <div class="table-tools">
+                                <input type="search" class="table-search" id="pendingValidationSearch" placeholder="Cari skim atau perincian...">
+                                <label class="checkbox-control">
+                                    <input type="checkbox" id="pendingValidationShowAllRows">
+                                    <span>Tunjuk semua row</span>
+                                </label>
+                                <div class="scroll-buttons" aria-label="Scroll jadual">
+                                    <button type="button" id="pendingValidationScrollLeftBtn" title="Scroll kiri">←</button>
+                                    <button type="button" id="pendingValidationScrollRightBtn" title="Scroll kanan">→</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-wrap pending-validation-wrap" id="pendingValidationTableWrap">
+                            <table class="pending-validation-table">
+                                <thead>
+                                    <tr>
+                                        <th>Kategori</th>
+                                        <th>Bil</th>
+                                        <th>Skim Bantuan</th>
+                                        <th>Perincian Skim Bantuan (i-Zakat)</th>
+                                        <th>JAN</th>
+                                        <th>FEB</th>
+                                        <th>MAC</th>
+                                        <th>APRIL</th>
+                                        <th>MEI</th>
+                                        <th>JUN</th>
+                                        <th>JULAI</th>
+                                        <th>OGOS</th>
+                                        <th>SEPT</th>
+                                        <th>OKT</th>
+                                        <th>NOV</th>
+                                        <th>DIS</th>
+                                        <th>Jumlah</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pendingValidationTableBody"></tbody>
+                                <tfoot id="pendingValidationTableFoot"></tfoot>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section class="table-card">
+                        <div class="panel-heading"><div><h2>Unmapped</h2><p>Rekod yang belum dipadankan ke template.</p></div></div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Skim CSV</th>
+                                        <th>Jumlah</th>
+                                        <th>Contoh Pemohon</th>
+                                        <th>ID Pemohon</th>
+                                        <th>Tarikh Mohon</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pendingValidationUnmappedBody"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </section>
+
                 <section class="tab-panel" id="performancePanel">
                     <section class="filter-card">
                         <div>
                             <p class="section-kicker">Jadual agregat</p>
                             <h2>Jadual Prestasi Keseluruhan</h2>
+                            <p class="muted tab-data-range" id="performanceDateRange" data-range-prefix="Data permohonan">Data permohonan: -</p>
+                            <div class="calendar-chip tab-calendar-chip" aria-label="Ringkasan kalendar 2026">
+                                <span><strong class="working-day-count">246</strong> hari bekerja</span>
+                                <span><strong class="holiday-count">119</strong> hari cuti</span>
+                            </div>
                         </div>
                         <div class="filters table-filters">
                             <label class="field-label">
@@ -355,6 +461,11 @@
                         <div>
                             <p class="section-kicker">Skim rasmi</p>
                             <h2>Dashboard Kelulusan 5 Hari Mengikut Skim Rasmi</h2>
+                            <p class="muted tab-data-range" id="officialDateRange" data-range-prefix="Data permohonan">Data permohonan: -</p>
+                            <div class="calendar-chip tab-calendar-chip" aria-label="Ringkasan kalendar 2026">
+                                <span><strong class="working-day-count">246</strong> hari bekerja</span>
+                                <span><strong class="holiday-count">119</strong> hari cuti</span>
+                            </div>
                         </div>
                         <div class="filters">
                             <label class="field-label">
@@ -431,6 +542,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="script.js?v=20260625-nice-axis"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="template-data.js"></script>
+    <script src="script.js?v=20260628-pending-top-scheme"></script>
 </body>
 </html>

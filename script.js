@@ -36,6 +36,7 @@ const applicationTypeColors = {
     addrate: '#f4b400',
     other: '#64748b'
 };
+const pendingValidationMonthLabels = ['JAN', 'FEB', 'MAC', 'APRIL', 'MEI', 'JUN', 'JULAI', 'OGOS', 'SEPT', 'OKT', 'NOV', 'DIS'];
 
 let headerMap = {};
 let rows = [];
@@ -57,6 +58,13 @@ let officialBranchOptions = [];
 let officialSchemeOptions = [];
 let officialTypeOptions = [];
 let applicationRows = [];
+let pendingValidationRows = [];
+let pendingValidationTemplateRows = [];
+let pendingValidationBranchOptions = [];
+let selectedPendingValidationBranches = [];
+let currentPendingValidationRows = [];
+let showAllPendingValidationRows = false;
+let pendingValidationSearchTerm = '';
 let applicationBranchOptions = [];
 let applicationSchemeOptions = [];
 let applicationTypeOptions = [];
@@ -78,8 +86,12 @@ let officialSchemes = [];
 let mappingsBySystemScheme = new Map();
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('workingDayCount').textContent = getWorkingDaysIn2026().length;
-    document.getElementById('holidayCount').textContent = 365 - getWorkingDaysIn2026().length;
+    document.querySelectorAll('.working-day-count').forEach(element => {
+        element.textContent = getWorkingDaysIn2026().length;
+    });
+    document.querySelectorAll('.holiday-count').forEach(element => {
+        element.textContent = 365 - getWorkingDaysIn2026().length;
+    });
 
     document.getElementById('authForm').addEventListener('submit', handleLogin);
     document.getElementById('profileButton').addEventListener('click', toggleProfileMenu);
@@ -118,6 +130,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('dailyEndRange').addEventListener('input', updateDailyZoomFromInputs);
     document.getElementById('dailyZoomResetBtn').addEventListener('click', resetDailyZoom);
     document.getElementById('downloadSummaryBtn').addEventListener('click', downloadSummaryTable);
+    document.getElementById('downloadPendingValidationBtn').addEventListener('click', downloadPendingValidationExcel);
+    document.getElementById('pendingValidationShowAllRows').addEventListener('change', event => {
+        showAllPendingValidationRows = event.target.checked;
+        updatePendingValidationDashboard();
+    });
+    document.getElementById('pendingValidationSearch').addEventListener('input', event => {
+        pendingValidationSearchTerm = normalizeKey(event.target.value);
+        updatePendingValidationDashboard();
+    });
+    document.getElementById('pendingValidationScrollLeftBtn').addEventListener('click', () => scrollPendingValidationTable(-560));
+    document.getElementById('pendingValidationScrollRightBtn').addEventListener('click', () => scrollPendingValidationTable(560));
 
     initializeSupabase();
 });
@@ -184,9 +207,14 @@ async function handleLogout() {
     filteredRows = [];
     approvedFilteredRows = [];
     currentSummaryRows = [];
+    pendingValidationRows = [];
+    pendingValidationTemplateRows = [];
+    currentPendingValidationRows = [];
     latestRun = null;
+    dataRange = { first: null, last: null };
     document.getElementById('dashboard').hidden = true;
-    document.getElementById('dateRangeText').textContent = '';
+    document.getElementById('dateRangeText').textContent = 'Paparan prestasi kelulusan, permohonan masuk dan perakuan bantuan.';
+    updateAllDataRangeLabels();
     document.getElementById('fileStatus').textContent = 'Belum ada fail dipilih.';
     updateAuthUi(null);
     closeProfileMenu();
@@ -214,7 +242,7 @@ async function loadSupabaseData() {
     }
 
     latestRun = runRows[0];
-    const [aggregateResult, dailyAggregateResult, officialResult, mappingResult] = await Promise.all([
+    const [aggregateResult, dailyAggregateResult, officialResult, mappingResult, pendingTemplateResult, pendingRowsResult] = await Promise.all([
         fetchAllAggregates(latestRun.run_id),
         fetchAllDailyApplicationAggregates(latestRun.run_id),
         supabaseClient
@@ -223,7 +251,9 @@ async function loadSupabaseData() {
             .order('display_order'),
         supabaseClient
             .from('dashboard_scheme_mappings')
-            .select('system_scheme,official_scheme,division')
+            .select('system_scheme,official_scheme,division'),
+        fetchPendingValidationTemplate(),
+        fetchAllPendingValidationRows(latestRun.run_id)
     ]);
     const { data: aggregates, error: aggregateError } = aggregateResult;
     const { data: dailyAggregates, error: dailyAggregateError } = dailyAggregateResult;
@@ -239,6 +269,8 @@ async function loadSupabaseData() {
 
     officialSchemes = officialResult.data || [];
     mappingsBySystemScheme = new Map((mappingResult.data || []).map(item => [item.system_scheme, item]));
+    pendingValidationTemplateRows = pendingTemplateResult.error ? [] : (pendingTemplateResult.data || []);
+    pendingValidationRows = pendingRowsResult.error ? [] : normalizePendingValidationRows(pendingRowsResult.data || []);
 
     rows = applySchemeMappings(expandAggregateRows(aggregates || []));
     applicationRows = applySchemeMappingsToApplicationRows(normalizeDailyApplicationRows(dailyAggregates || []));
@@ -254,16 +286,19 @@ async function loadSupabaseData() {
     setupFilters();
     setupOfficialFilters();
     setupApplicationFilters();
+    setupPendingValidationFilters();
     updateDashboard();
     updateSummaryTable();
     updateOfficialDashboard();
     updateApplicationDashboard();
+    updatePendingValidationDashboard();
+    updateAllDataRangeLabels();
 
     document.getElementById('fileStatus').textContent = `Data Supabase dimuatkan (${Number(latestRun.source_record_count || rows.length).toLocaleString('ms-MY')} rekod sumber).`;
-    document.getElementById('dateRangeText').textContent = `Data permohonan: ${formatShortDate(dataRange.first)} hingga ${formatShortDate(dataRange.last)}. Dikemaskini pada ${formatDateTime(latestRun.generated_at)}.`;
     document.getElementById('dashboard').hidden = false;
-    showAuthMessage(dailyAggregateError
-        ? `Data Supabase berjaya dimuatkan. Nota: agregat harian belum tersedia (${dailyAggregateError.message}).`
+    const optionalErrors = [dailyAggregateError, pendingTemplateResult.error, pendingRowsResult.error].filter(Boolean);
+    showAuthMessage(optionalErrors.length
+        ? `Data Supabase berjaya dimuatkan. Nota: sebahagian data tambahan belum tersedia (${optionalErrors.map(error => error.message).join('; ')}).`
         : 'Data Supabase berjaya dimuatkan.', false);
 }
 
@@ -300,6 +335,33 @@ async function fetchAllDailyApplicationAggregates(runId) {
             .order('application_date')
             .order('branch')
             .order('scheme')
+            .range(start, start + pageSize - 1);
+
+        if (error) return { data, error };
+        data.push(...(page || []));
+        if (!page || page.length < pageSize) return { data, error: null };
+    }
+}
+
+async function fetchPendingValidationTemplate() {
+    return supabaseClient
+        .from('dashboard_pending_validation_template')
+        .select('template_category,template_bil,template_scheme,template_detail,display_order')
+        .order('display_order');
+}
+
+async function fetchAllPendingValidationRows(runId) {
+    const pageSize = 1000;
+    const data = [];
+
+    for (let start = 0; ; start += pageSize) {
+        const { data: page, error } = await supabaseClient
+            .from('dashboard_pending_validation_rows')
+            .select('reference_number,application_date,application_month,branch,sub_branch,system_scheme,mapped_detail,template_category,template_bil,template_scheme,applicant_name,applicant_id,process,status,is_unmapped')
+            .eq('run_id', runId)
+            .order('branch')
+            .order('application_date')
+            .order('system_scheme')
             .range(start, start + pageSize - 1);
 
         if (error) return { data, error };
@@ -385,6 +447,25 @@ function normalizeDailyApplicationRows(aggregates) {
     }).filter(Boolean);
 }
 
+function normalizePendingValidationRows(sourceRows) {
+    return sourceRows.map(row => ({
+        ...row,
+        appliedDate: parseAppDate(row.application_date),
+        applicationMonth: Number(row.application_month || 0),
+        branch: row.branch || '(Tiada cawangan)',
+        subBranch: row.sub_branch || 'TANPA PAZA',
+        systemScheme: row.system_scheme || '(Tiada skim)',
+        mappedDetail: row.mapped_detail || '',
+        templateCategory: row.template_category || '',
+        templateBil: row.template_bil,
+        templateScheme: row.template_scheme || '',
+        applicantName: row.applicant_name || '',
+        applicantId: row.applicant_id || '',
+        referenceNumber: row.reference_number || '',
+        isUnmapped: Boolean(row.is_unmapped)
+    })).filter(row => row.appliedDate);
+}
+
 function applySchemeMappingsToApplicationRows(sourceRows) {
     return sourceRows.map(row => {
         const mapping = mappingsBySystemScheme.get(row.scheme);
@@ -465,9 +546,9 @@ function handleFile(file) {
             updateDashboard();
             updateSummaryTable();
             updateOfficialDashboard();
+            updateAllDataRangeLabels();
 
             document.getElementById('fileStatus').textContent = `${file.name} dimuatkan (${rows.length.toLocaleString('ms-MY')} rekod).`;
-            document.getElementById('dateRangeText').textContent = `Data permohonan: ${formatShortDate(dataRange.first)} hingga ${formatShortDate(dataRange.last)}.`;
             document.getElementById('dashboard').hidden = false;
         } catch (error) {
             showError(error.message);
@@ -611,6 +692,21 @@ function setupApplicationFilters() {
     getMultiSelectConfigs().forEach(renderMultiSelect);
 }
 
+function setupPendingValidationFilters() {
+    pendingValidationBranchOptions = getUniqueValues(pendingValidationRows.map(row => row.branch));
+    selectedPendingValidationBranches = [...pendingValidationBranchOptions];
+    const downloadSelect = document.getElementById('pendingValidationDownloadBranch');
+    if (downloadSelect) {
+        downloadSelect.innerHTML = pendingValidationBranchOptions
+            .map(branch => `<option value="${escapeHtml(branch)}">${escapeHtml(branch)}</option>`)
+            .join('');
+        if (pendingValidationBranchOptions.includes('KUALA LUMPUR')) {
+            downloadSelect.value = 'KUALA LUMPUR';
+        }
+    }
+    getMultiSelectConfigs().forEach(renderMultiSelect);
+}
+
 function getMultiSelectConfigs() {
     return [
         multiConfig('dashboardBranch', 'Semua cawangan', 'branchFilter', updateDashboard),
@@ -622,6 +718,7 @@ function getMultiSelectConfigs() {
         multiConfig('applicationBranch', 'Semua cawangan', 'applicationBranchFilter', updateApplicationDashboard),
         multiConfig('applicationScheme', 'Semua skim rasmi', 'applicationSchemeFilter', updateApplicationDashboard, true),
         multiConfig('applicationType', 'Semua jenis', 'applicationTypeFilter', updateApplicationDashboard),
+        multiConfig('pendingValidationBranch', 'Semua cawangan', 'pendingValidationBranchFilter', updatePendingValidationDashboard, true),
         multiConfig('officialBranch', 'Semua cawangan', 'officialBranchFilter', updateOfficialDashboard),
         multiConfig('officialScheme', 'Semua skim rasmi', 'officialSchemeFilter', updateOfficialDashboard, true),
         multiConfig('officialType', 'Semua jenis', 'officialTypeFilter', updateOfficialDashboard)
@@ -682,13 +779,132 @@ function updateApplicationDashboard() {
     });
 
     const range = getApplicationAggregateRange(activeRows);
-    document.getElementById('applicationDateRange').textContent = range.first && range.last
-        ? `Data permohonan: ${formatShortDate(range.first)} hingga ${formatShortDate(range.last)}`
-        : 'Data agregat harian belum tersedia.';
 
     updateApplicationKpis(activeRows, range);
     updateApplicationCharts(activeRows);
     updateApplicationLeaderboards(activeRows);
+}
+
+function updatePendingValidationDashboard() {
+    currentPendingValidationRows = pendingValidationRows.filter(row => selectedPendingValidationBranches.includes(row.branch));
+    const mappedRows = currentPendingValidationRows.filter(row => !row.isUnmapped);
+    const unmappedRows = currentPendingValidationRows.filter(row => row.isUnmapped);
+
+    document.getElementById('pendingValidationTotal').textContent = currentPendingValidationRows.length.toLocaleString('ms-MY');
+    updatePendingValidationTopScheme(mappedRows);
+    document.getElementById('pendingValidationUnmapped').textContent = unmappedRows.length.toLocaleString('ms-MY');
+
+    renderPendingValidationTable(currentPendingValidationRows);
+    renderPendingValidationUnmapped(unmappedRows);
+}
+
+function updatePendingValidationTopScheme(mappedRows) {
+    const grouped = new Map();
+    mappedRows.forEach(row => {
+        const scheme = row.templateScheme || row.mappedDetail || row.systemScheme || 'TANPA SKIM';
+        grouped.set(scheme, (grouped.get(scheme) || 0) + 1);
+    });
+    const topScheme = [...grouped.entries()]
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ms-MY'))[0];
+    const totalElement = document.getElementById('pendingValidationTopSchemeTotal');
+    const nameElement = document.getElementById('pendingValidationTopSchemeName');
+    if (!topScheme) {
+        totalElement.textContent = '0';
+        nameElement.textContent = '(Tiada data)';
+        return;
+    }
+    totalElement.textContent = topScheme[1].toLocaleString('ms-MY');
+    nameElement.textContent = `(${topScheme[0]})`;
+}
+
+function updateAllDataRangeLabels() {
+    document.querySelectorAll('.tab-data-range').forEach(element => {
+        element.textContent = getDataRangeLabel(element.dataset.rangePrefix || 'Data permohonan');
+    });
+}
+
+function getDataRangeLabel(prefix) {
+    if (!dataRange.first || !dataRange.last) return `${prefix}: -`;
+    const updatedText = latestRun?.generated_at
+        ? `. Dikemaskini pada ${formatDateTime(latestRun.generated_at)}.`
+        : '.';
+    return `${prefix}: ${formatShortDate(dataRange.first)} hingga ${formatShortDate(dataRange.last)}${updatedText}`;
+}
+
+function renderPendingValidationTable(activeRows) {
+    const counts = new Map();
+    activeRows.filter(row => !row.isUnmapped).forEach(row => {
+        const key = row.mappedDetail;
+        const current = counts.get(key) || Array(12).fill(0);
+        if (row.applicationMonth >= 1 && row.applicationMonth <= 12) current[row.applicationMonth - 1]++;
+        counts.set(key, current);
+    });
+
+    let visibleRowCount = 0;
+    const rowsHtml = pendingValidationTemplateRows.map(template => {
+        const monthCounts = counts.get(template.template_detail) || Array(12).fill(0);
+        const total = monthCounts.reduce((sum, value) => sum + value, 0);
+        if (!showAllPendingValidationRows && total === 0) return '';
+        const searchableText = normalizeKey([
+            template.template_category,
+            template.template_bil,
+            template.template_scheme,
+            template.template_detail
+        ].join(' '));
+        if (pendingValidationSearchTerm && !searchableText.includes(pendingValidationSearchTerm)) return '';
+        visibleRowCount++;
+        return `
+            <tr>
+                <td>${escapeHtml(template.template_category || '')}</td>
+                <td>${template.template_bil ?? ''}</td>
+                <td>${escapeHtml(template.template_scheme || '')}</td>
+                <td>${escapeHtml(template.template_detail || '')}</td>
+                ${monthCounts.map(value => `<td>${value ? value.toLocaleString('ms-MY') : '0'}</td>`).join('')}
+                <td><strong>${total.toLocaleString('ms-MY')}</strong></td>
+            </tr>
+        `;
+    }).join('');
+
+    const totals = Array(12).fill(0);
+    counts.forEach(monthCounts => monthCounts.forEach((value, index) => { totals[index] += value; }));
+    const grandTotal = totals.reduce((sum, value) => sum + value, 0);
+
+    document.getElementById('pendingValidationTableBody').innerHTML = rowsHtml || '<tr><td colspan="17" class="empty-state">Tiada data dipadan untuk filter ini. Aktifkan "Tunjuk semua row" untuk lihat template penuh.</td></tr>';
+    document.getElementById('pendingValidationVisibleRows').textContent = `${visibleRowCount.toLocaleString('ms-MY')} row dipapar`;
+    document.getElementById('pendingValidationTableFoot').innerHTML = `
+        <tr>
+            <td colspan="4">Jumlah Dipadan</td>
+            ${totals.map(value => `<td>${value.toLocaleString('ms-MY')}</td>`).join('')}
+            <td>${grandTotal.toLocaleString('ms-MY')}</td>
+        </tr>
+    `;
+}
+
+function renderPendingValidationUnmapped(unmappedRows) {
+    const grouped = new Map();
+    unmappedRows.forEach(row => {
+        const item = grouped.get(row.systemScheme) || { scheme: row.systemScheme, count: 0, sample: row };
+        item.count++;
+        grouped.set(row.systemScheme, item);
+    });
+    const rowsHtml = [...grouped.values()]
+        .sort((a, b) => b.count - a.count || a.scheme.localeCompare(b.scheme))
+        .map(item => `
+            <tr>
+                <td>${escapeHtml(item.scheme)}</td>
+                <td>${item.count.toLocaleString('ms-MY')}</td>
+                <td>${escapeHtml(item.sample.applicantName || '-')}</td>
+                <td>${escapeHtml(item.sample.applicantId || '-')}</td>
+                <td>${formatShortDate(item.sample.appliedDate)}</td>
+            </tr>
+        `).join('');
+    document.getElementById('pendingValidationUnmappedBody').innerHTML = rowsHtml || '<tr><td colspan="5" class="empty-state">Tiada unmapped untuk filter ini.</td></tr>';
+}
+
+function scrollPendingValidationTable(delta) {
+    const wrap = document.getElementById('pendingValidationTableWrap');
+    if (!wrap) return;
+    wrap.scrollBy({ left: delta, behavior: 'smooth' });
 }
 
 function updateApplicationKpis(activeRows, range) {
@@ -1053,6 +1269,335 @@ function downloadSummaryTable() {
     URL.revokeObjectURL(link.href);
 }
 
+async function downloadPendingValidationExcel() {
+    const branch = document.getElementById('pendingValidationDownloadBranch').value || pendingValidationBranchOptions[0];
+    if (!branch) {
+        showError('Tiada cawangan untuk download.');
+        return;
+    }
+    const branchRows = pendingValidationRows.filter(row => row.branch === branch);
+    if (!branchRows.length) {
+        showError('Tiada data belum diperaku untuk cawangan dipilih.');
+        return;
+    }
+
+    let blob;
+    try {
+        blob = await buildPendingValidationTemplateWorkbook(branchRows, branch);
+    } catch (error) {
+        showError(`Export template gagal: ${error.message}`);
+        return;
+    }
+    const link = document.createElement('a');
+    const endDate = dataRange.last ? formatMalayFileDate(dataRange.last) : toIsoDate(new Date());
+    link.href = URL.createObjectURL(blob);
+    link.download = `${endDate} - PERMOHONAN BELUM PERAKU - ${sanitizeFileName(branch)}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
+async function buildPendingValidationTemplateWorkbook(branchRows, branch) {
+    if (!window.JSZip) {
+        throw new Error('JSZip library not loaded.');
+    }
+    const templateData = window.PENDING_VALIDATION_TEMPLATE_BASE64
+        ? base64ToArrayBuffer(window.PENDING_VALIDATION_TEMPLATE_BASE64)
+        : await fetchPendingValidationTemplateWorkbook();
+    const zip = await window.JSZip.loadAsync(templateData);
+    const workbookInfo = await getWorkbookSheetInfo(zip);
+    const mainPath = workbookInfo.get('26.6.2026');
+    const unmappedPath = workbookInfo.get('Unmapped');
+    if (!mainPath || !unmappedPath) throw new Error('Worksheet template tidak lengkap.');
+
+    const range = getDateRangeFromDates(branchRows.map(row => row.appliedDate));
+    const reportRows = buildPendingValidationExportRows(branchRows);
+    const titleDate = formatFullMalayDate(dataRange.last || range.last).toLocaleUpperCase('ms-MY');
+    let mainXml = await zip.file(mainPath).async('string');
+    const totalStyleId = await ensurePendingValidationWorkbookStyles(zip);
+    const sharedStrings = await readSharedStrings(zip);
+    const detailToRow = getTemplateDetailRowsFromSheetXml(mainXml, sharedStrings);
+    mainXml = setSheetStringCell(mainXml, 'B2', `DATA DIKEMASKINI SEHINGGA ${titleDate}`);
+    reportRows.forEach(row => {
+        const excelRow = detailToRow.get(normalizeKey(row.detail));
+        if (!excelRow) return;
+        row.months.forEach((value, index) => {
+            mainXml = setSheetNumberCell(mainXml, `${columnName(6 + index)}${excelRow}`, value);
+        });
+        mainXml = setSheetFormulaCell(mainXml, `R${excelRow}`, `SUM(F${excelRow}:Q${excelRow})`, row.total, ` s="${totalStyleId}"`);
+    });
+    zip.file(mainPath, mainXml);
+
+    const unmappedXml = buildUnmappedSheetXml(branchRows.filter(row => row.isUnmapped));
+    zip.file(unmappedPath, unmappedXml);
+
+    const output = await zip.generateAsync({ type: 'arraybuffer' });
+    return new Blob([output], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+
+async function fetchPendingValidationTemplateWorkbook() {
+    const response = await fetch('templates/permohonan-belum-peraku-template.xlsx', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`Template tidak dapat dibaca (${response.status}).`);
+    return response.arrayBuffer();
+}
+
+function base64ToArrayBuffer(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
+    return bytes.buffer;
+}
+
+async function getWorkbookSheetInfo(zip) {
+    const workbookXml = await zip.file('xl/workbook.xml').async('string');
+    const relsXml = await zip.file('xl/_rels/workbook.xml.rels').async('string');
+    const relTargets = new Map([...relsXml.matchAll(/<Relationship[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"/g)]
+        .map(match => [match[1], `xl/${match[2].replace(/^\/?xl\//, '')}`]));
+    return new Map([...workbookXml.matchAll(/<sheet[^>]*name="([^"]+)"[^>]*(?:r:id|id)="([^"]+)"/g)]
+        .map(match => [decodeXml(match[1]), relTargets.get(match[2])]));
+}
+
+function getMainTemplateRowForDetail(detail) {
+    const index = pendingValidationTemplateRows.findIndex(row => normalizeKey(row.template_detail) === normalizeKey(detail));
+    return index === -1 ? null : index + 6;
+}
+
+async function ensurePendingValidationWorkbookStyles(zip) {
+    const stylesPath = 'xl/styles.xml';
+    const file = zip.file(stylesPath);
+    if (!file) return 23;
+
+    let stylesXml = await file.async('string');
+    const totalFillId = getOrAppendWorkbookFill(stylesXml, 'FFE97132');
+    stylesXml = totalFillId.stylesXml;
+    const totalStyleXml = `<xf numFmtId="3" fontId="7" fillId="${totalFillId.fillId}" borderId="8" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>`;
+    const cellXfsMatch = stylesXml.match(/<cellXfs[^>]*count="(\d+)"[^>]*>([\s\S]*?)<\/cellXfs>/);
+    if (!cellXfsMatch) return 23;
+
+    const existingXfs = [...cellXfsMatch[2].matchAll(/<xf[^>]*\/>|<xf[\s\S]*?<\/xf>/g)].map(match => match[0]);
+    const existingIndex = existingXfs.indexOf(totalStyleXml);
+    if (existingIndex >= 0) return existingIndex;
+
+    const nextStyleId = Number(cellXfsMatch[1]);
+    stylesXml = stylesXml.replace(/<cellXfs([^>]*)count="(\d+)"([^>]*)>([\s\S]*?)<\/cellXfs>/, (_match, before, _count, after, content) => {
+        return `<cellXfs${before}count="${nextStyleId + 1}"${after}>${content}${totalStyleXml}</cellXfs>`;
+    });
+    zip.file(stylesPath, stylesXml);
+    return nextStyleId;
+}
+
+function getOrAppendWorkbookFill(stylesXml, rgb) {
+    const fillXml = `<fill><patternFill patternType="solid"><fgColor rgb="${rgb}"/><bgColor indexed="64"/></patternFill></fill>`;
+    const fillsMatch = stylesXml.match(/<fills[^>]*count="(\d+)"[^>]*>([\s\S]*?)<\/fills>/);
+    if (!fillsMatch) return { stylesXml, fillId: 6 };
+
+    const fills = [...fillsMatch[2].matchAll(/<fill>[\s\S]*?<\/fill>/g)].map(match => match[0]);
+    const existingIndex = fills.indexOf(fillXml);
+    if (existingIndex >= 0) return { stylesXml, fillId: existingIndex };
+
+    const nextFillId = Number(fillsMatch[1]);
+    const nextStylesXml = stylesXml.replace(/<fills([^>]*)count="(\d+)"([^>]*)>([\s\S]*?)<\/fills>/, (_match, before, _count, after, content) => {
+        return `<fills${before}count="${nextFillId + 1}"${after}>${content}${fillXml}</fills>`;
+    });
+    return { stylesXml: nextStylesXml, fillId: nextFillId };
+}
+
+async function readSharedStrings(zip) {
+    const file = zip.file('xl/sharedStrings.xml');
+    if (!file) return [];
+    const xml = await file.async('string');
+    return [...xml.matchAll(/<si>([\s\S]*?)<\/si>/g)].map(match => {
+        const text = [...match[1].matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(part => decodeXml(part[1])).join('');
+        return text;
+    });
+}
+
+function getTemplateDetailRowsFromSheetXml(sheetXml, sharedStrings) {
+    const result = new Map();
+    const rows = [...sheetXml.matchAll(/<row[^>]*r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g)];
+    rows.forEach(match => {
+        const rowNumber = Number(match[1]);
+        if (rowNumber < 6) return;
+        const cell = match[2].match(/<c[^>]*r="E\d+"[^>]*>([\s\S]*?)<\/c>/);
+        if (!cell) return;
+        const fullCell = cell[0];
+        const valueMatch = cell[1].match(/<v>([\s\S]*?)<\/v>/);
+        const inlineMatch = cell[1].match(/<t[^>]*>([\s\S]*?)<\/t>/);
+        let value = '';
+        if (/t="s"/.test(fullCell) && valueMatch) {
+            value = sharedStrings[Number(valueMatch[1])] || '';
+        } else if (inlineMatch) {
+            value = decodeXml(inlineMatch[1]);
+        } else if (valueMatch) {
+            value = decodeXml(valueMatch[1]);
+        }
+        if (value && !normalizeKey(value).startsWith('JUMLAH')) {
+            result.set(normalizeKey(value), rowNumber);
+        }
+    });
+    return result;
+}
+
+function setSheetStringCell(xml, ref, value) {
+    return setSheetCellXml(xml, ref, `<is><t>${escapeXml(value)}</t></is>`, ' t="inlineStr"');
+}
+
+function setSheetNumberCell(xml, ref, value) {
+    return setSheetCellXml(xml, ref, `<v>${Number(value || 0)}</v>`);
+}
+
+function setSheetFormulaCell(xml, ref, formula, cachedValue = null, extraAttrs = '') {
+    const valueXml = cachedValue === null || cachedValue === undefined ? '' : `<v>${Number(cachedValue || 0)}</v>`;
+    return setSheetCellXml(xml, ref, `<f>${escapeXml(formula)}</f>${valueXml}`, extraAttrs);
+}
+
+function setSheetCellXml(xml, ref, innerXml, extraAttrs = '') {
+    const escapedRef = ref.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const selfClosingPattern = new RegExp(`<c([^>]*)r="${escapedRef}"([^>]*)\\/>`);
+    if (selfClosingPattern.test(xml)) {
+        return xml.replace(selfClosingPattern, (_match, before, after) => `<c${before}r="${ref}"${mergeCellAttrs(after, extraAttrs)}>${innerXml}</c>`);
+    }
+    const cellPattern = new RegExp(`<c([^>\\/]*)r="${escapedRef}"([^>]*)>([\\s\\S]*?)<\\/c>`);
+    if (cellPattern.test(xml)) {
+        return xml.replace(cellPattern, (_match, before, after) => `<c${before}r="${ref}"${mergeCellAttrs(after, extraAttrs)}>${innerXml}</c>`);
+    }
+    const rowNumber = ref.match(/\d+/)?.[0];
+    if (!rowNumber) return xml;
+    const rowPattern = new RegExp(`(<row[^>]*r="${rowNumber}"[^>]*>)([\\s\\S]*?)(<\\/row>)`);
+    return xml.replace(rowPattern, `$1$2<c r="${ref}"${extraAttrs}>${innerXml}</c>$3`);
+}
+
+function mergeCellAttrs(existingAttrs, extraAttrs) {
+    let attrs = String(existingAttrs || '').replace(/\/\s*$/, '');
+    if (extraAttrs.includes('t="inlineStr"')) {
+        attrs = attrs.replace(/\s+t="[^"]*"/, '');
+    }
+    if (/\s+s="/.test(extraAttrs)) {
+        attrs = attrs.replace(/\s+s="[^"]*"/, '');
+    }
+    return `${attrs}${extraAttrs}`;
+}
+
+function buildUnmappedSheetXml(unmappedRows) {
+    const rows = [
+        ['Skim Bantuan', 'Nama Pemohon', 'ID Pemohon', 'Tarikh Mohon'],
+        ...unmappedRows.map(row => [row.systemScheme, row.applicantName, row.applicantId, formatCsvDateTime(row.appliedDate)])
+    ];
+    const sheetData = rows.map((row, rowIndex) => {
+        const rowNumber = rowIndex + 1;
+        const cells = row.map((value, colIndex) => {
+            const ref = `${columnName(colIndex + 1)}${rowNumber}`;
+            return `<c r="${ref}" t="inlineStr"><is><t>${escapeXml(value || '')}</t></is></c>`;
+        }).join('');
+        return `<row r="${rowNumber}">${cells}</row>`;
+    }).join('');
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheetData>${sheetData}</sheetData>
+</worksheet>`;
+}
+
+function columnName(number) {
+    let name = '';
+    let current = number;
+    while (current > 0) {
+        const mod = (current - 1) % 26;
+        name = String.fromCharCode(65 + mod) + name;
+        current = Math.floor((current - mod) / 26);
+    }
+    return name;
+}
+
+function decodeXml(value) {
+    return String(value || '')
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&');
+}
+
+function buildPendingValidationWorkbookHtml(branchRows, branch) {
+    const range = getDateRangeFromDates(branchRows.map(row => row.appliedDate));
+    const reportRows = buildPendingValidationExportRows(branchRows);
+    const unmappedRows = branchRows.filter(row => row.isUnmapped);
+    const mainRows = [
+        [textCell('LAPORAN PERMOHONAN BANTUAN YANG BELUM DIPERAKU', 17, 'Title')],
+        [textCell(`DATA DIKEMASKINI SEHINGGA ${formatFullMalayDate(dataRange.last || range.last)}`, 17, 'Title')],
+        [textCell(`CAWANGAN: ${branch}`, 17, 'Plain')],
+        [],
+        ['KATEGORI', 'BIL', 'SKIM BANTUAN', 'PERINCIAN SKIM BANTUAN (i-Zakat)', ...pendingValidationMonthLabels, 'JUMLAH'].map(value => textCell(value, 1, 'Header')),
+        ...reportRows.map(row => [
+            textCell(row.category),
+            numberCell(row.bil || ''),
+            textCell(row.scheme),
+            textCell(row.detail),
+            ...row.months.map(numberCell),
+            numberCell(row.total)
+        ])
+    ];
+    const unmappedSheetRows = [
+        ['Skim Bantuan', 'Nama Pemohon', 'ID Pemohon', 'Tarikh Mohon', 'Cawangan', 'PAZA', 'Reference Number'].map(value => textCell(value, 1, 'Header')),
+        ...unmappedRows.map(row => [
+            textCell(row.systemScheme),
+            textCell(row.applicantName),
+            textCell(row.applicantId),
+            textCell(formatShortDate(row.appliedDate)),
+            textCell(row.branch),
+            textCell(row.subBranch),
+            textCell(row.referenceNumber)
+        ])
+    ];
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Styles>
+  <Style ss:ID="Title"><Font ss:Bold="1"/><Alignment ss:Horizontal="Left"/></Style>
+  <Style ss:ID="Header"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1F4E78" ss:Pattern="Solid"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>
+  <Style ss:ID="Plain"/>
+ </Styles>
+ ${worksheetXml('Belum Diperaku', mainRows)}
+ ${worksheetXml('Unmapped', unmappedSheetRows)}
+</Workbook>`;
+}
+
+function worksheetXml(name, rows) {
+    return `<Worksheet ss:Name="${escapeXml(name)}"><Table>${rows.map(row => `<Row>${row.join('')}</Row>`).join('')}</Table></Worksheet>`;
+}
+
+function textCell(value, mergeAcross = 1, style = 'Plain') {
+    const merge = mergeAcross > 1 ? ` ss:MergeAcross="${mergeAcross - 1}"` : '';
+    return `<Cell ss:StyleID="${style}"${merge}><Data ss:Type="String">${escapeXml(value ?? '')}</Data></Cell>`;
+}
+
+function numberCell(value) {
+    if (value === '' || value === null || value === undefined) return '<Cell><Data ss:Type="String"></Data></Cell>';
+    return `<Cell><Data ss:Type="Number">${Number(value || 0)}</Data></Cell>`;
+}
+
+function buildPendingValidationExportRows(branchRows) {
+    const counts = new Map();
+    branchRows.filter(row => !row.isUnmapped).forEach(row => {
+        const current = counts.get(row.mappedDetail) || Array(12).fill(0);
+        if (row.applicationMonth >= 1 && row.applicationMonth <= 12) current[row.applicationMonth - 1]++;
+        counts.set(row.mappedDetail, current);
+    });
+    return pendingValidationTemplateRows.map(template => {
+        const months = counts.get(template.template_detail) || Array(12).fill(0);
+        return {
+            category: template.template_category || '',
+            bil: template.template_bil,
+            scheme: template.template_scheme || '',
+            detail: template.template_detail || '',
+            months,
+            total: months.reduce((sum, value) => sum + value, 0)
+        };
+    });
+}
+
 function renderLineChart(canvasId, labels, data, isPercent) {
     const canvas = document.getElementById(canvasId);
     const rect = canvas.getBoundingClientRect();
@@ -1299,6 +1844,7 @@ function switchTab(panelId) {
     closeDashboardDrawer();
     if (panelId === 'fiveDayPanel') updateTrendChart(approvedFilteredRows);
     if (panelId === 'applicationPanel') updateApplicationDashboard();
+    if (panelId === 'pendingValidationPanel') updatePendingValidationDashboard();
 }
 
 function toggleDashboardDrawer(event) {
@@ -1395,6 +1941,7 @@ function getMultiSelectOptions(key) {
         applicationBranch: applicationBranchOptions,
         applicationScheme: applicationSchemeOptions,
         applicationType: applicationTypeOptions,
+        pendingValidationBranch: pendingValidationBranchOptions,
         officialBranch: officialBranchOptions,
         officialScheme: officialSchemeOptions,
         officialType: officialTypeOptions
@@ -1413,6 +1960,7 @@ function getMultiSelectSelection(key) {
         applicationBranch: selectedApplicationBranches,
         applicationScheme: selectedApplicationSchemes,
         applicationType: selectedApplicationTypes,
+        pendingValidationBranch: selectedPendingValidationBranches,
         officialBranch: selectedOfficialBranches,
         officialScheme: selectedOfficialSchemes,
         officialType: selectedOfficialTypes
@@ -1431,6 +1979,7 @@ function setMultiSelectSelection(key, selected) {
     else if (key === 'applicationBranch') selectedApplicationBranches = values;
     else if (key === 'applicationScheme') selectedApplicationSchemes = values;
     else if (key === 'applicationType') selectedApplicationTypes = values;
+    else if (key === 'pendingValidationBranch') selectedPendingValidationBranches = values;
     else if (key === 'officialBranch') selectedOfficialBranches = values;
     else if (key === 'officialScheme') selectedOfficialSchemes = values;
     else if (key === 'officialType') selectedOfficialTypes = values;
@@ -1469,6 +2018,7 @@ function closeMultiSelectMenus() {
         ['applicationBranchFilterMenu', 'applicationBranchFilterToggle'],
         ['applicationSchemeFilterMenu', 'applicationSchemeFilterToggle'],
         ['applicationTypeFilterMenu', 'applicationTypeFilterToggle'],
+        ['pendingValidationBranchFilterMenu', 'pendingValidationBranchFilterToggle'],
         ['officialBranchFilterMenu', 'officialBranchFilterToggle'],
         ['officialSchemeFilterMenu', 'officialSchemeFilterToggle'],
         ['officialTypeFilterMenu', 'officialTypeFilterToggle']
@@ -1496,6 +2046,10 @@ function filterSelectOptions(optionsId, query) {
 
 function normalizeSearch(value) {
     return String(value || '').toLocaleLowerCase('ms-MY').trim();
+}
+
+function normalizeKey(value) {
+    return String(value || '').normalize('NFKC').replace(/\s+/g, ' ').trim().toLocaleUpperCase('ms-MY');
 }
 
 function parseAppDate(value) {
@@ -1558,6 +2112,11 @@ function getDateRange(activeRows) {
     return { first: dates[0] || null, last: dates[dates.length - 1] || null };
 }
 
+function getDateRangeFromDates(dates) {
+    const sorted = dates.filter(Boolean).sort((a, b) => a - b);
+    return { first: sorted[0] || null, last: sorted[sorted.length - 1] || null };
+}
+
 function getWeekKey(row) {
     const date = row.appliedDate ? row.appliedDate : parseIsoDate(row);
     return toIsoDate(getMonday(date));
@@ -1615,6 +2174,32 @@ function formatDateTime(value) {
     });
 }
 
+function formatFullMalayDate(date) {
+    if (!date) return '-';
+    return date.toLocaleDateString('ms-MY', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatMalayFileDate(date) {
+    return formatFullMalayDate(date).replace(/\s+/g, ' ');
+}
+
+function formatSheetDate(date) {
+    if (!date) return 'Belum Diperaku';
+    return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
+}
+
+function formatCsvDateTime(date) {
+    if (!date) return '';
+    return date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZone: 'Asia/Kuala_Lumpur'
+    });
+}
+
 function formatPercent(value) {
     return `${Number(value || 0).toFixed(1)}%`;
 }
@@ -1663,6 +2248,14 @@ function escapeHtml(value) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+}
+
+function escapeXml(value) {
+    return escapeHtml(value);
+}
+
+function sanitizeFileName(value) {
+    return String(value || '').replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
 }
 
 function csvEscape(value) {

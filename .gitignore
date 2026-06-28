@@ -3,6 +3,7 @@
 *.xlsx
 *.xls
 *.xlsm
+!templates/permohonan-belum-peraku-template.xlsx
 
 # Fail sementara sistem/editor
 .DS_Store
