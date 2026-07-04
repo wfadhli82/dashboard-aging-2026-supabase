@@ -383,6 +383,116 @@ input[type="password"] {
     background: #dceaf3;
 }
 
+.chatbot-open-btn {
+    color: var(--brand);
+    background: #fff;
+}
+
+.chatbot-open-btn:hover {
+    color: var(--brand);
+    background: #e8f1f7;
+}
+
+.chatbot-panel {
+    position: fixed;
+    z-index: 90;
+    right: 18px;
+    bottom: 18px;
+    display: grid;
+    grid-template-rows: auto minmax(220px, 1fr) auto auto;
+    width: min(420px, calc(100vw - 28px));
+    max-height: min(680px, calc(100vh - 36px));
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 18px 46px rgba(20, 35, 52, 0.22);
+    overflow: hidden;
+}
+
+.chatbot-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: start;
+    padding: 14px;
+    color: #fff;
+    background: var(--brand);
+}
+
+.chatbot-header h2 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.chatbot-close-btn {
+    width: 34px;
+    min-height: 34px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.chatbot-messages {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    padding: 14px;
+    overflow-y: auto;
+    background: #f6f9fb;
+}
+
+.chatbot-message {
+    width: fit-content;
+    max-width: 92%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    line-height: 1.42;
+    white-space: pre-wrap;
+}
+
+.chatbot-message.user {
+    justify-self: end;
+    color: #fff;
+    background: var(--brand-2);
+}
+
+.chatbot-message.assistant {
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--line);
+}
+
+.chatbot-message.error {
+    color: #8a2f22;
+    background: #fde2dc;
+    border: 1px solid #f5b8ac;
+}
+
+.chatbot-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid var(--line);
+}
+
+.chatbot-form input {
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 11px;
+    color: var(--ink);
+    font: inherit;
+}
+
+.chatbot-note {
+    margin: 0;
+    padding: 0 12px 12px;
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
 .multi-select,
 .single-select {
     position: relative;
@@ -951,6 +1061,10 @@ tfoot td {
         justify-content: space-between;
     }
 
+    .chatbot-open-btn {
+        flex: 1;
+    }
+
     .calendar-chip {
         min-width: 0;
         flex: 1;
@@ -1040,6 +1154,13 @@ tfoot td {
 
     canvas {
         height: 280px;
+    }
+
+    .chatbot-panel {
+        right: 10px;
+        bottom: 10px;
+        width: calc(100vw - 20px);
+        max-height: calc(100vh - 20px);
     }
 }
 

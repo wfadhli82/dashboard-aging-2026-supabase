@@ -96,6 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('authForm').addEventListener('submit', handleLogin);
     document.getElementById('profileButton').addEventListener('click', toggleProfileMenu);
     document.getElementById('profileLogoutBtn').addEventListener('click', handleLogout);
+    document.getElementById('chatbotOpenBtn').addEventListener('click', openChatbot);
+    document.getElementById('chatbotCloseBtn').addEventListener('click', closeChatbot);
+    document.getElementById('chatbotForm').addEventListener('submit', handleChatbotSubmit);
     document.getElementById('chooseFileBtn').addEventListener('click', () => document.getElementById('fileInput').click());
     document.getElementById('fileInput').addEventListener('change', event => {
         if (event.target.files[0]) handleFile(event.target.files[0]);
@@ -829,6 +832,217 @@ function getDataRangeLabel(prefix) {
         ? `. Dikemaskini pada ${formatDateTime(latestRun.generated_at)}.`
         : '.';
     return `${prefix}: ${formatShortDate(dataRange.first)} hingga ${formatShortDate(dataRange.last)}${updatedText}`;
+}
+
+function openChatbot() {
+    document.getElementById('chatbotPanel').hidden = false;
+    document.getElementById('chatbotInput').focus();
+}
+
+function closeChatbot() {
+    document.getElementById('chatbotPanel').hidden = true;
+}
+
+async function handleChatbotSubmit(event) {
+    event.preventDefault();
+    const input = document.getElementById('chatbotInput');
+    const sendButton = document.getElementById('chatbotSendBtn');
+    const question = input.value.trim();
+    if (!question) return;
+
+    appendChatbotMessage(question, 'user');
+    input.value = '';
+    sendButton.disabled = true;
+    sendButton.textContent = '...';
+
+    const thinkingMessage = appendChatbotMessage('Sedang semak data dashboard...', 'assistant');
+    try {
+        const response = await fetch('/api/chatbot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                question,
+                context: buildChatbotDashboardContext()
+            })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || `Request gagal (${response.status})`);
+        thinkingMessage.textContent = result.answer || 'Tiada jawapan diterima.';
+    } catch (error) {
+        thinkingMessage.className = 'chatbot-message error';
+        thinkingMessage.textContent = `Chatbot gagal: ${error.message}. Pastikan dashboard dibuka melalui npm run chatbot:local.`;
+    } finally {
+        sendButton.disabled = false;
+        sendButton.textContent = 'Hantar';
+        input.focus();
+    }
+}
+
+function appendChatbotMessage(text, role) {
+    const container = document.getElementById('chatbotMessages');
+    const message = document.createElement('div');
+    message.className = `chatbot-message ${role}`;
+    message.textContent = text;
+    container.appendChild(message);
+    container.scrollTop = container.scrollHeight;
+    return message;
+}
+
+function buildChatbotDashboardContext() {
+    const fiveDaySummary = getFiveDaySummary(rows);
+    const applicationSummary = getApplicationSummary(applicationRows);
+    const selectedApplicationRows = getSelectedApplicationRows();
+    const selectedFiveDayRows = getSelectedFiveDayRows();
+    const selectedPendingValidationRows = getSelectedPendingValidationRows();
+    const pendingSummary = getPendingValidationSummary(pendingValidationRows);
+
+    return {
+        dashboard: 'Dashboard Bahagian Agihan Zakat',
+        activeTab: getActiveTabLabel(),
+        dataRange: {
+            start: dataRange.first ? formatShortDate(dataRange.first) : null,
+            end: dataRange.last ? formatShortDate(dataRange.last) : null,
+            updatedAt: latestRun?.generated_at ? formatDateTime(latestRun.generated_at) : null
+        },
+        filters: {
+            fiveDayBranches: selectedBranches,
+            fiveDaySchemes: selectedSchemes,
+            fiveDayTypes: selectedTypes,
+            applicationBranches: selectedApplicationBranches,
+            applicationSchemes: selectedApplicationSchemes,
+            applicationTypes: selectedApplicationTypes,
+            pendingValidationBranches: selectedPendingValidationBranches
+        },
+        fiveDaySummary,
+        selectedFiveDaySummary: getFiveDaySummary(selectedFiveDayRows),
+        applicationSummary,
+        selectedApplicationSummary: getApplicationSummary(selectedApplicationRows),
+        pendingValidationSummary: pendingSummary,
+        selectedPendingValidationSummary: getPendingValidationSummary(selectedPendingValidationRows),
+        note: 'Context ini ialah ringkasan agregat dashboard. Utamakan selected*Summary apabila soalan merujuk filter/skrin semasa. Tiada nama atau nombor ID pemohon dihantar.'
+    };
+}
+
+function getActiveTabLabel() {
+    const activePanel = document.querySelector('.tab-panel.active');
+    const activeButton = activePanel
+        ? document.querySelector(`.tab-button[data-tab="${activePanel.id}"]`)
+        : null;
+    return activeButton?.textContent.trim() || activePanel?.id || null;
+}
+
+function getSelectedFiveDayRows() {
+    return rows.filter(row => {
+        return selectedBranches.includes(row.branch)
+            && selectedSchemes.includes(row.scheme)
+            && selectedTypes.includes(row.applicationTypeLabel);
+    });
+}
+
+function getSelectedApplicationRows() {
+    return applicationRows.filter(row => {
+        return selectedApplicationBranches.includes(row.branch)
+            && selectedApplicationSchemes.includes(row.officialScheme)
+            && selectedApplicationTypes.includes(row.applicationTypeLabel);
+    });
+}
+
+function getSelectedPendingValidationRows() {
+    return pendingValidationRows.filter(row => selectedPendingValidationBranches.includes(row.branch));
+}
+
+function getFiveDaySummary(sourceRows) {
+    const total = sourceRows.length;
+    const approvedRows = sourceRows.filter(row => row.isApproved);
+    const approved = approvedRows.length;
+    const onTime = approvedRows.filter(row => row.aging <= 5).length;
+    const late = approved - onTime;
+    return {
+        totalApplications: total,
+        approved,
+        pending: total - approved,
+        approvedWithinFiveWorkingDays: onTime,
+        approvedOverFiveWorkingDays: late,
+        onTimePercent: approved ? Number(((onTime / approved) * 100).toFixed(1)) : 0,
+        topBranchesByApplications: summarizeRowsByCount(sourceRows, row => row.branch, 10),
+        topSchemesByApplications: summarizeRowsByCount(sourceRows, row => row.scheme, 15),
+        topOfficialSchemesByApplications: summarizeRowsByCount(sourceRows, row => row.officialScheme, 15),
+        worstOfficialSchemesByFiveDayPercent: summarizeFiveDayPerformance(approvedRows, 'officialScheme', false, 10),
+        bestOfficialSchemesByFiveDayPercent: summarizeFiveDayPerformance(approvedRows, 'officialScheme', true, 10)
+    };
+}
+
+function getApplicationSummary(sourceRows) {
+    const total = sourceRows.reduce((sum, row) => sum + row.totalApplications, 0);
+    return {
+        totalApplications: total,
+        byType: summarizeApplicationRows(sourceRows, row => row.applicationTypeLabel, 10),
+        byBranch: summarizeApplicationRows(sourceRows, row => row.branch, 10),
+        byOfficialScheme: summarizeApplicationRows(sourceRows, row => row.officialScheme, 15),
+        byBranchAndOfficialScheme: summarizeApplicationRows(sourceRows, row => `${row.branch} | ${row.officialScheme}`, 20),
+        byMonth: summarizeApplicationRows(sourceRows, row => monthLabels[row.appliedDate.getMonth()], 12),
+        topDates: summarizeApplicationRows(sourceRows, row => formatShortDate(row.appliedDate), 10)
+    };
+}
+
+function getPendingValidationSummary(sourceRows) {
+    const mappedRows = sourceRows.filter(row => !row.isUnmapped);
+    const unmappedRows = sourceRows.filter(row => row.isUnmapped);
+    return {
+        totalPendingValidation: sourceRows.length,
+        mapped: mappedRows.length,
+        unmapped: unmappedRows.length,
+        byBranch: summarizeRowsByCount(sourceRows, row => row.branch, 10),
+        byTemplateScheme: summarizeRowsByCount(mappedRows, row => row.templateScheme || row.mappedDetail || row.systemScheme, 15),
+        bySystemSchemeUnmapped: summarizeRowsByCount(unmappedRows, row => row.systemScheme, 10),
+        byMonth: summarizeRowsByCount(sourceRows, row => pendingValidationMonthLabels[row.applicationMonth - 1] || String(row.applicationMonth), 12)
+    };
+}
+
+function summarizeRowsByCount(sourceRows, getKey, limit) {
+    const grouped = new Map();
+    sourceRows.forEach(row => {
+        const key = getKey(row) || '(Tiada data)';
+        grouped.set(key, (grouped.get(key) || 0) + 1);
+    });
+    return [...grouped.entries()]
+        .map(([label, total]) => ({ label, total }))
+        .sort((a, b) => b.total - a.total || a.label.localeCompare(b.label, 'ms-MY'))
+        .slice(0, limit);
+}
+
+function summarizeApplicationRows(sourceRows, getKey, limit) {
+    const grouped = new Map();
+    sourceRows.forEach(row => {
+        const key = getKey(row) || '(Tiada data)';
+        grouped.set(key, (grouped.get(key) || 0) + row.totalApplications);
+    });
+    return [...grouped.entries()]
+        .map(([label, total]) => ({ label, total }))
+        .sort((a, b) => b.total - a.total || a.label.localeCompare(b.label, 'ms-MY'))
+        .slice(0, limit);
+}
+
+function summarizeFiveDayPerformance(sourceRows, key, bestFirst, limit) {
+    const grouped = new Map();
+    sourceRows.forEach(row => {
+        const label = row[key] || '(Tiada data)';
+        const item = grouped.get(label) || { label, approved: 0, onTime: 0 };
+        item.approved++;
+        if (row.aging <= 5) item.onTime++;
+        grouped.set(label, item);
+    });
+    return [...grouped.values()]
+        .filter(item => item.approved > 0)
+        .map(item => ({
+            ...item,
+            onTimePercent: Number(((item.onTime / item.approved) * 100).toFixed(1))
+        }))
+        .sort((a, b) => {
+            const percentDiff = bestFirst ? b.onTimePercent - a.onTimePercent : a.onTimePercent - b.onTimePercent;
+            return percentDiff || b.approved - a.approved || a.label.localeCompare(b.label, 'ms-MY');
+        })
+        .slice(0, limit);
 }
 
 function renderPendingValidationTable(activeRows) {
