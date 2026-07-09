@@ -3,6 +3,8 @@ const HEADER_ALIASES = {
     approvedAt: ['Tarikh Kelulusan'],
     scheme: ['Schemes â†’ Name', 'Schemes -> Name', 'Schemes → Name'],
     applicationType: ['Application Type'],
+    process: ['Process', 'Proses'],
+    status: ['Status'],
     subBranch: ['Sub Branches → Name', 'Sub Branches -> Name'],
     branch: ['Branches â†’ Name', 'Branches -> Name', 'Branches → Name']
 };
@@ -182,21 +184,26 @@ async function handleLogin(event) {
         return;
     }
 
-    const email = document.getElementById('emailInput').value.trim();
+    const username = document.getElementById('usernameInput').value.trim().toLowerCase();
     const password = document.getElementById('passwordInput').value;
-    if (!email || !password) return;
+    if (!username || !password) return;
+
+    if (!/^[a-z0-9._-]+$/.test(username)) {
+        showAuthMessage('Nama pengguna hanya boleh mengandungi huruf, nombor, titik, sengkang dan garis bawah.', true);
+        return;
+    }
 
     const loginButton = document.getElementById('loginBtn');
     loginButton.disabled = true;
     loginButton.textContent = 'Sedang Log Masuk...';
 
     const { error } = await supabaseClient.auth.signInWithPassword({
-        email,
+        email: `${username}@dashboard.local`,
         password
     });
 
     if (error) {
-        showAuthMessage('Log masuk gagal. Semak emel, kata laluan, dan akses yang dibenarkan.', true);
+        showAuthMessage('Log masuk gagal. Semak nama pengguna dan kata laluan.', true);
         loginButton.disabled = false;
         loginButton.textContent = 'Log Masuk';
         return;
@@ -493,13 +500,14 @@ function appendSyntheticRows(target, count, row) {
 function updateAuthUi(session) {
     const isLoggedIn = Boolean(session);
     const email = session?.user?.email?.toLowerCase() || '';
+    const username = email.endsWith('@dashboard.local') ? email.slice(0, -'@dashboard.local'.length) : email;
     const uploadCard = document.getElementById('uploadCard');
     document.getElementById('loginView').hidden = isLoggedIn;
     document.getElementById('appContent').hidden = !isLoggedIn;
     document.getElementById('loginBtn').disabled = false;
     document.getElementById('loginBtn').textContent = 'Log Masuk';
-    document.getElementById('profileEmail').textContent = email || '-';
-    document.getElementById('profileInitial').textContent = email ? email.charAt(0).toUpperCase() : '?';
+    document.getElementById('profileEmail').textContent = username || '-';
+    document.getElementById('profileInitial').textContent = username ? username.charAt(0).toUpperCase() : '?';
     uploadCard.hidden = true;
     uploadCard.style.display = 'none';
 }
@@ -644,7 +652,9 @@ function normalizeRows(records) {
         if (!appliedDate) return null;
 
         const type = (record[headerMap.applicationType] || '').toLowerCase();
-        const isApproved = Boolean(approvedDate);
+        const applicationState = getApplicationState(record, approvedDate);
+        if (applicationState === 'rejected') return null;
+        const isApproved = applicationState === 'approved';
         return {
             appliedDate,
             approvedDate,
@@ -658,6 +668,16 @@ function normalizeRows(records) {
             applicationTypeLabel: typeLabels[type] || titleCase(type || 'Lain-lain')
         };
     }).filter(Boolean);
+}
+
+function getApplicationState(record, approvedDate) {
+    const process = normalizeHeader(headerMap.process ? record[headerMap.process] : '');
+    const status = normalizeHeader(headerMap.status ? record[headerMap.status] : '');
+
+    if (process === 'approval' && status === 'rejected') return 'rejected';
+    if (approvedDate && process === 'payment' && status === 'processing') return 'approved';
+    if (approvedDate && (!process || !status)) return 'approved';
+    return 'pending';
 }
 
 function setupFilters() {
