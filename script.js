@@ -98,9 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('authForm').addEventListener('submit', handleLogin);
     document.getElementById('profileButton').addEventListener('click', toggleProfileMenu);
     document.getElementById('profileLogoutBtn').addEventListener('click', handleLogout);
-    document.getElementById('chatbotOpenBtn').addEventListener('click', openChatbot);
-    document.getElementById('chatbotCloseBtn').addEventListener('click', closeChatbot);
-    document.getElementById('chatbotForm').addEventListener('submit', handleChatbotSubmit);
     document.getElementById('chooseFileBtn').addEventListener('click', () => document.getElementById('fileInput').click());
     document.getElementById('fileInput').addEventListener('change', event => {
         if (event.target.files[0]) handleFile(event.target.files[0]);
