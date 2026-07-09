@@ -188,17 +188,19 @@ async function handleLogin(event) {
     const password = document.getElementById('passwordInput').value;
     if (!username || !password) return;
 
-    if (!/^[a-z0-9._-]+$/.test(username)) {
-        showAuthMessage('Nama pengguna hanya boleh mengandungi huruf, nombor, titik, sengkang dan garis bawah.', true);
+    const isEmail = username.includes('@');
+    if ((!isEmail && !/^[a-z0-9._-]+$/.test(username)) || (isEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username))) {
+        showAuthMessage('Masukkan nama pengguna atau alamat emel yang sah.', true);
         return;
     }
+    const email = isEmail ? username : `${username}@dashboard.local`;
 
     const loginButton = document.getElementById('loginBtn');
     loginButton.disabled = true;
     loginButton.textContent = 'Sedang Log Masuk...';
 
     const { error } = await supabaseClient.auth.signInWithPassword({
-        email: `${username}@dashboard.local`,
+        email,
         password
     });
 
