@@ -84,6 +84,8 @@ let dailyZoom = { start: 0, end: 0 };
 let dailyLabels = [];
 let supabaseClient = null;
 let latestRun = null;
+let latestVisitorRun = null;
+let visitorRows = [];
 let officialSchemes = [];
 let mappingsBySystemScheme = new Map();
 
@@ -133,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('dailyZoomResetBtn').addEventListener('click', resetDailyZoom);
     document.getElementById('downloadSummaryBtn').addEventListener('click', downloadSummaryTable);
     document.getElementById('downloadPendingValidationBtn').addEventListener('click', downloadPendingValidationExcel);
+    document.getElementById('downloadVisitorExcelBtn').addEventListener('click', downloadVisitorExcel);
     document.getElementById('pendingValidationShowAllRows').addEventListener('change', event => {
         showAllPendingValidationRows = event.target.checked;
         updatePendingValidationDashboard();
@@ -219,6 +222,8 @@ async function handleLogout() {
     pendingValidationRows = [];
     pendingValidationTemplateRows = [];
     currentPendingValidationRows = [];
+    latestVisitorRun = null;
+    visitorRows = [];
     latestRun = null;
     dataRange = { first: null, last: null };
     document.getElementById('dashboard').hidden = true;
@@ -280,6 +285,9 @@ async function loadSupabaseData() {
     mappingsBySystemScheme = new Map((mappingResult.data || []).map(item => [item.system_scheme, item]));
     pendingValidationTemplateRows = pendingTemplateResult.error ? [] : (pendingTemplateResult.data || []);
     pendingValidationRows = pendingRowsResult.error ? [] : normalizePendingValidationRows(pendingRowsResult.data || []);
+    const visitorResult = await fetchLatestVisitorData();
+    latestVisitorRun = visitorResult.run;
+    visitorRows = normalizeVisitorAggregateRows(visitorResult.rows || []);
 
     rows = applySchemeMappings(expandAggregateRows(aggregates || []));
     applicationRows = applySchemeMappingsToApplicationRows(normalizeDailyApplicationRows(dailyAggregates || []));
@@ -301,14 +309,38 @@ async function loadSupabaseData() {
     updateOfficialDashboard();
     updateApplicationDashboard();
     updatePendingValidationDashboard();
+    updateVisitorDashboard();
     updateAllDataRangeLabels();
 
     document.getElementById('fileStatus').textContent = `Data Supabase dimuatkan (${Number(latestRun.source_record_count || rows.length).toLocaleString('ms-MY')} rekod sumber).`;
     document.getElementById('dashboard').hidden = false;
-    const optionalErrors = [dailyAggregateError, pendingTemplateResult.error, pendingRowsResult.error].filter(Boolean);
+    const optionalErrors = [dailyAggregateError, pendingTemplateResult.error, pendingRowsResult.error, visitorResult.error].filter(Boolean);
     showAuthMessage(optionalErrors.length
         ? `Data Supabase berjaya dimuatkan. Nota: sebahagian data tambahan belum tersedia (${optionalErrors.map(error => error.message).join('; ')}).`
         : 'Data Supabase berjaya dimuatkan.', false);
+}
+
+async function fetchLatestVisitorData() {
+    const { data: runRows, error: runError } = await supabaseClient
+        .from('dashboard_visitor_sync_runs')
+        .select('run_id,started_at,finished_at,source_year,source_count,rows_read,rows_processed,unique_rows,duplicate_rows,parse_errors,aggregate_rows,status')
+        .eq('status', 'success')
+        .order('started_at', { ascending: false })
+        .limit(1);
+
+    if (runError) return { run: null, rows: [], error: runError };
+    if (!runRows?.length) return { run: null, rows: [], error: null };
+
+    const run = runRows[0];
+    const { data, error } = await supabaseClient
+        .from('dashboard_visitor_monthly_paza_aggregates')
+        .select('year,month,paza,visitor_count')
+        .eq('run_id', run.run_id)
+        .order('year')
+        .order('month')
+        .order('paza');
+
+    return { run, rows: data || [], error };
 }
 
 async function fetchAllAggregates(runId) {
@@ -839,6 +871,123 @@ function updatePendingValidationTopScheme(mappedRows) {
     nameElement.textContent = `(${topScheme[0]})`;
 }
 
+function normalizeVisitorAggregateRows(data) {
+    return data.map(item => ({
+        year: Number(item.year),
+        month: Number(item.month),
+        paza: item.paza || '(Tiada PAZA)',
+        visitorCount: Number(item.visitor_count || 0)
+    })).filter(row => Number.isFinite(row.year) && row.month >= 1 && row.month <= 12);
+}
+
+function updateVisitorDashboard() {
+    const total = visitorRows.reduce((sum, row) => sum + row.visitorCount, 0);
+    const byPaza = groupVisitorByPaza(visitorRows);
+    const byMonth = groupVisitorByMonth(visitorRows);
+    const monthStats = getVisitorMonthStats(byMonth);
+
+    document.getElementById('visitorTotal').textContent = total.toLocaleString('ms-MY');
+    document.getElementById('visitorMonthlyAverage').textContent = monthStats.average.toLocaleString('ms-MY', { maximumFractionDigits: 0 });
+    document.getElementById('visitorMonthlyAverageNote').textContent = monthStats.activeMonthCount ? `(${monthStats.activeMonthCount} bulan data)` : '(Tiada data)';
+    document.getElementById('visitorHighestMonthTotal').textContent = monthStats.highest ? monthStats.highest.total.toLocaleString('ms-MY') : '0';
+    document.getElementById('visitorHighestMonthName').textContent = monthStats.highest ? `(${monthLabels[monthStats.highest.month - 1]})` : '(Tiada data)';
+    document.getElementById('visitorLowestMonthTotal').textContent = monthStats.lowest ? monthStats.lowest.total.toLocaleString('ms-MY') : '0';
+    document.getElementById('visitorLowestMonthName').textContent = monthStats.lowest ? `(${monthLabels[monthStats.lowest.month - 1]})` : '(Tiada data)';
+    document.getElementById('visitorDateRange').textContent = getVisitorDataRangeLabel();
+
+    renderVisitorPazaChart(byPaza);
+    renderVisitorMonthlyTable();
+}
+
+function getVisitorDataRangeLabel() {
+    if (!latestVisitorRun) return 'Data pengunjung: Belum tersedia.';
+    const syncedAt = latestVisitorRun.finished_at || latestVisitorRun.started_at;
+    const uniqueText = Number(latestVisitorRun.unique_rows || 0).toLocaleString('ms-MY');
+    const duplicateText = Number(latestVisitorRun.duplicate_rows || 0).toLocaleString('ms-MY');
+    return `Data pengunjung ${latestVisitorRun.source_year}: ${uniqueText} lawatan dikira. Duplicate 20 minit: ${duplicateText}. Sync pada ${formatDateTime(syncedAt)}.`;
+}
+
+function getVisitorMonthStats(byMonth) {
+    const months = [...byMonth.entries()]
+        .filter(([, total]) => total > 0)
+        .map(([month, total]) => ({ month: Number(month), total }));
+    if (!months.length) {
+        return { activeMonthCount: 0, average: 0, highest: null, lowest: null };
+    }
+
+    const sum = months.reduce((total, item) => total + item.total, 0);
+    const highest = [...months].sort((a, b) => b.total - a.total || a.month - b.month)[0];
+    const lowest = [...months].sort((a, b) => a.total - b.total || a.month - b.month)[0];
+    return {
+        activeMonthCount: months.length,
+        average: sum / months.length,
+        highest,
+        lowest
+    };
+}
+
+function groupVisitorByPaza(sourceRows) {
+    return sourceRows.reduce((grouped, row) => {
+        grouped.set(row.paza, (grouped.get(row.paza) || 0) + row.visitorCount);
+        return grouped;
+    }, new Map());
+}
+
+function groupVisitorByMonth(sourceRows) {
+    return sourceRows.reduce((grouped, row) => {
+        grouped.set(row.month, (grouped.get(row.month) || 0) + row.visitorCount);
+        return grouped;
+    }, new Map());
+}
+
+function renderVisitorPazaChart(byPaza) {
+    const items = [...byPaza.entries()]
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ms-MY'))
+        .slice(0, 10)
+        .map(([label, value]) => ({ label, value }));
+    renderHorizontalBarChart('visitorPazaChart', items);
+}
+
+function renderVisitorMonthlyTable() {
+    const grouped = new Map();
+    visitorRows.forEach(row => {
+        if (!grouped.has(row.paza)) grouped.set(row.paza, Array(12).fill(0));
+        grouped.get(row.paza)[row.month - 1] += row.visitorCount;
+    });
+
+    const items = [...grouped.entries()]
+        .map(([paza, values]) => ({
+            paza,
+            values,
+            total: values.reduce((sum, value) => sum + value, 0)
+        }))
+        .sort((a, b) => b.total - a.total || a.paza.localeCompare(b.paza, 'ms-MY'));
+
+    document.getElementById('visitorVisibleRows').textContent = `${items.length.toLocaleString('ms-MY')} PAZA dipapar`;
+    document.getElementById('visitorMonthlyTableBody').innerHTML = items.length
+        ? items.map(item => `
+            <tr>
+                <td>${escapeHtml(item.paza)}</td>
+                ${item.values.map(value => `<td>${value.toLocaleString('ms-MY')}</td>`).join('')}
+                <td><strong>${item.total.toLocaleString('ms-MY')}</strong></td>
+            </tr>
+        `).join('')
+        : '<tr><td colspan="14" class="empty-state">Tiada data rekod pengunjung.</td></tr>';
+
+    const totals = Array(12).fill(0);
+    items.forEach(item => item.values.forEach((value, index) => {
+        totals[index] += value;
+    }));
+    const grandTotal = totals.reduce((sum, value) => sum + value, 0);
+    document.getElementById('visitorMonthlyTableFoot').innerHTML = `
+        <tr>
+            <td>Jumlah</td>
+            ${totals.map(value => `<td>${value.toLocaleString('ms-MY')}</td>`).join('')}
+            <td>${grandTotal.toLocaleString('ms-MY')}</td>
+        </tr>
+    `;
+}
+
 function updateAllDataRangeLabels() {
     document.querySelectorAll('.tab-data-range').forEach(element => {
         element.textContent = getDataRangeLabel(element.dataset.rangePrefix || 'Data permohonan');
@@ -851,217 +1000,6 @@ function getDataRangeLabel(prefix) {
         ? `. Dikemaskini pada ${formatDateTime(latestRun.generated_at)}.`
         : '.';
     return `${prefix}: ${formatShortDate(dataRange.first)} hingga ${formatShortDate(dataRange.last)}${updatedText}`;
-}
-
-function openChatbot() {
-    document.getElementById('chatbotPanel').hidden = false;
-    document.getElementById('chatbotInput').focus();
-}
-
-function closeChatbot() {
-    document.getElementById('chatbotPanel').hidden = true;
-}
-
-async function handleChatbotSubmit(event) {
-    event.preventDefault();
-    const input = document.getElementById('chatbotInput');
-    const sendButton = document.getElementById('chatbotSendBtn');
-    const question = input.value.trim();
-    if (!question) return;
-
-    appendChatbotMessage(question, 'user');
-    input.value = '';
-    sendButton.disabled = true;
-    sendButton.textContent = '...';
-
-    const thinkingMessage = appendChatbotMessage('Sedang semak data dashboard...', 'assistant');
-    try {
-        const response = await fetch('/api/chatbot', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                question,
-                context: buildChatbotDashboardContext()
-            })
-        });
-        const result = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(result.error || `Request gagal (${response.status})`);
-        thinkingMessage.textContent = result.answer || 'Tiada jawapan diterima.';
-    } catch (error) {
-        thinkingMessage.className = 'chatbot-message error';
-        thinkingMessage.textContent = `Chatbot gagal: ${error.message}. Pastikan dashboard dibuka melalui npm run chatbot:local.`;
-    } finally {
-        sendButton.disabled = false;
-        sendButton.textContent = 'Hantar';
-        input.focus();
-    }
-}
-
-function appendChatbotMessage(text, role) {
-    const container = document.getElementById('chatbotMessages');
-    const message = document.createElement('div');
-    message.className = `chatbot-message ${role}`;
-    message.textContent = text;
-    container.appendChild(message);
-    container.scrollTop = container.scrollHeight;
-    return message;
-}
-
-function buildChatbotDashboardContext() {
-    const fiveDaySummary = getFiveDaySummary(rows);
-    const applicationSummary = getApplicationSummary(applicationRows);
-    const selectedApplicationRows = getSelectedApplicationRows();
-    const selectedFiveDayRows = getSelectedFiveDayRows();
-    const selectedPendingValidationRows = getSelectedPendingValidationRows();
-    const pendingSummary = getPendingValidationSummary(pendingValidationRows);
-
-    return {
-        dashboard: 'Dashboard Bahagian Agihan Zakat',
-        activeTab: getActiveTabLabel(),
-        dataRange: {
-            start: dataRange.first ? formatShortDate(dataRange.first) : null,
-            end: dataRange.last ? formatShortDate(dataRange.last) : null,
-            updatedAt: latestRun?.generated_at ? formatDateTime(latestRun.generated_at) : null
-        },
-        filters: {
-            fiveDayBranches: selectedBranches,
-            fiveDaySchemes: selectedSchemes,
-            fiveDayTypes: selectedTypes,
-            applicationBranches: selectedApplicationBranches,
-            applicationSchemes: selectedApplicationSchemes,
-            applicationTypes: selectedApplicationTypes,
-            pendingValidationBranches: selectedPendingValidationBranches
-        },
-        fiveDaySummary,
-        selectedFiveDaySummary: getFiveDaySummary(selectedFiveDayRows),
-        applicationSummary,
-        selectedApplicationSummary: getApplicationSummary(selectedApplicationRows),
-        pendingValidationSummary: pendingSummary,
-        selectedPendingValidationSummary: getPendingValidationSummary(selectedPendingValidationRows),
-        note: 'Context ini ialah ringkasan agregat dashboard. Utamakan selected*Summary apabila soalan merujuk filter/skrin semasa. Tiada nama atau nombor ID pemohon dihantar.'
-    };
-}
-
-function getActiveTabLabel() {
-    const activePanel = document.querySelector('.tab-panel.active');
-    const activeButton = activePanel
-        ? document.querySelector(`.tab-button[data-tab="${activePanel.id}"]`)
-        : null;
-    return activeButton?.textContent.trim() || activePanel?.id || null;
-}
-
-function getSelectedFiveDayRows() {
-    return rows.filter(row => {
-        return selectedBranches.includes(row.branch)
-            && selectedSchemes.includes(row.scheme)
-            && selectedTypes.includes(row.applicationTypeLabel);
-    });
-}
-
-function getSelectedApplicationRows() {
-    return applicationRows.filter(row => {
-        return selectedApplicationBranches.includes(row.branch)
-            && selectedApplicationSchemes.includes(row.officialScheme)
-            && selectedApplicationTypes.includes(row.applicationTypeLabel);
-    });
-}
-
-function getSelectedPendingValidationRows() {
-    return pendingValidationRows.filter(row => selectedPendingValidationBranches.includes(row.branch));
-}
-
-function getFiveDaySummary(sourceRows) {
-    const total = sourceRows.length;
-    const approvedRows = sourceRows.filter(row => row.isApproved);
-    const approved = approvedRows.length;
-    const onTime = approvedRows.filter(row => row.aging <= 5).length;
-    const late = approved - onTime;
-    return {
-        totalApplications: total,
-        approved,
-        pending: total - approved,
-        approvedWithinFiveWorkingDays: onTime,
-        approvedOverFiveWorkingDays: late,
-        onTimePercent: approved ? Number(((onTime / approved) * 100).toFixed(1)) : 0,
-        topBranchesByApplications: summarizeRowsByCount(sourceRows, row => row.branch, 10),
-        topSchemesByApplications: summarizeRowsByCount(sourceRows, row => row.scheme, 15),
-        topOfficialSchemesByApplications: summarizeRowsByCount(sourceRows, row => row.officialScheme, 15),
-        worstOfficialSchemesByFiveDayPercent: summarizeFiveDayPerformance(approvedRows, 'officialScheme', false, 10),
-        bestOfficialSchemesByFiveDayPercent: summarizeFiveDayPerformance(approvedRows, 'officialScheme', true, 10)
-    };
-}
-
-function getApplicationSummary(sourceRows) {
-    const total = sourceRows.reduce((sum, row) => sum + row.totalApplications, 0);
-    return {
-        totalApplications: total,
-        byType: summarizeApplicationRows(sourceRows, row => row.applicationTypeLabel, 10),
-        byBranch: summarizeApplicationRows(sourceRows, row => row.branch, 10),
-        byOfficialScheme: summarizeApplicationRows(sourceRows, row => row.officialScheme, 15),
-        byBranchAndOfficialScheme: summarizeApplicationRows(sourceRows, row => `${row.branch} | ${row.officialScheme}`, 20),
-        byMonth: summarizeApplicationRows(sourceRows, row => monthLabels[row.appliedDate.getMonth()], 12),
-        topDates: summarizeApplicationRows(sourceRows, row => formatShortDate(row.appliedDate), 10)
-    };
-}
-
-function getPendingValidationSummary(sourceRows) {
-    const mappedRows = sourceRows.filter(row => !row.isUnmapped);
-    const unmappedRows = sourceRows.filter(row => row.isUnmapped);
-    return {
-        totalPendingValidation: sourceRows.length,
-        mapped: mappedRows.length,
-        unmapped: unmappedRows.length,
-        byBranch: summarizeRowsByCount(sourceRows, row => row.branch, 10),
-        byTemplateScheme: summarizeRowsByCount(mappedRows, row => row.templateScheme || row.mappedDetail || row.systemScheme, 15),
-        bySystemSchemeUnmapped: summarizeRowsByCount(unmappedRows, row => row.systemScheme, 10),
-        byMonth: summarizeRowsByCount(sourceRows, row => pendingValidationMonthLabels[row.applicationMonth - 1] || String(row.applicationMonth), 12)
-    };
-}
-
-function summarizeRowsByCount(sourceRows, getKey, limit) {
-    const grouped = new Map();
-    sourceRows.forEach(row => {
-        const key = getKey(row) || '(Tiada data)';
-        grouped.set(key, (grouped.get(key) || 0) + 1);
-    });
-    return [...grouped.entries()]
-        .map(([label, total]) => ({ label, total }))
-        .sort((a, b) => b.total - a.total || a.label.localeCompare(b.label, 'ms-MY'))
-        .slice(0, limit);
-}
-
-function summarizeApplicationRows(sourceRows, getKey, limit) {
-    const grouped = new Map();
-    sourceRows.forEach(row => {
-        const key = getKey(row) || '(Tiada data)';
-        grouped.set(key, (grouped.get(key) || 0) + row.totalApplications);
-    });
-    return [...grouped.entries()]
-        .map(([label, total]) => ({ label, total }))
-        .sort((a, b) => b.total - a.total || a.label.localeCompare(b.label, 'ms-MY'))
-        .slice(0, limit);
-}
-
-function summarizeFiveDayPerformance(sourceRows, key, bestFirst, limit) {
-    const grouped = new Map();
-    sourceRows.forEach(row => {
-        const label = row[key] || '(Tiada data)';
-        const item = grouped.get(label) || { label, approved: 0, onTime: 0 };
-        item.approved++;
-        if (row.aging <= 5) item.onTime++;
-        grouped.set(label, item);
-    });
-    return [...grouped.values()]
-        .filter(item => item.approved > 0)
-        .map(item => ({
-            ...item,
-            onTimePercent: Number(((item.onTime / item.approved) * 100).toFixed(1))
-        }))
-        .sort((a, b) => {
-            const percentDiff = bestFirst ? b.onTimePercent - a.onTimePercent : a.onTimePercent - b.onTimePercent;
-            return percentDiff || b.approved - a.approved || a.label.localeCompare(b.label, 'ms-MY');
-        })
-        .slice(0, limit);
 }
 
 function renderPendingValidationTable(activeRows) {
@@ -1502,6 +1440,113 @@ function downloadSummaryTable() {
     URL.revokeObjectURL(link.href);
 }
 
+async function downloadVisitorExcel() {
+    if (!visitorRows.length) {
+        showError('Tiada data rekod pengunjung untuk download.');
+        return;
+    }
+
+    const rows = buildVisitorExcelRows();
+    const year = latestVisitorRun?.source_year || new Date().getFullYear();
+    const fileName = `rekod-pengunjung-paza-${year}-${toIsoDate(new Date())}`;
+    try {
+        if (!window.JSZip) throw new Error('JSZip library not loaded.');
+        const blob = await buildVisitorXlsxBlob(rows);
+        triggerDownload(blob, `${fileName}.xlsx`);
+    } catch (_error) {
+        const csv = rows.map(row => row.map(csvEscape).join(',')).join('\r\n');
+        triggerDownload(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }), `${fileName}.csv`);
+    }
+}
+
+function buildVisitorExcelRows() {
+    const grouped = new Map();
+    visitorRows.forEach(row => {
+        if (!grouped.has(row.paza)) grouped.set(row.paza, Array(12).fill(0));
+        grouped.get(row.paza)[row.month - 1] += row.visitorCount;
+    });
+    const items = [...grouped.entries()]
+        .map(([paza, values]) => ({
+            paza,
+            values,
+            total: values.reduce((sum, value) => sum + value, 0)
+        }))
+        .sort((a, b) => b.total - a.total || a.paza.localeCompare(b.paza, 'ms-MY'));
+    const totals = Array(12).fill(0);
+    items.forEach(item => item.values.forEach((value, index) => {
+        totals[index] += value;
+    }));
+    const grandTotal = totals.reduce((sum, value) => sum + value, 0);
+
+    return [
+        ['LAPORAN BULANAN PENGUNJUNG PAZA'],
+        [`Tahun: ${latestVisitorRun?.source_year || ''}`],
+        [`Sync: ${latestVisitorRun?.finished_at ? formatDateTime(latestVisitorRun.finished_at) : '-'}`],
+        [`Rule: Tarikh + PAZA + Email; duplicate jika bawah 20 minit dan IC sama atau nama sama`],
+        [],
+        ['PAZA', ...monthLabels.map(label => label.toUpperCase()), 'JUMLAH'],
+        ...items.map(item => [item.paza, ...item.values, item.total]),
+        ['JUMLAH', ...totals, grandTotal]
+    ];
+}
+
+async function buildVisitorXlsxBlob(rows) {
+    const zip = new JSZip();
+    zip.file('[Content_Types].xml', visitorContentTypesXml());
+    zip.folder('_rels').file('.rels', visitorRootRelsXml());
+    zip.folder('xl').file('workbook.xml', visitorWorkbookXml());
+    zip.folder('xl').folder('_rels').file('workbook.xml.rels', visitorWorkbookRelsXml());
+    zip.folder('xl').file('styles.xml', visitorStylesXml());
+    zip.folder('xl').folder('worksheets').file('sheet1.xml', visitorWorksheetXml(rows));
+    return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+
+function visitorWorksheetXml(rows) {
+    const sheetData = rows.map((row, rowIndex) => {
+        const rowNumber = rowIndex + 1;
+        const cells = row.map((value, colIndex) => {
+            const ref = `${columnName(colIndex + 1)}${rowNumber}`;
+            const style = rowIndex === 0 || rowIndex === 5 ? ' s="1"' : '';
+            if (isVisitorNumericCell(value)) return `<c r="${ref}"${style}><v>${String(value).replace(/,/g, '')}</v></c>`;
+            return `<c r="${ref}" t="inlineStr"${style}><is><t>${escapeXml(value)}</t></is></c>`;
+        }).join('');
+        return `<row r="${rowNumber}">${cells}</row>`;
+    }).join('');
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="15"/><cols><col min="1" max="1" width="34" customWidth="1"/><col min="2" max="14" width="12" customWidth="1"/></cols><sheetData>${sheetData}</sheetData></worksheet>`;
+}
+
+function visitorContentTypesXml() {
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>';
+}
+
+function visitorRootRelsXml() {
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+}
+
+function visitorWorkbookXml() {
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Rekod Pengunjung" sheetId="1" r:id="rId1"/></sheets></workbook>';
+}
+
+function visitorWorkbookRelsXml() {
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+}
+
+function visitorStylesXml() {
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/></cellXfs></styleSheet>';
+}
+
+function isVisitorNumericCell(value) {
+    return typeof value === 'number' || /^-?\d+(?:,\d{3})*(?:\.\d+)?$/.test(String(value || '').trim());
+}
+
+function triggerDownload(blob, fileName) {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
 async function downloadPendingValidationExcel() {
     const branch = document.getElementById('pendingValidationDownloadBranch').value || pendingValidationBranchOptions[0];
     if (!branch) {
@@ -1921,6 +1966,65 @@ function renderLineChart(canvasId, labels, data, isPercent) {
     }
 }
 
+function renderHorizontalBarChart(canvasId, items) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    const width = Math.max(460, Math.floor(rect.width || canvas.parentElement.clientWidth || 640));
+    const height = Math.max(260, 72 + Math.max(items.length, 1) * 34);
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+    canvas.style.height = `${height}px`;
+
+    const ctx = canvas.getContext('2d');
+    ctx.scale(ratio, ratio);
+    ctx.clearRect(0, 0, width, height);
+
+    const chart = { left: 180, top: 24, right: width - 34, bottom: height - 28 };
+    chart.width = chart.right - chart.left;
+    const max = Math.max(...items.map(item => item.value), 1);
+    const barHeight = 20;
+    const gap = 14;
+
+    ctx.font = '12px Segoe UI, Arial';
+    ctx.textBaseline = 'middle';
+
+    if (!items.length) {
+        ctx.fillStyle = '#64748b';
+        ctx.textAlign = 'center';
+        ctx.fillText('Tiada data untuk dipaparkan', width / 2, height / 2);
+        return;
+    }
+
+    items.forEach((item, index) => {
+        const y = chart.top + index * (barHeight + gap);
+        const barWidth = Math.max(3, (item.value / max) * chart.width);
+
+        ctx.fillStyle = '#43576a';
+        ctx.textAlign = 'right';
+        ctx.fillText(truncateText(ctx, item.label, chart.left - 18), chart.left - 10, y + barHeight / 2);
+
+        ctx.fillStyle = '#d9e3ea';
+        ctx.fillRect(chart.left, y, chart.width, barHeight);
+        ctx.fillStyle = '#0f6bce';
+        ctx.fillRect(chart.left, y, barWidth, barHeight);
+
+        ctx.fillStyle = '#142334';
+        ctx.textAlign = 'left';
+        ctx.fillText(item.value.toLocaleString('ms-MY'), chart.left + barWidth + 8, y + barHeight / 2);
+    });
+}
+
+function truncateText(ctx, text, maxWidth) {
+    if (ctx.measureText(text).width <= maxWidth) return text;
+    let output = text;
+    while (output.length > 3 && ctx.measureText(`${output}...`).width > maxWidth) {
+        output = output.slice(0, -1);
+    }
+    return `${output}...`;
+}
+
 function renderMultiSeriesLineChart(canvasId, labels, series, options = {}) {
     const canvas = document.getElementById(canvasId);
     const rect = canvas.getBoundingClientRect();
@@ -2078,6 +2182,7 @@ function switchTab(panelId) {
     if (panelId === 'fiveDayPanel') updateTrendChart(approvedFilteredRows);
     if (panelId === 'applicationPanel') updateApplicationDashboard();
     if (panelId === 'pendingValidationPanel') updatePendingValidationDashboard();
+    if (panelId === 'visitorPanel') updateVisitorDashboard();
 }
 
 function toggleDashboardDrawer(event) {

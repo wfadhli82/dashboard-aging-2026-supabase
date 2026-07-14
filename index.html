@@ -73,6 +73,7 @@
                     <button type="button" class="tab-button" data-tab="officialPanel">Dashboard Skim Rasmi</button>
                     <button type="button" class="tab-button" data-tab="performancePanel">Jadual Prestasi Keseluruhan</button>
                     <button type="button" class="tab-button" data-tab="pendingValidationPanel">Permohonan Belum Diperaku</button>
+                    <button type="button" class="tab-button" data-tab="visitorPanel">Rekod Pengunjung</button>
                 </nav>
                 <div class="dashboard-content">
 
@@ -280,6 +281,59 @@
                         <article class="table-card"><h2>Top Skim Rasmi</h2><ol id="applicationTopSchemes"></ol></article>
                         <article class="table-card"><h2>Hari Tertinggi</h2><ol id="applicationTopDays"></ol></article>
                         <article class="table-card"><h2>Minggu Tertinggi</h2><ol id="applicationTopWeeks"></ol></article>
+                    </section>
+                </section>
+
+                <section class="tab-panel" id="visitorPanel">
+                    <section class="filter-card visitor-filter-card">
+                        <div>
+                            <p class="section-kicker">Kaunter PAZA</p>
+                            <h2>Rekod Pengunjung</h2>
+                            <p class="muted" id="visitorDateRange">Data pengunjung: -</p>
+                        </div>
+                        <div class="filters visitor-actions">
+                            <button type="button" id="downloadVisitorExcelBtn">Download Excel</button>
+                        </div>
+                    </section>
+
+                    <section class="kpi-grid" aria-label="Ringkasan rekod pengunjung">
+                        <article class="kpi-card"><span>Jumlah Pengunjung</span><strong id="visitorTotal">0</strong></article>
+                        <article class="kpi-card approved"><span>Purata Sebulan</span><strong id="visitorMonthlyAverage">0</strong><small id="visitorMonthlyAverageNote">(Tiada data)</small></article>
+                        <article class="kpi-card pending"><span>Bulan Tertinggi</span><strong id="visitorHighestMonthTotal">0</strong><small id="visitorHighestMonthName">(Tiada data)</small></article>
+                        <article class="kpi-card risk"><span>Bulan Terendah</span><strong id="visitorLowestMonthTotal">0</strong><small id="visitorLowestMonthName">(Tiada data)</small></article>
+                    </section>
+
+                    <section class="chart-card">
+                        <div class="panel-heading"><div><h2>Ranking Pengunjung Mengikut PAZA</h2></div></div>
+                        <canvas id="visitorPazaChart"></canvas>
+                    </section>
+
+                    <section class="table-card">
+                        <div class="panel-heading"><div><h2>Jadual Bulanan PAZA</h2><p id="visitorVisibleRows">0 PAZA dipapar</p></div></div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>PAZA</th>
+                                        <th>JAN</th>
+                                        <th>FEB</th>
+                                        <th>MAC</th>
+                                        <th>APR</th>
+                                        <th>MEI</th>
+                                        <th>JUN</th>
+                                        <th>JUL</th>
+                                        <th>OGOS</th>
+                                        <th>SEPT</th>
+                                        <th>OKT</th>
+                                        <th>NOV</th>
+                                        <th>DIS</th>
+                                        <th>Jumlah</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="visitorMonthlyTableBody"></tbody>
+                                <tfoot id="visitorMonthlyTableFoot"></tfoot>
+                            </table>
+                        </div>
                     </section>
                 </section>
 
@@ -545,6 +599,6 @@
     <script src="supabase-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="template-data.js"></script>
-    <script src="script.js?v=20260709-email-login"></script>
+    <script src="script.js?v=20260714-visitor-dashboard"></script>
 </body>
 </html>

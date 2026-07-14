@@ -1,9 +1,13 @@
 # Dashboard Aging Kelulusan 2026 Supabase
 
-Versi ini menggunakan Supabase Auth dan table agregat Supabase. UI kekal dua tab:
+Versi ini menggunakan Supabase Auth dan table agregat Supabase. UI utama merangkumi:
 
-1. Dashboard Kelulusan 5 Hari
-2. Jadual Prestasi Keseluruhan
+1. Analisis Permohonan
+2. Dashboard Kelulusan 5 Hari
+3. Dashboard Skim Rasmi
+4. Jadual Prestasi Keseluruhan
+5. Permohonan Belum Diperaku
+6. Rekod Pengunjung
 
 ## Setup Frontend
 
@@ -32,6 +36,7 @@ window.DASHBOARD_SUPABASE_CONFIG = {
 - Emel pengguna juga mesti wujud dalam `dashboard_allowed_users`.
 - Browser baca run terkini daripada `dashboard_aging_runs`.
 - Browser baca agregat daripada `dashboard_aging_aggregates`.
+- Tab Rekod Pengunjung baca run terkini daripada `dashboard_visitor_sync_runs` dan agregat daripada `dashboard_visitor_monthly_paza_aggregates`.
 - Paparan akan tunjuk teks `Dikemaskini pada ...`.
 - CSV upload lokal kekal sebagai fallback sahaja.
 
@@ -43,7 +48,7 @@ Untuk tambah pengguna:
 
 ## Keselamatan Data
 
-- Supabase hanya menyimpan agregat bulanan ikut skim dan jenis permohonan.
-- Tiada nama, No KP, telefon, alamat, reference number, atau rekod individu.
+- Supabase aging menyimpan agregat bulanan ikut skim dan jenis permohonan.
+- Tab Rekod Pengunjung hanya membaca aggregate PAZA/bulan dan metadata sync; email/nama/No KP mentah tidak didedahkan kepada frontend.
 - RLS mesti aktif untuk semua table.
 - Automation service role key hanya disimpan dalam `.env` lokal di `automation-supabase`.
