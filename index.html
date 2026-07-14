@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Bahagian Agihan Zakat</title>
-    <link rel="stylesheet" href="style.css?v=20260628-pending-top-scheme">
+    <link rel="stylesheet" href="style.css?v=20260714-login-polish">
 </head>
 <body>
     <div class="app-shell">
@@ -12,23 +12,27 @@
             <div class="login-brand">
                 <p class="eyebrow">MAIWP Santuni Asnaf</p>
                 <h1>Dashboard Bahagian Agihan Zakat</h1>
+                <p>Prestasi kelulusan, permohonan, perakuan dan rekod pengunjung PAZA dalam satu paparan.</p>
             </div>
-            <div class="auth-copy">
-                <h2>Akses Dashboard</h2>
-                <p>Masukkan nama pengguna atau emel dan kata laluan yang telah dibenarkan.</p>
+            <div class="login-panel">
+                <div class="auth-copy">
+                    <p class="section-kicker">Akses Dashboard</p>
+                    <h2>Log masuk pegawai</h2>
+                    <p>Gunakan nama pengguna atau emel yang telah dibenarkan.</p>
+                </div>
+                <form class="auth-form" id="authForm">
+                    <label>
+                        <span>Nama Pengguna / Emel</span>
+                        <input type="text" id="usernameInput" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+                    </label>
+                    <label>
+                        <span>Kata Laluan</span>
+                        <input type="password" id="passwordInput" autocomplete="current-password" required>
+                    </label>
+                    <button type="submit" id="loginBtn">Log Masuk</button>
+                </form>
+                <p class="message info" id="authMessage" hidden></p>
             </div>
-            <form class="auth-form" id="authForm">
-                <label>
-                    <span>Nama Pengguna / Emel</span>
-                    <input type="text" id="usernameInput" autocomplete="username" autocapitalize="none" spellcheck="false" required>
-                </label>
-                <label>
-                    <span>Kata Laluan</span>
-                    <input type="password" id="passwordInput" autocomplete="current-password" required>
-                </label>
-                <button type="submit" id="loginBtn">Log Masuk</button>
-            </form>
-            <p class="message info" id="authMessage" hidden></p>
         </section>
 
         <div id="appContent" hidden>
