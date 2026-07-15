@@ -1261,10 +1261,10 @@ function updateApplicationKpis(activeRows) {
     document.getElementById('applicationRenewalTotal').textContent = (totals.renewal || 0).toLocaleString('ms-MY');
     document.getElementById('applicationAppealTotal').textContent = (totals.appeal || 0).toLocaleString('ms-MY');
     document.getElementById('applicationAddrateTotal').textContent = (totals.addrate || 0).toLocaleString('ms-MY');
-    document.getElementById('applicationStatusProcessingTotal').textContent = statusTotals.processing.toLocaleString('ms-MY');
-    document.getElementById('applicationStatusRejectedTotal').textContent = statusTotals.rejected.toLocaleString('ms-MY');
-    document.getElementById('applicationStatusCancelTotal').textContent = statusTotals.cancel.toLocaleString('ms-MY');
-    document.getElementById('applicationStatusTerminatedTotal').textContent = statusTotals.terminated.toLocaleString('ms-MY');
+    updateStatusKpi('Processing', statusTotals.processing, statusTotals.total);
+    updateStatusKpi('Rejected', statusTotals.rejected, statusTotals.total);
+    updateStatusKpi('Cancel', statusTotals.cancel, statusTotals.total);
+    updateStatusKpi('Terminated', statusTotals.terminated, statusTotals.total);
 }
 
 function getApplicationTypeTotals(activeRows) {
@@ -1275,12 +1275,21 @@ function getApplicationTypeTotals(activeRows) {
 }
 
 function getApplicationStatusTotals(activeRows) {
-    return activeRows.reduce((totals, row) => {
+    const totals = activeRows.reduce((totals, row) => {
         applicationStatusKeys.forEach(key => {
             totals[key] += Number(row.statusCounts?.[key] || 0);
         });
         return totals;
     }, { processing: 0, rejected: 0, cancel: 0, terminated: 0 });
+    totals.total = applicationStatusKeys.reduce((sum, key) => sum + totals[key], 0);
+    return totals;
+}
+
+function updateStatusKpi(idSuffix, count, total) {
+    document.getElementById(`applicationStatus${idSuffix}Total`).textContent = count.toLocaleString('ms-MY');
+    document.getElementById(`applicationStatus${idSuffix}Percent`).textContent = total
+        ? `(${((count / total) * 100).toFixed(1)}%)`
+        : '(0.0%)';
 }
 
 function updateApplicationCharts(activeRows) {
