@@ -31,6 +31,7 @@ const HOLIDAY_DATES_2026 = new Set([
 const monthLabels = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogos', 'Sept', 'Okt', 'Nov', 'Dis'];
 const typeLabels = { new: 'Baharu', renewal: 'Penyambungan', appeal: 'Rayuan', addrate: 'Tambah Kadar' };
 const applicationTypeOrder = ['new', 'renewal', 'appeal', 'addrate'];
+const applicationStatusKeys = ['processing', 'rejected', 'cancel', 'terminated'];
 const applicationTypeColors = {
     new: '#0f6bce',
     renewal: '#00a88f',
@@ -383,6 +384,40 @@ async function fetchAllAggregates(runId) {
 async function fetchAllDailyApplicationAggregates(runId) {
     const pageSize = 1000;
     const data = [];
+    const fields = [
+        'application_date',
+        'branch',
+        'scheme',
+        'application_type',
+        'total_applications',
+        'approved_count',
+        'pending_count',
+        'status_processing_count',
+        'status_rejected_count',
+        'status_cancel_count',
+        'status_terminated_count'
+    ].join(',');
+
+    for (let start = 0; ; start += pageSize) {
+        const { data: page, error } = await supabaseClient
+            .from('dashboard_application_daily_aggregates')
+            .select(fields)
+            .eq('run_id', runId)
+            .order('application_date')
+            .order('branch')
+            .order('scheme')
+            .range(start, start + pageSize - 1);
+
+        if (error && isMissingStatusAggregateColumn(error)) return fetchAllDailyApplicationAggregatesWithoutStatus(runId);
+        if (error) return { data, error };
+        data.push(...(page || []));
+        if (!page || page.length < pageSize) return { data, error: null };
+    }
+}
+
+async function fetchAllDailyApplicationAggregatesWithoutStatus(runId) {
+    const pageSize = 1000;
+    const data = [];
 
     for (let start = 0; ; start += pageSize) {
         const { data: page, error } = await supabaseClient
@@ -398,6 +433,12 @@ async function fetchAllDailyApplicationAggregates(runId) {
         data.push(...(page || []));
         if (!page || page.length < pageSize) return { data, error: null };
     }
+}
+
+function isMissingStatusAggregateColumn(error) {
+    const message = String(error?.message || error?.details || '');
+    return /status_(processing|rejected|cancel|terminated)_count/i.test(message)
+        || /column .* does not exist/i.test(message);
 }
 
 async function fetchPendingValidationTemplate() {
@@ -499,7 +540,13 @@ function normalizeDailyApplicationRows(aggregates) {
             applicationTypeLabel,
             totalApplications: Number(item.total_applications || 0),
             approvedCount: Number(item.approved_count || 0),
-            pendingCount: Number(item.pending_count || 0)
+            pendingCount: Number(item.pending_count || 0),
+            statusCounts: {
+                processing: Number(item.status_processing_count || 0),
+                rejected: Number(item.status_rejected_count || 0),
+                cancel: Number(item.status_cancel_count || 0),
+                terminated: Number(item.status_terminated_count || 0)
+            }
         };
     }).filter(Boolean);
 }
@@ -850,7 +897,7 @@ function updateApplicationDashboard() {
 
     const range = getApplicationAggregateRange(activeRows);
 
-    updateApplicationKpis(activeRows, range);
+    updateApplicationKpis(activeRows);
     updateApplicationCharts(activeRows);
     updateApplicationLeaderboards(activeRows);
 }
@@ -1204,19 +1251,20 @@ function scrollPendingValidationTable(delta) {
     wrap.scrollBy({ left: delta, behavior: 'smooth' });
 }
 
-function updateApplicationKpis(activeRows, range) {
+function updateApplicationKpis(activeRows) {
     const totals = getApplicationTypeTotals(activeRows);
+    const statusTotals = getApplicationStatusTotals(activeRows);
     const total = Object.values(totals).reduce((sum, value) => sum + value, 0);
-    const workingDays = range.first && range.last
-        ? getWorkingDaysIn2026().filter(date => date >= toIsoDate(range.first) && date <= toIsoDate(range.last)).length
-        : 0;
 
     document.getElementById('applicationTotal').textContent = total.toLocaleString('ms-MY');
     document.getElementById('applicationNewTotal').textContent = (totals.new || 0).toLocaleString('ms-MY');
     document.getElementById('applicationRenewalTotal').textContent = (totals.renewal || 0).toLocaleString('ms-MY');
     document.getElementById('applicationAppealTotal').textContent = (totals.appeal || 0).toLocaleString('ms-MY');
     document.getElementById('applicationAddrateTotal').textContent = (totals.addrate || 0).toLocaleString('ms-MY');
-    document.getElementById('applicationWorkingAverage').textContent = workingDays ? (total / workingDays).toFixed(1) : '0';
+    document.getElementById('applicationStatusProcessingTotal').textContent = statusTotals.processing.toLocaleString('ms-MY');
+    document.getElementById('applicationStatusRejectedTotal').textContent = statusTotals.rejected.toLocaleString('ms-MY');
+    document.getElementById('applicationStatusCancelTotal').textContent = statusTotals.cancel.toLocaleString('ms-MY');
+    document.getElementById('applicationStatusTerminatedTotal').textContent = statusTotals.terminated.toLocaleString('ms-MY');
 }
 
 function getApplicationTypeTotals(activeRows) {
@@ -1224,6 +1272,15 @@ function getApplicationTypeTotals(activeRows) {
         totals[row.applicationType] = (totals[row.applicationType] || 0) + row.totalApplications;
         return totals;
     }, {});
+}
+
+function getApplicationStatusTotals(activeRows) {
+    return activeRows.reduce((totals, row) => {
+        applicationStatusKeys.forEach(key => {
+            totals[key] += Number(row.statusCounts?.[key] || 0);
+        });
+        return totals;
+    }, { processing: 0, rejected: 0, cancel: 0, terminated: 0 });
 }
 
 function updateApplicationCharts(activeRows) {
