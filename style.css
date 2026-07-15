@@ -365,16 +365,28 @@ button:disabled {
 }
 
 .visitor-filter-card {
-    grid-template-columns: minmax(240px, 1fr) minmax(160px, auto);
+    grid-template-columns: minmax(240px, 1fr) minmax(320px, auto);
 }
 
 .visitor-actions {
     justify-self: end;
-    grid-template-columns: minmax(160px, auto);
+    grid-template-columns: minmax(150px, 180px) minmax(160px, auto);
+    align-items: end;
 }
 
 .visitor-actions button {
     width: 100%;
+}
+
+.staff-breakdown {
+    color: #40556a;
+    line-height: 1.45;
+    white-space: normal;
+}
+
+.staff-name-cell {
+    font-weight: 800;
+    color: #123047;
 }
 
 .section-kicker {
@@ -1036,6 +1048,7 @@ tfoot td {
 
     .visitor-actions {
         justify-self: stretch;
+        grid-template-columns: 1fr;
     }
 
     .drawer-toggle {

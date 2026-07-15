@@ -86,6 +86,8 @@ let supabaseClient = null;
 let latestRun = null;
 let latestVisitorRun = null;
 let visitorRows = [];
+let visitorStaffRows = [];
+let selectedVisitorMonth = 'all';
 let officialSchemes = [];
 let mappingsBySystemScheme = new Map();
 
@@ -136,6 +138,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('downloadSummaryBtn').addEventListener('click', downloadSummaryTable);
     document.getElementById('downloadPendingValidationBtn').addEventListener('click', downloadPendingValidationExcel);
     document.getElementById('downloadVisitorExcelBtn').addEventListener('click', downloadVisitorExcel);
+    document.getElementById('visitorMonthFilter').addEventListener('change', event => {
+        selectedVisitorMonth = event.target.value;
+        updateVisitorDashboard();
+    });
     document.getElementById('pendingValidationShowAllRows').addEventListener('change', event => {
         showAllPendingValidationRows = event.target.checked;
         updatePendingValidationDashboard();
@@ -224,6 +230,7 @@ async function handleLogout() {
     currentPendingValidationRows = [];
     latestVisitorRun = null;
     visitorRows = [];
+    visitorStaffRows = [];
     latestRun = null;
     dataRange = { first: null, last: null };
     document.getElementById('dashboard').hidden = true;
@@ -288,6 +295,7 @@ async function loadSupabaseData() {
     const visitorResult = await fetchLatestVisitorData();
     latestVisitorRun = visitorResult.run;
     visitorRows = normalizeVisitorAggregateRows(visitorResult.rows || []);
+    visitorStaffRows = normalizeVisitorStaffRows(visitorResult.staffRows || []);
 
     rows = applySchemeMappings(expandAggregateRows(aggregates || []));
     applicationRows = applySchemeMappingsToApplicationRows(normalizeDailyApplicationRows(dailyAggregates || []));
@@ -328,8 +336,8 @@ async function fetchLatestVisitorData() {
         .order('started_at', { ascending: false })
         .limit(1);
 
-    if (runError) return { run: null, rows: [], error: runError };
-    if (!runRows?.length) return { run: null, rows: [], error: null };
+    if (runError) return { run: null, rows: [], staffRows: [], error: runError };
+    if (!runRows?.length) return { run: null, rows: [], staffRows: [], error: null };
 
     const run = runRows[0];
     const { data, error } = await supabaseClient
@@ -340,7 +348,15 @@ async function fetchLatestVisitorData() {
         .order('month')
         .order('paza');
 
-    return { run, rows: data || [], error };
+    const { data: staffRows, error: staffError } = await supabaseClient
+        .from('dashboard_visitor_staff_aggregates')
+        .select('year,month,email_hash,staff_name,staff_paza,visitor_count,paza_breakdown')
+        .eq('run_id', run.run_id)
+        .order('year')
+        .order('month')
+        .order('visitor_count', { ascending: false });
+
+    return { run, rows: data || [], staffRows: staffRows || [], error: error || staffError };
 }
 
 async function fetchAllAggregates(runId) {
@@ -880,10 +896,31 @@ function normalizeVisitorAggregateRows(data) {
     })).filter(row => Number.isFinite(row.year) && row.month >= 1 && row.month <= 12);
 }
 
+function normalizeVisitorStaffRows(data) {
+    return data.map(item => ({
+        year: Number(item.year),
+        month: Number(item.month),
+        emailHash: item.email_hash || '',
+        staffName: item.staff_name || 'Staf tidak dikenal pasti',
+        staffPaza: item.staff_paza || '',
+        visitorCount: Number(item.visitor_count || 0),
+        pazaBreakdown: normalizeVisitorPazaBreakdown(item.paza_breakdown)
+    })).filter(row => row.emailHash && Number.isFinite(row.year) && row.month >= 1 && row.month <= 12);
+}
+
+function normalizeVisitorPazaBreakdown(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+    return Object.fromEntries(Object.entries(value)
+        .map(([paza, count]) => [paza || '(Tiada PAZA)', Number(count || 0)])
+        .filter(([, count]) => count > 0));
+}
+
 function updateVisitorDashboard() {
-    const total = visitorRows.reduce((sum, row) => sum + row.visitorCount, 0);
-    const byPaza = groupVisitorByPaza(visitorRows);
-    const byMonth = groupVisitorByMonth(visitorRows);
+    const activeRows = getFilteredVisitorRows();
+    const activeStaffRows = getFilteredVisitorStaffRows();
+    const total = activeRows.reduce((sum, row) => sum + row.visitorCount, 0);
+    const byPaza = groupVisitorByPaza(activeRows);
+    const byMonth = groupVisitorByMonth(activeRows);
     const monthStats = getVisitorMonthStats(byMonth);
 
     document.getElementById('visitorTotal').textContent = total.toLocaleString('ms-MY');
@@ -896,7 +933,20 @@ function updateVisitorDashboard() {
     document.getElementById('visitorDateRange').textContent = getVisitorDataRangeLabel();
 
     renderVisitorPazaChart(byPaza);
-    renderVisitorMonthlyTable();
+    renderVisitorStaffTable(activeStaffRows);
+    renderVisitorMonthlyTable(activeRows);
+}
+
+function getFilteredVisitorRows() {
+    if (selectedVisitorMonth === 'all') return visitorRows;
+    const month = Number(selectedVisitorMonth);
+    return visitorRows.filter(row => row.month === month);
+}
+
+function getFilteredVisitorStaffRows() {
+    if (selectedVisitorMonth === 'all') return visitorStaffRows;
+    const month = Number(selectedVisitorMonth);
+    return visitorStaffRows.filter(row => row.month === month);
 }
 
 function getVisitorDataRangeLabel() {
@@ -904,7 +954,8 @@ function getVisitorDataRangeLabel() {
     const syncedAt = latestVisitorRun.finished_at || latestVisitorRun.started_at;
     const uniqueText = Number(latestVisitorRun.unique_rows || 0).toLocaleString('ms-MY');
     const duplicateText = Number(latestVisitorRun.duplicate_rows || 0).toLocaleString('ms-MY');
-    return `Data pengunjung ${latestVisitorRun.source_year}: ${uniqueText} lawatan dikira. Duplicate 20 minit: ${duplicateText}. Sync pada ${formatDateTime(syncedAt)}.`;
+    const monthText = selectedVisitorMonth === 'all' ? '' : ` Filter: ${monthLabels[Number(selectedVisitorMonth) - 1]}.`;
+    return `Data pengunjung ${latestVisitorRun.source_year}: ${uniqueText} lawatan dikira. Duplicate 20 minit: ${duplicateText}. Sync pada ${formatDateTime(syncedAt)}.${monthText}`;
 }
 
 function getVisitorMonthStats(byMonth) {
@@ -948,9 +999,52 @@ function renderVisitorPazaChart(byPaza) {
     renderHorizontalBarChart('visitorPazaChart', items);
 }
 
-function renderVisitorMonthlyTable() {
+function renderVisitorStaffTable(sourceRows) {
     const grouped = new Map();
-    visitorRows.forEach(row => {
+    sourceRows.forEach(row => {
+        if (!grouped.has(row.emailHash)) {
+            grouped.set(row.emailHash, {
+                staffName: row.staffName,
+                staffPaza: row.staffPaza,
+                visitorCount: 0,
+                pazaBreakdown: {}
+            });
+        }
+        const item = grouped.get(row.emailHash);
+        item.visitorCount += row.visitorCount;
+        Object.entries(row.pazaBreakdown).forEach(([paza, count]) => {
+            item.pazaBreakdown[paza] = (item.pazaBreakdown[paza] || 0) + count;
+        });
+    });
+
+    const items = [...grouped.values()]
+        .sort((a, b) => b.visitorCount - a.visitorCount || a.staffName.localeCompare(b.staffName, 'ms-MY'))
+        .slice(0, 5);
+
+    document.getElementById('visitorStaffVisibleRows').textContent = `${items.length.toLocaleString('ms-MY')} staf dipapar`;
+    document.getElementById('visitorStaffTableBody').innerHTML = items.length
+        ? items.map(item => `
+            <tr>
+                <td class="staff-name-cell">${escapeHtml(item.staffName)}${item.staffPaza ? `<br><small>${escapeHtml(item.staffPaza)}</small>` : ''}</td>
+                <td><strong>${item.visitorCount.toLocaleString('ms-MY')}</strong></td>
+                <td class="staff-breakdown">${escapeHtml(formatVisitorPazaBreakdown(item.pazaBreakdown))}</td>
+            </tr>
+        `).join('')
+        : '<tr><td colspan="3" class="empty-state">Data ranking staf belum tersedia.</td></tr>';
+}
+
+function formatVisitorPazaBreakdown(breakdown) {
+    const items = Object.entries(breakdown || {})
+        .filter(([, count]) => Number(count) > 0)
+        .sort((a, b) => Number(b[1]) - Number(a[1]) || a[0].localeCompare(b[0], 'ms-MY'));
+    return items.length
+        ? items.map(([paza, count]) => `${paza} ${Number(count).toLocaleString('ms-MY')}`).join(', ')
+        : '-';
+}
+
+function renderVisitorMonthlyTable(sourceRows) {
+    const grouped = new Map();
+    sourceRows.forEach(row => {
         if (!grouped.has(row.paza)) grouped.set(row.paza, Array(12).fill(0));
         grouped.get(row.paza)[row.month - 1] += row.visitorCount;
     });
@@ -964,6 +1058,44 @@ function renderVisitorMonthlyTable() {
         .sort((a, b) => b.total - a.total || a.paza.localeCompare(b.paza, 'ms-MY'));
 
     document.getElementById('visitorVisibleRows').textContent = `${items.length.toLocaleString('ms-MY')} PAZA dipapar`;
+    const totals = Array(12).fill(0);
+    items.forEach(item => item.values.forEach((value, index) => {
+        totals[index] += value;
+    }));
+    const grandTotal = totals.reduce((sum, value) => sum + value, 0);
+
+    if (selectedVisitorMonth !== 'all') {
+        const monthIndex = Number(selectedVisitorMonth) - 1;
+        document.getElementById('visitorMonthlyTableHead').innerHTML = `
+            <tr>
+                <th>PAZA</th>
+                <th>${monthLabels[monthIndex].toUpperCase()}</th>
+            </tr>
+        `;
+        document.getElementById('visitorMonthlyTableBody').innerHTML = items.length
+            ? items.map(item => `
+                <tr>
+                    <td>${escapeHtml(item.paza)}</td>
+                    <td><strong>${item.values[monthIndex].toLocaleString('ms-MY')}</strong></td>
+                </tr>
+            `).join('')
+            : '<tr><td colspan="2" class="empty-state">Tiada data rekod pengunjung.</td></tr>';
+        document.getElementById('visitorMonthlyTableFoot').innerHTML = `
+            <tr>
+                <td>Jumlah</td>
+                <td>${totals[monthIndex].toLocaleString('ms-MY')}</td>
+            </tr>
+        `;
+        return;
+    }
+
+    document.getElementById('visitorMonthlyTableHead').innerHTML = `
+        <tr>
+            <th>PAZA</th>
+            ${monthLabels.map(label => `<th>${label.toUpperCase()}</th>`).join('')}
+            <th>Jumlah</th>
+        </tr>
+    `;
     document.getElementById('visitorMonthlyTableBody').innerHTML = items.length
         ? items.map(item => `
             <tr>
@@ -973,12 +1105,6 @@ function renderVisitorMonthlyTable() {
             </tr>
         `).join('')
         : '<tr><td colspan="14" class="empty-state">Tiada data rekod pengunjung.</td></tr>';
-
-    const totals = Array(12).fill(0);
-    items.forEach(item => item.values.forEach((value, index) => {
-        totals[index] += value;
-    }));
-    const grandTotal = totals.reduce((sum, value) => sum + value, 0);
     document.getElementById('visitorMonthlyTableFoot').innerHTML = `
         <tr>
             <td>Jumlah</td>
@@ -1446,9 +1572,10 @@ async function downloadVisitorExcel() {
         return;
     }
 
-    const rows = buildVisitorExcelRows();
+    const rows = buildVisitorExcelRows(getFilteredVisitorRows(), getFilteredVisitorStaffRows());
     const year = latestVisitorRun?.source_year || new Date().getFullYear();
-    const fileName = `rekod-pengunjung-paza-${year}-${toIsoDate(new Date())}`;
+    const monthSuffix = selectedVisitorMonth === 'all' ? 'semua-bulan' : monthLabels[Number(selectedVisitorMonth) - 1].toLowerCase();
+    const fileName = `rekod-pengunjung-paza-${year}-${monthSuffix}-${toIsoDate(new Date())}`;
     try {
         if (!window.JSZip) throw new Error('JSZip library not loaded.');
         const blob = await buildVisitorXlsxBlob(rows);
@@ -1459,9 +1586,9 @@ async function downloadVisitorExcel() {
     }
 }
 
-function buildVisitorExcelRows() {
+function buildVisitorExcelRows(sourceRows, sourceStaffRows) {
     const grouped = new Map();
-    visitorRows.forEach(row => {
+    sourceRows.forEach(row => {
         if (!grouped.has(row.paza)) grouped.set(row.paza, Array(12).fill(0));
         grouped.get(row.paza)[row.month - 1] += row.visitorCount;
     });
@@ -1478,16 +1605,47 @@ function buildVisitorExcelRows() {
     }));
     const grandTotal = totals.reduce((sum, value) => sum + value, 0);
 
+    const monthText = selectedVisitorMonth === 'all' ? 'Semua bulan' : monthLabels[Number(selectedVisitorMonth) - 1];
+    const staffRows = buildVisitorStaffExcelRows(sourceStaffRows);
+
     return [
         ['LAPORAN BULANAN PENGUNJUNG PAZA'],
         [`Tahun: ${latestVisitorRun?.source_year || ''}`],
+        [`Filter bulan: ${monthText}`],
         [`Sync: ${latestVisitorRun?.finished_at ? formatDateTime(latestVisitorRun.finished_at) : '-'}`],
         [`Rule: Tarikh + PAZA + Email; duplicate jika bawah 20 minit dan IC sama atau nama sama`],
         [],
         ['PAZA', ...monthLabels.map(label => label.toUpperCase()), 'JUMLAH'],
         ...items.map(item => [item.paza, ...item.values, item.total]),
-        ['JUMLAH', ...totals, grandTotal]
+        ['JUMLAH', ...totals, grandTotal],
+        [],
+        ['TOP 5 STAF ENTERTAIN PENGUNJUNG'],
+        ['Staf', 'Jumlah', 'Pecahan PAZA'],
+        ...staffRows
     ];
+}
+
+function buildVisitorStaffExcelRows(sourceStaffRows) {
+    const grouped = new Map();
+    sourceStaffRows.forEach(row => {
+        if (!grouped.has(row.emailHash)) {
+            grouped.set(row.emailHash, {
+                staffName: row.staffName,
+                visitorCount: 0,
+                pazaBreakdown: {}
+            });
+        }
+        const item = grouped.get(row.emailHash);
+        item.visitorCount += row.visitorCount;
+        Object.entries(row.pazaBreakdown).forEach(([paza, count]) => {
+            item.pazaBreakdown[paza] = (item.pazaBreakdown[paza] || 0) + count;
+        });
+    });
+
+    return [...grouped.values()]
+        .sort((a, b) => b.visitorCount - a.visitorCount || a.staffName.localeCompare(b.staffName, 'ms-MY'))
+        .slice(0, 5)
+        .map(item => [item.staffName, item.visitorCount, formatVisitorPazaBreakdown(item.pazaBreakdown)]);
 }
 
 async function buildVisitorXlsxBlob(rows) {
@@ -1506,7 +1664,11 @@ function visitorWorksheetXml(rows) {
         const rowNumber = rowIndex + 1;
         const cells = row.map((value, colIndex) => {
             const ref = `${columnName(colIndex + 1)}${rowNumber}`;
-            const style = rowIndex === 0 || rowIndex === 5 ? ' s="1"' : '';
+            const isHeaderRow = rowIndex === 0
+                || row[0] === 'PAZA'
+                || row[0] === 'TOP 5 STAF ENTERTAIN PENGUNJUNG'
+                || row[0] === 'Staf';
+            const style = isHeaderRow ? ' s="1"' : '';
             if (isVisitorNumericCell(value)) return `<c r="${ref}"${style}><v>${String(value).replace(/,/g, '')}</v></c>`;
             return `<c r="${ref}" t="inlineStr"${style}><is><t>${escapeXml(value)}</t></is></c>`;
         }).join('');
