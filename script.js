@@ -1818,7 +1818,7 @@ async function buildPendingValidationTemplateWorkbook(branchRows, branch) {
     const range = getDateRangeFromDates(branchRows.map(row => row.appliedDate));
     const reportRows = buildPendingValidationExportRows(branchRows);
     const titleDate = formatFullMalayDate(dataRange.last || range.last).toLocaleUpperCase('ms-MY');
-    let mainXml = await zip.file(mainPath).async('string');
+    let mainXml = await readZipText(zip, mainPath);
     const totalStyleId = await ensurePendingValidationWorkbookStyles(zip);
     const sharedStrings = await readSharedStrings(zip);
     const detailToRow = getTemplateDetailRowsFromSheetXml(mainXml, sharedStrings);
@@ -1831,10 +1831,10 @@ async function buildPendingValidationTemplateWorkbook(branchRows, branch) {
         });
         mainXml = setSheetFormulaCell(mainXml, `R${excelRow}`, `SUM(F${excelRow}:Q${excelRow})`, row.total, ` s="${totalStyleId}"`);
     });
-    zip.file(mainPath, mainXml);
+    writeZipFile(zip, mainPath, mainXml);
 
     const unmappedXml = buildUnmappedSheetXml(branchRows.filter(row => row.isUnmapped));
-    zip.file(unmappedPath, unmappedXml);
+    writeZipFile(zip, unmappedPath, unmappedXml);
 
     const output = await zip.generateAsync({ type: 'arraybuffer' });
     return new Blob([output], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -1854,12 +1854,36 @@ function base64ToArrayBuffer(base64) {
 }
 
 async function getWorkbookSheetInfo(zip) {
-    const workbookXml = await zip.file('xl/workbook.xml').async('string');
-    const relsXml = await zip.file('xl/_rels/workbook.xml.rels').async('string');
+    const workbookXml = await readZipText(zip, 'xl/workbook.xml');
+    const relsXml = await readZipText(zip, 'xl/_rels/workbook.xml.rels');
     const relTargets = new Map([...relsXml.matchAll(/<Relationship[^>]*Id="([^"]+)"[^>]*Target="([^"]+)"/g)]
         .map(match => [match[1], `xl/${match[2].replace(/^\/?xl\//, '')}`]));
     return new Map([...workbookXml.matchAll(/<sheet[^>]*name="([^"]+)"[^>]*(?:r:id|id)="([^"]+)"/g)]
         .map(match => [decodeXml(match[1]), relTargets.get(match[2])]));
+}
+
+async function readZipText(zip, filePath) {
+    const entry = getZipEntry(zip, filePath);
+    if (!entry.file) throw new Error(`Template file missing: ${filePath}`);
+    return entry.file.async('string');
+}
+
+function writeZipFile(zip, filePath, content) {
+    zip.file(getZipEntry(zip, filePath).path, content);
+}
+
+function getZipEntry(zip, filePath) {
+    const text = String(filePath || '');
+    const candidates = [...new Set([
+        text,
+        text.replace(/\//g, '\\'),
+        text.replace(/\\/g, '/')
+    ])];
+    for (const candidate of candidates) {
+        const file = zip.file(candidate);
+        if (file) return { file, path: candidate };
+    }
+    return { file: null, path: text };
 }
 
 function getMainTemplateRowForDetail(detail) {
@@ -1869,7 +1893,7 @@ function getMainTemplateRowForDetail(detail) {
 
 async function ensurePendingValidationWorkbookStyles(zip) {
     const stylesPath = 'xl/styles.xml';
-    const file = zip.file(stylesPath);
+    const file = getZipEntry(zip, stylesPath).file;
     if (!file) return 23;
 
     let stylesXml = await file.async('string');
@@ -1887,7 +1911,7 @@ async function ensurePendingValidationWorkbookStyles(zip) {
     stylesXml = stylesXml.replace(/<cellXfs([^>]*)count="(\d+)"([^>]*)>([\s\S]*?)<\/cellXfs>/, (_match, before, _count, after, content) => {
         return `<cellXfs${before}count="${nextStyleId + 1}"${after}>${content}${totalStyleXml}</cellXfs>`;
     });
-    zip.file(stylesPath, stylesXml);
+    writeZipFile(zip, stylesPath, stylesXml);
     return nextStyleId;
 }
 
@@ -1908,7 +1932,7 @@ function getOrAppendWorkbookFill(stylesXml, rgb) {
 }
 
 async function readSharedStrings(zip) {
-    const file = zip.file('xl/sharedStrings.xml');
+    const file = getZipEntry(zip, 'xl/sharedStrings.xml').file;
     if (!file) return [];
     const xml = await file.async('string');
     return [...xml.matchAll(/<si>([\s\S]*?)<\/si>/g)].map(match => {
