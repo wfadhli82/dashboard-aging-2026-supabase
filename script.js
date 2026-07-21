@@ -1671,47 +1671,50 @@ function buildVisitorExcelRows(sourceRows, sourceStaffRows) {
     }));
     const grandTotal = totals.reduce((sum, value) => sum + value, 0);
 
-    const monthText = selectedVisitorMonth === 'all' ? 'Semua bulan' : monthLabels[Number(selectedVisitorMonth) - 1];
-    const staffRows = buildVisitorStaffExcelRows(sourceStaffRows);
+    const staffRows = buildVisitorStaffMonthlyRankingRows(sourceStaffRows);
+    const reportYear = latestVisitorRun?.source_year || '';
 
     return [
-        ['LAPORAN BULANAN PENGUNJUNG PAZA'],
-        [`Tahun: ${latestVisitorRun?.source_year || ''}`],
-        [`Filter bulan: ${monthText}`],
-        [`Sync: ${latestVisitorRun?.finished_at ? formatDateTime(latestVisitorRun.finished_at) : '-'}`],
-        [`Rule: Tarikh + PAZA + Email; duplicate jika bawah 20 minit dan IC sama atau nama sama`],
+        [`LAPORAN BULANAN PENGUNJUNG PAZA TAHUN ${reportYear}`],
+        [`Tarikh Kemaskini: ${latestVisitorRun?.finished_at ? formatShortMalayDate(latestVisitorRun.finished_at) : '-'}`],
+        [],
         [],
         ['PAZA', ...monthLabels.map(label => label.toUpperCase()), 'JUMLAH'],
         ...items.map(item => [item.paza, ...item.values, item.total]),
         ['JUMLAH', ...totals, grandTotal],
         [],
-        ['TOP 5 STAF ENTERTAIN PENGUNJUNG'],
-        ['Staf', 'Jumlah', 'Pecahan PAZA'],
+        ['KEDUDUKAN 5 PENYIASAT TERTINGGI MENGIKUT BILANGAN PENGUNJUNG DILAYANI'],
+        ['KEDUDUKAN', ...monthLabels.map(label => label.toUpperCase())],
         ...staffRows
     ];
 }
 
-function buildVisitorStaffExcelRows(sourceStaffRows) {
-    const grouped = new Map();
-    sourceStaffRows.forEach(row => {
-        if (!grouped.has(row.emailHash)) {
-            grouped.set(row.emailHash, {
-                staffName: row.staffName,
-                visitorCount: 0,
-                pazaBreakdown: {}
-            });
-        }
-        const item = grouped.get(row.emailHash);
-        item.visitorCount += row.visitorCount;
-        Object.entries(row.pazaBreakdown).forEach(([paza, count]) => {
-            item.pazaBreakdown[paza] = (item.pazaBreakdown[paza] || 0) + count;
-        });
-    });
+function buildVisitorStaffMonthlyRankingRows(sourceStaffRows) {
+    const rankingByMonth = new Map();
+    for (let month = 1; month <= 12; month++) {
+        rankingByMonth.set(month, sourceStaffRows
+            .filter(row => row.month === month)
+            .sort((a, b) => b.visitorCount - a.visitorCount || a.staffName.localeCompare(b.staffName, 'ms-MY'))
+            .slice(0, 5));
+    }
 
-    return [...grouped.values()]
-        .sort((a, b) => b.visitorCount - a.visitorCount || a.staffName.localeCompare(b.staffName, 'ms-MY'))
-        .slice(0, 5)
-        .map(item => [item.staffName, item.visitorCount, formatVisitorPazaBreakdown(item.pazaBreakdown)]);
+    return [1, 2, 3, 4, 5].map(rank => [
+        rank,
+        ...monthLabels.map((_label, index) => {
+            const item = rankingByMonth.get(index + 1)[rank - 1];
+            return item ? `${item.staffName} (${item.visitorCount.toLocaleString('ms-MY')})` : '';
+        })
+    ]);
+}
+
+function formatShortMalayDate(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '-';
+    return date.toLocaleDateString('ms-MY', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
 }
 
 async function buildVisitorXlsxBlob(rows) {
@@ -1732,15 +1735,22 @@ function visitorWorksheetXml(rows) {
             const ref = `${columnName(colIndex + 1)}${rowNumber}`;
             const isHeaderRow = rowIndex === 0
                 || row[0] === 'PAZA'
-                || row[0] === 'TOP 5 STAF ENTERTAIN PENGUNJUNG'
-                || row[0] === 'Staf';
-            const style = isHeaderRow ? ' s="1"' : '';
-            if (isVisitorNumericCell(value)) return `<c r="${ref}"${style}><v>${String(value).replace(/,/g, '')}</v></c>`;
+                || row[0] === 'KEDUDUKAN 5 PENYIASAT TERTINGGI MENGIKUT BILANGAN PENGUNJUNG DILAYANI'
+                || row[0] === 'KEDUDUKAN';
+            const isNumeric = isVisitorNumericCell(value);
+            const style = getVisitorCellStyle({ isHeaderRow, isNumeric, colIndex });
+            if (isNumeric) return `<c r="${ref}"${style}><v>${String(value).replace(/,/g, '')}</v></c>`;
             return `<c r="${ref}" t="inlineStr"${style}><is><t>${escapeXml(value)}</t></is></c>`;
         }).join('');
         return `<row r="${rowNumber}">${cells}</row>`;
     }).join('');
-    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="15"/><cols><col min="1" max="1" width="34" customWidth="1"/><col min="2" max="14" width="12" customWidth="1"/></cols><sheetData>${sheetData}</sheetData></worksheet>`;
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="15"/><cols><col min="1" max="1" width="34" customWidth="1"/><col min="2" max="14" width="18" customWidth="1"/></cols><sheetData>${sheetData}</sheetData></worksheet>`;
+}
+
+function getVisitorCellStyle({ isHeaderRow, isNumeric, colIndex }) {
+    if (isHeaderRow) return ' s="1"';
+    if (isNumeric && colIndex > 0) return ' s="2"';
+    return '';
 }
 
 function visitorContentTypesXml() {
@@ -1760,7 +1770,7 @@ function visitorWorkbookRelsXml() {
 }
 
 function visitorStylesXml() {
-    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/></cellXfs></styleSheet>';
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/><xf numFmtId="3" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs></styleSheet>';
 }
 
 function isVisitorNumericCell(value) {
