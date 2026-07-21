@@ -41,6 +41,28 @@ const applicationTypeColors = {
     other: '#64748b'
 };
 const pendingValidationMonthLabels = ['JAN', 'FEB', 'MAC', 'APRIL', 'MEI', 'JUN', 'JULAI', 'OGOS', 'SEPT', 'OKT', 'NOV', 'DIS'];
+const schemePengagihanPreset = [
+    'BANTUAN DEPOSIT SEWA RUMAH',
+    'BANTUAN KHAIRAT ASNAF',
+    'BANTUAN MENYELESAIKAN HUTANG',
+    'BANTUAN MUSIBAH',
+    'BANTUAN PERALATAN KESIHATAN',
+    'BANTUAN PERKAHWINAN',
+    'BANTUAN SARA HIDUP',
+    'BANTUAN AM PELAJARAN IPT DALAM NEGERI',
+    'BANTUAN PERSEDIAAN IPT',
+    'BANTUAN SEWA RUMAH BULANAN',
+    'BANTUAN PENYELESAIAN PEMBIAYAAN PINJAMAN PENDIDIKAN',
+    'BANTUAN PERUBATAN AM (AM/GENERAL)',
+    'BANTUAN PERUBATAN AM (PAMPERS)',
+    'BANTUAN PERUBATAN AM (PEMBEDAHAN)',
+    'BANTUAN PERUBATAN AM (SUSU)',
+    'BANTUAN AM PELAJARAN IPT LUAR NEGERI',
+    'BANTUAN DIALISIS',
+    'BANTUAN TAMBANG DAN KEPERLUAN DIRI DALAM NEGERI',
+    'BANTUAN TAMBANG DAN KEPERLUAN DIRI LUAR NEGERI',
+    'BANTUAN ORANG KELAINAN UPAYA (OKU)'
+];
 
 let headerMap = {};
 let rows = [];
@@ -115,6 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('drawerToggle').addEventListener('click', toggleDashboardDrawer);
 
     getMultiSelectConfigs().forEach(setupMultiSelectEvents);
+    document.querySelectorAll('[data-preset-key]').forEach(button => {
+        button.addEventListener('click', () => applySchemePreset(button.dataset.presetKey));
+    });
     document.addEventListener('click', () => {
         closeMultiSelectMenus();
         closeProfileMenu();
@@ -2657,6 +2682,28 @@ function setupMultiSelectEvents(config) {
     if (searchInput) {
         searchInput.addEventListener('input', () => filterSelectOptions(config.optionsId, searchInput.value));
     }
+}
+
+function applySchemePreset(selectedKey) {
+    const config = getMultiSelectConfigs().find(item => item.selectedKey === selectedKey);
+    if (!config) return;
+
+    const options = getMultiSelectOptions(selectedKey);
+    const selected = getSchemePresetValues(selectedKey, options);
+    setMultiSelectSelection(selectedKey, selected);
+    refreshMultiSelect(config);
+    config.onChange();
+}
+
+function getSchemePresetValues(selectedKey, options) {
+    const available = new Set(options);
+    if (selectedKey === 'applicationScheme') {
+        const officialValues = schemePengagihanPreset
+            .map(scheme => mappingsBySystemScheme.get(scheme)?.official_scheme)
+            .filter(Boolean);
+        return getUniqueValues(officialValues).filter(value => available.has(value));
+    }
+    return schemePengagihanPreset.filter(value => available.has(value));
 }
 
 function renderMultiSelect(config) {

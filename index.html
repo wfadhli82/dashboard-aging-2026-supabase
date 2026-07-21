@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Bahagian Agihan Zakat</title>
-    <link rel="stylesheet" href="style.css?v=20260715-staff-ranking">
+    <link rel="stylesheet" href="style.css?v=20260721-scheme-preset">
 </head>
 <body>
     <div class="app-shell">
@@ -121,6 +121,10 @@
                                 </div>
                             </label>
                             <label class="field-label">
+                                <span>Preset Skim</span>
+                                <button type="button" class="preset-button" id="dashboardSchemePresetBtn" data-preset-key="dashboardScheme">Skim Pengagihan</button>
+                            </label>
+                            <label class="field-label">
                                 <span>Jenis</span>
                                 <div class="multi-select" id="typeFilter">
                                     <button type="button" class="multi-select-toggle" id="typeFilterToggle" aria-expanded="false" aria-controls="typeFilterMenu">Semua jenis</button>
@@ -231,6 +235,10 @@
                                         <div class="multi-select-options" id="applicationSchemeFilterOptions"></div>
                                     </div>
                                 </div>
+                            </label>
+                            <label class="field-label">
+                                <span>Preset Skim</span>
+                                <button type="button" class="preset-button" id="applicationSchemePresetBtn" data-preset-key="applicationScheme">Skim Pengagihan</button>
                             </label>
                             <label class="field-label">
                                 <span>Jenis</span>
@@ -518,6 +526,10 @@
                                 </div>
                             </label>
                             <label class="field-label">
+                                <span>Preset Skim</span>
+                                <button type="button" class="preset-button" id="tableSchemePresetBtn" data-preset-key="tableScheme">Skim Pengagihan</button>
+                            </label>
+                            <label class="field-label">
                                 <span>Jenis</span>
                                 <div class="multi-select" id="tableTypeFilter">
                                     <button type="button" class="multi-select-toggle" id="tableTypeFilterToggle" aria-expanded="false" aria-controls="tableTypeFilterMenu">Semua jenis</button>
@@ -642,6 +654,6 @@
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="template-data.js"></script>
-    <script src="script.js?v=20260721-visitor-pdf-export"></script>
+    <script src="script.js?v=20260721-scheme-preset"></script>
 </body>
 </html>

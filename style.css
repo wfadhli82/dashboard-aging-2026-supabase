@@ -443,6 +443,24 @@ select:focus {
     background: #dceaf3;
 }
 
+.preset-button {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 12px;
+    color: #fff;
+    background: var(--brand);
+    border: 1px solid var(--brand);
+    border-radius: 6px;
+    font-size: 0.86rem;
+    font-weight: 800;
+    text-align: center;
+}
+
+.preset-button:hover {
+    background: var(--brand-2);
+    border-color: var(--brand-2);
+}
+
 .multi-select,
 .single-select {
     position: relative;
