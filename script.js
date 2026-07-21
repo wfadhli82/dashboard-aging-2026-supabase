@@ -1738,7 +1738,7 @@ function visitorWorksheetXml(rows) {
                 || row[0] === 'KEDUDUKAN 5 PENYIASAT TERTINGGI MENGIKUT BILANGAN PENGUNJUNG DILAYANI'
                 || row[0] === 'KEDUDUKAN';
             const isNumeric = isVisitorNumericCell(value);
-            const style = getVisitorCellStyle({ isHeaderRow, isNumeric, colIndex });
+            const style = getVisitorCellStyle({ isHeaderRow, isNumeric, isTableRow: row.length > 1, colIndex });
             if (isNumeric) return `<c r="${ref}"${style}><v>${String(value).replace(/,/g, '')}</v></c>`;
             return `<c r="${ref}" t="inlineStr"${style}><is><t>${escapeXml(value)}</t></is></c>`;
         }).join('');
@@ -1747,9 +1747,12 @@ function visitorWorksheetXml(rows) {
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="15"/><cols><col min="1" max="1" width="34" customWidth="1"/><col min="2" max="14" width="18" customWidth="1"/></cols><sheetData>${sheetData}</sheetData></worksheet>`;
 }
 
-function getVisitorCellStyle({ isHeaderRow, isNumeric, colIndex }) {
+function getVisitorCellStyle({ isHeaderRow, isNumeric, isTableRow, colIndex }) {
+    if (isHeaderRow && isTableRow) return ' s="4"';
     if (isHeaderRow) return ' s="1"';
+    if (isNumeric && colIndex > 0 && isTableRow) return ' s="5"';
     if (isNumeric && colIndex > 0) return ' s="2"';
+    if (isTableRow) return ' s="3"';
     return '';
 }
 
@@ -1770,7 +1773,7 @@ function visitorWorkbookRelsXml() {
 }
 
 function visitorStylesXml() {
-    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/><xf numFmtId="3" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs></styleSheet>';
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFD9E2EC"/></left><right style="thin"><color rgb="FFD9E2EC"/></right><top style="thin"><color rgb="FFD9E2EC"/></top><bottom style="thin"><color rgb="FFD9E2EC"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="6"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/><xf numFmtId="3" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/><xf numFmtId="0" fontId="1" fillId="0" borderId="1" xfId="0" applyBorder="1"/><xf numFmtId="3" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/></cellXfs></styleSheet>';
 }
 
 function isVisitorNumericCell(value) {
