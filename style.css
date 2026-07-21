@@ -365,12 +365,12 @@ button:disabled {
 }
 
 .visitor-filter-card {
-    grid-template-columns: minmax(240px, 1fr) minmax(320px, auto);
+    grid-template-columns: minmax(240px, 1fr) minmax(500px, auto);
 }
 
 .visitor-actions {
     justify-self: end;
-    grid-template-columns: minmax(150px, 180px) minmax(160px, auto);
+    grid-template-columns: minmax(150px, 180px) minmax(150px, auto) minmax(150px, auto);
     align-items: end;
 }
 

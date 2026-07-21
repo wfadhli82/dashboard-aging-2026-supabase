@@ -29,6 +29,7 @@ const HOLIDAY_DATES_2026 = new Set([
 ]);
 
 const monthLabels = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogos', 'Sept', 'Okt', 'Nov', 'Dis'];
+const visitorStaffRankingTitle = 'KEDUDUKAN 5 PENYIASAT TERTINGGI MENGIKUT BILANGAN URUSAN PENGUNJUNG';
 const typeLabels = { new: 'Baharu', renewal: 'Penyambungan', appeal: 'Rayuan', addrate: 'Tambah Kadar' };
 const applicationTypeOrder = ['new', 'renewal', 'appeal', 'addrate'];
 const applicationStatusKeys = ['processing', 'rejected', 'cancel', 'terminated'];
@@ -139,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('downloadSummaryBtn').addEventListener('click', downloadSummaryTable);
     document.getElementById('downloadPendingValidationBtn').addEventListener('click', downloadPendingValidationExcel);
     document.getElementById('downloadVisitorExcelBtn').addEventListener('click', downloadVisitorExcel);
+    document.getElementById('downloadVisitorPdfBtn').addEventListener('click', downloadVisitorPdf);
     document.getElementById('visitorMonthFilter').addEventListener('change', event => {
         selectedVisitorMonth = event.target.value;
         updateVisitorDashboard();
@@ -1652,6 +1654,28 @@ async function downloadVisitorExcel() {
     }
 }
 
+function downloadVisitorPdf() {
+    if (!visitorRows.length) {
+        showError('Tiada data rekod pengunjung untuk download.');
+        return;
+    }
+    const JsPdf = window.jspdf?.jsPDF;
+    if (!JsPdf) {
+        showError('Library PDF tidak dapat dimuatkan. Cuba refresh semula dashboard.');
+        return;
+    }
+
+    const year = latestVisitorRun?.source_year || new Date().getFullYear();
+    const fileName = `rekod-pengunjung-paza-${year}-${toIsoDate(new Date())}.pdf`;
+    const doc = new JsPdf({ orientation: 'landscape', unit: 'pt', format: 'letter' });
+    drawVisitorPazaPdfPage(doc, visitorRows, year);
+    doc.addPage('letter', 'landscape');
+    drawVisitorStaffRankingPdfPage(doc, visitorStaffRows, [1, 2, 3, 4, 5, 6]);
+    doc.addPage('letter', 'landscape');
+    drawVisitorStaffRankingPdfPage(doc, visitorStaffRows, [7, 8, 9, 10, 11, 12]);
+    doc.save(fileName);
+}
+
 function buildVisitorExcelRows(sourceRows, sourceStaffRows) {
     const grouped = new Map();
     sourceRows.forEach(row => {
@@ -1679,11 +1703,11 @@ function buildVisitorExcelRows(sourceRows, sourceStaffRows) {
         [`Tarikh Kemaskini: ${latestVisitorRun?.finished_at ? formatShortMalayDate(latestVisitorRun.finished_at) : '-'}`],
         [],
         [],
-        ['PAZA', ...monthLabels.map(label => label.toUpperCase()), 'JUMLAH'],
-        ...items.map(item => [item.paza, ...item.values, item.total]),
-        ['JUMLAH', ...totals, grandTotal],
+        ['BIL', 'PAZA', ...monthLabels.map(label => label.toUpperCase()), 'JUMLAH'],
+        ...items.map((item, index) => [index + 1, item.paza, ...item.values, item.total]),
+        ['', 'JUMLAH', ...totals, grandTotal],
         [],
-        ['KEDUDUKAN 5 PENYIASAT TERTINGGI MENGIKUT BILANGAN PENGUNJUNG DILAYANI'],
+        [visitorStaffRankingTitle],
         ['KEDUDUKAN', ...monthLabels.map(label => label.toUpperCase())],
         ...staffRows
     ];
@@ -1717,6 +1741,147 @@ function formatShortMalayDate(value) {
     });
 }
 
+function drawVisitorPazaPdfPage(doc, sourceRows, year) {
+    const items = buildVisitorPazaSummaryItems(sourceRows);
+    const totals = Array(12).fill(0);
+    items.forEach(item => item.values.forEach((value, index) => {
+        totals[index] += value;
+    }));
+    const grandTotal = totals.reduce((sum, value) => sum + value, 0);
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text(`LAPORAN BULANAN PENGUNJUNG PAZA TAHUN ${year}`, 396, 70, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text(`Tarikh Kemaskini: ${getVisitorReportDateText()}`, 396, 86, { align: 'center' });
+
+    const startX = 20;
+    let y = 164;
+    const columns = [
+        { label: 'BIL', width: 30, align: 'center' },
+        { label: 'PAZA', width: 82, align: 'left' },
+        ...monthLabels.map(label => ({ label: label.toUpperCase(), width: 47, align: 'right' })),
+        { label: 'JUMLAH', width: 47, align: 'right' }
+    ];
+    const headerHeight = 14;
+    drawVisitorPdfTableRow(doc, startX, y, columns, columns.map(column => column.label), headerHeight, { bold: true, fontSize: 7.2 });
+    y += headerHeight;
+
+    items.forEach((item, index) => {
+        const pazaLines = splitVisitorPdfText(doc, item.paza, columns[1].width - 6, 7.2);
+        const rowHeight = Math.max(17, pazaLines.length * 10 + 6);
+        drawVisitorPdfTableRow(doc, startX, y, columns, [
+            index + 1,
+            item.paza,
+            ...item.values.map(formatPdfNumber),
+            formatPdfNumber(item.total)
+        ], rowHeight, { fontSize: 7.2 });
+        y += rowHeight;
+    });
+
+    drawVisitorPdfTableRow(doc, startX, y, columns, [
+        '',
+        'JUMLAH',
+        ...totals.map(formatPdfNumber),
+        formatPdfNumber(grandTotal)
+    ], 16, { bold: true, fontSize: 7.2 });
+}
+
+function drawVisitorStaffRankingPdfPage(doc, sourceStaffRows, months) {
+    const rankings = buildVisitorStaffRankingByMonth(sourceStaffRows);
+    const startX = 36;
+    let y = 126;
+    const columns = [
+        { label: 'KEDUDUKAN', width: 66, align: 'center' },
+        ...months.map(month => ({ label: monthLabels[month - 1].toUpperCase(), width: 108, align: 'left' }))
+    ];
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text(visitorStaffRankingTitle, 40, 94);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text(`Tarikh Kemaskini: ${getVisitorReportDateText()}`, 40, 110);
+
+    drawVisitorPdfTableRow(doc, startX, y, columns, columns.map(column => column.label), 24, { bold: true, fontSize: 8 });
+    y += 24;
+
+    [1, 2, 3, 4, 5].forEach(rank => {
+        drawVisitorPdfTableRow(doc, startX, y, columns, [
+            rank,
+            ...months.map(month => {
+                const item = rankings.get(month)[rank - 1];
+                return item ? `${item.staffName} (${formatPdfNumber(item.visitorCount)})` : '';
+            })
+        ], 70, { fontSize: 8.4 });
+        y += 70;
+    });
+}
+
+function buildVisitorPazaSummaryItems(sourceRows) {
+    const grouped = new Map();
+    sourceRows.forEach(row => {
+        if (!grouped.has(row.paza)) grouped.set(row.paza, Array(12).fill(0));
+        grouped.get(row.paza)[row.month - 1] += row.visitorCount;
+    });
+    return [...grouped.entries()]
+        .map(([paza, values]) => ({
+            paza,
+            values,
+            total: values.reduce((sum, value) => sum + value, 0)
+        }))
+        .sort((a, b) => b.total - a.total || a.paza.localeCompare(b.paza, 'ms-MY'));
+}
+
+function buildVisitorStaffRankingByMonth(sourceStaffRows) {
+    const rankingByMonth = new Map();
+    for (let month = 1; month <= 12; month++) {
+        rankingByMonth.set(month, sourceStaffRows
+            .filter(row => row.month === month)
+            .sort((a, b) => b.visitorCount - a.visitorCount || a.staffName.localeCompare(b.staffName, 'ms-MY'))
+            .slice(0, 5));
+    }
+    return rankingByMonth;
+}
+
+function drawVisitorPdfTableRow(doc, startX, y, columns, values, height, options = {}) {
+    let x = startX;
+    columns.forEach((column, index) => {
+        const value = values[index] == null ? '' : String(values[index]);
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.6);
+        doc.rect(x, y, column.width, height);
+        doc.setFont('helvetica', options.bold ? 'bold' : 'normal');
+        doc.setFontSize(options.fontSize || 8);
+        const align = column.align || 'left';
+        const textX = align === 'right' ? x + column.width - 3 : (align === 'center' ? x + column.width / 2 : x + 3);
+        const maxWidth = Math.max(8, column.width - 6);
+        const lines = splitVisitorPdfText(doc, value, maxWidth, options.fontSize || 8);
+        const lineHeight = (options.fontSize || 8) + 2;
+        const top = options.bold ? y + (height / 2) - ((lines.length - 1) * lineHeight / 2) + 2.5 : y + 9;
+        lines.forEach((line, lineIndex) => {
+            doc.text(line, textX, top + lineIndex * lineHeight, { align });
+        });
+        x += column.width;
+    });
+}
+
+function splitVisitorPdfText(doc, value, maxWidth, fontSize) {
+    doc.setFontSize(fontSize);
+    return doc.splitTextToSize(String(value || ''), maxWidth);
+}
+
+function getVisitorReportDateText() {
+    return latestVisitorRun?.finished_at ? formatShortMalayDate(latestVisitorRun.finished_at) : '-';
+}
+
+function formatPdfNumber(value) {
+    return Number(value || 0).toLocaleString('ms-MY');
+}
+
 async function buildVisitorXlsxBlob(rows) {
     const zip = new JSZip();
     zip.file('[Content_Types].xml', visitorContentTypesXml());
@@ -1734,8 +1899,8 @@ function visitorWorksheetXml(rows) {
         const cells = row.map((value, colIndex) => {
             const ref = `${columnName(colIndex + 1)}${rowNumber}`;
             const isHeaderRow = rowIndex === 0
-                || row[0] === 'PAZA'
-                || row[0] === 'KEDUDUKAN 5 PENYIASAT TERTINGGI MENGIKUT BILANGAN PENGUNJUNG DILAYANI'
+                || row[0] === 'BIL'
+                || row[0] === visitorStaffRankingTitle
                 || row[0] === 'KEDUDUKAN';
             const isNumeric = isVisitorNumericCell(value);
             const style = getVisitorCellStyle({ isHeaderRow, isNumeric, isTableRow: row.length > 1, colIndex });
@@ -1744,7 +1909,7 @@ function visitorWorksheetXml(rows) {
         }).join('');
         return `<row r="${rowNumber}">${cells}</row>`;
     }).join('');
-    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="15"/><cols><col min="1" max="1" width="34" customWidth="1"/><col min="2" max="14" width="18" customWidth="1"/></cols><sheetData>${sheetData}</sheetData></worksheet>`;
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="15"/><cols><col min="1" max="1" width="8" customWidth="1"/><col min="2" max="2" width="34" customWidth="1"/><col min="3" max="15" width="14" customWidth="1"/></cols><sheetData>${sheetData}</sheetData></worksheet>`;
 }
 
 function getVisitorCellStyle({ isHeaderRow, isNumeric, isTableRow, colIndex }) {
