@@ -719,6 +719,211 @@ select:focus {
     font-weight: 900;
 }
 
+.officer-filter-card {
+    grid-template-columns: minmax(260px, 0.85fr) minmax(520px, 1.25fr);
+}
+
+.officer-filters {
+    align-items: end;
+}
+
+.officer-mode-toggle {
+    min-width: 160px;
+}
+
+.officer-kpis {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.officer-screen-view,
+.officer-management-view {
+    margin-top: 14px;
+}
+
+.officer-leaderboard {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.officer-rank-card {
+    min-height: 150px;
+    padding: 14px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-left: 6px solid var(--risk);
+    border-radius: 8px;
+    box-shadow: 0 10px 22px rgba(20, 35, 52, 0.07);
+}
+
+.officer-rank-card.hit {
+    border-left-color: var(--good);
+}
+
+.officer-rank-card.near {
+    border-left-color: var(--warn);
+}
+
+.officer-rank-card-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: start;
+}
+
+.officer-rank {
+    display: grid;
+    place-items: center;
+    min-width: 34px;
+    height: 34px;
+    color: #fff;
+    background: var(--brand);
+    border-radius: 6px;
+    font-weight: 900;
+}
+
+.officer-name {
+    margin: 0;
+    color: var(--ink);
+    font-size: 1.05rem;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.officer-badge {
+    padding: 5px 8px;
+    color: #8c1d1d;
+    background: #fde8e8;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.officer-rank-card.hit .officer-badge {
+    color: #136b3a;
+    background: #ddf7e8;
+}
+
+.officer-rank-card.near .officer-badge {
+    color: #7a4f00;
+    background: #fff4cc;
+}
+
+.officer-score-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: end;
+    margin-top: 16px;
+}
+
+.officer-score {
+    color: var(--ink);
+    font-size: 2.2rem;
+    font-weight: 950;
+    line-height: 0.95;
+}
+
+.officer-target {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.officer-progress {
+    height: 10px;
+    overflow: hidden;
+    background: #e2edf4;
+    border-radius: 999px;
+}
+
+.officer-progress span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--risk);
+}
+
+.officer-rank-card.hit .officer-progress span {
+    background: var(--good);
+}
+
+.officer-rank-card.near .officer-progress span {
+    background: var(--warn);
+}
+
+.officer-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.officer-heatmap {
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.officer-heatmap-grid {
+    display: grid;
+    min-width: max-content;
+    background: #fff;
+}
+
+.officer-heatmap-cell {
+    min-width: 42px;
+    min-height: 34px;
+    padding: 6px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 0.74rem;
+    font-weight: 850;
+    text-align: center;
+}
+
+.officer-heatmap-cell.name {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    min-width: 156px;
+    text-align: left;
+    background: #f8fbfd;
+}
+
+.officer-heatmap-cell.header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    color: #254258;
+    background: #e8f1f7;
+}
+
+.officer-heatmap-cell.hit {
+    color: #0d5b31;
+    background: #ddf7e8;
+}
+
+.officer-heatmap-cell.near {
+    color: #7a4f00;
+    background: #fff4cc;
+}
+
+.officer-heatmap-cell.miss {
+    color: #8c1d1d;
+    background: #fde8e8;
+}
+
+.officer-heatmap-cell.empty {
+    color: #64748b;
+    background: #f3f7fa;
+}
+
 .panel-heading {
     display: flex;
     justify-content: space-between;
@@ -1117,6 +1322,11 @@ tfoot td {
         grid-template-columns: 1fr 1fr;
     }
 
+    .officer-kpis,
+    .officer-leaderboard {
+        grid-template-columns: 1fr 1fr;
+    }
+
     .tab-button {
         min-height: 48px;
         padding: 10px 12px;
@@ -1127,6 +1337,7 @@ tfoot td {
 
     .chart-split,
     .leaderboard-grid,
+    .officer-filter-card,
     .range-zoom {
         grid-template-columns: 1fr;
     }
@@ -1158,6 +1369,11 @@ tfoot td {
     }
 
     .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .officer-kpis,
+    .officer-leaderboard {
         grid-template-columns: 1fr;
     }
 }

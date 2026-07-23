@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Bahagian Agihan Zakat</title>
-    <link rel="stylesheet" href="style.css?v=20260721-scheme-preset">
+    <link rel="stylesheet" href="style.css?v=20260723-officer-performance">
 </head>
 <body>
     <div class="app-shell">
@@ -77,6 +77,8 @@
                     <button type="button" class="tab-button" data-tab="officialPanel">Dashboard Skim Rasmi</button>
                     <button type="button" class="tab-button" data-tab="performancePanel">Jadual Prestasi Keseluruhan</button>
                     <button type="button" class="tab-button" data-tab="pendingValidationPanel">Permohonan Belum Diperaku</button>
+                    <button type="button" class="tab-button" data-tab="certifierPerformancePanel">Prestasi Harian Peraku</button>
+                    <button type="button" class="tab-button" data-tab="approverPerformancePanel">Prestasi Harian Pelulus</button>
                     <button type="button" class="tab-button" data-tab="visitorPanel">Rekod Pengunjung</button>
                 </nav>
                 <div class="dashboard-content">
@@ -296,6 +298,104 @@
                         <article class="table-card"><h2>Top Skim Rasmi</h2><ol id="applicationTopSchemes"></ol></article>
                         <article class="table-card"><h2>Hari Tertinggi</h2><ol id="applicationTopDays"></ol></article>
                         <article class="table-card"><h2>Minggu Tertinggi</h2><ol id="applicationTopWeeks"></ol></article>
+                    </section>
+                </section>
+
+                <section class="tab-panel" id="certifierPerformancePanel">
+                    <section class="filter-card officer-filter-card">
+                        <div>
+                            <p class="section-kicker">Target 15 sehari</p>
+                            <h2>Prestasi Harian Peraku</h2>
+                            <p class="muted tab-data-range" data-range-prefix="Data prestasi peraku">Data prestasi peraku: -</p>
+                        </div>
+                        <div class="filters officer-filters">
+                            <label class="field-label"><span>Bulan</span><select id="certifierMonthFilter"></select></label>
+                            <label class="field-label"><span>Cawangan</span><select id="certifierBranchFilter"></select></label>
+                            <label class="field-label"><span>Skim</span><select id="certifierSchemeFilter"></select></label>
+                            <label class="field-label"><span>Jenis</span><select id="certifierTypeFilter"></select></label>
+                            <div class="segmented officer-mode-toggle" role="radiogroup" aria-label="Mod paparan peraku">
+                                <label><input type="radio" name="certifierViewMode" value="screen" checked><span>Skrin</span></label>
+                                <label><input type="radio" name="certifierViewMode" value="management"><span>Urus</span></label>
+                            </div>
+                            <button type="button" id="certifierCopySummaryBtn">Copy Ringkasan</button>
+                            <button type="button" id="certifierDownloadCsvBtn">Download CSV</button>
+                        </div>
+                    </section>
+
+                    <section class="kpi-grid officer-kpis" aria-label="Ringkasan prestasi peraku">
+                        <article class="kpi-card"><span>Jumlah Selesai</span><strong id="certifierTotalCompleted">0</strong></article>
+                        <article class="kpi-card approved"><span>Purata Hari Bekerja</span><strong id="certifierDailyAverage">0</strong><small>Target 15 sehari</small></article>
+                        <article class="kpi-card percent"><span>Hari Capai Target</span><strong id="certifierHitRate">0%</strong><small id="certifierHitRateNote">(Tiada data)</small></article>
+                        <article class="kpi-card pending"><span>Capai Hari Terkini</span><strong id="certifierLatestHitCount">0</strong><small id="certifierLatestDateNote">(Tiada data)</small></article>
+                        <article class="kpi-card risk"><span>Gap Target Terkini</span><strong id="certifierLatestGap">0</strong></article>
+                    </section>
+
+                    <section class="officer-screen-view" id="certifierScreenView">
+                        <section class="officer-leaderboard" id="certifierLeaderboard"></section>
+                    </section>
+
+                    <section class="officer-management-view" id="certifierManagementView" hidden>
+                        <section class="chart-card">
+                            <div class="panel-heading"><div><h2>Trend Harian Peraku</h2></div></div>
+                            <canvas id="certifierDailyChart"></canvas>
+                        </section>
+                        <section class="table-card">
+                            <div class="panel-heading"><div><h2>Heatmap Target Harian</h2><p id="certifierHeatmapNote">-</p></div></div>
+                            <div class="officer-heatmap" id="certifierHeatmap"></div>
+                        </section>
+                        <section class="table-card">
+                            <div class="panel-heading"><div><h2>Jadual Prestasi Peraku</h2><p id="certifierVisibleRows">0 pegawai dipapar</p></div></div>
+                            <div class="table-wrap"><table><thead><tr><th>Pegawai</th><th>Jumlah</th><th>Purata</th><th>Hari Capai</th><th>Terkini</th><th>Gap Terkini</th></tr></thead><tbody id="certifierOfficerTableBody"></tbody></table></div>
+                        </section>
+                    </section>
+                </section>
+
+                <section class="tab-panel" id="approverPerformancePanel">
+                    <section class="filter-card officer-filter-card">
+                        <div>
+                            <p class="section-kicker">Target 30 sehari</p>
+                            <h2>Prestasi Harian Pelulus</h2>
+                            <p class="muted tab-data-range" data-range-prefix="Data prestasi pelulus">Data prestasi pelulus: -</p>
+                        </div>
+                        <div class="filters officer-filters">
+                            <label class="field-label"><span>Bulan</span><select id="approverMonthFilter"></select></label>
+                            <label class="field-label"><span>Cawangan</span><select id="approverBranchFilter"></select></label>
+                            <label class="field-label"><span>Skim</span><select id="approverSchemeFilter"></select></label>
+                            <label class="field-label"><span>Jenis</span><select id="approverTypeFilter"></select></label>
+                            <div class="segmented officer-mode-toggle" role="radiogroup" aria-label="Mod paparan pelulus">
+                                <label><input type="radio" name="approverViewMode" value="screen" checked><span>Skrin</span></label>
+                                <label><input type="radio" name="approverViewMode" value="management"><span>Urus</span></label>
+                            </div>
+                            <button type="button" id="approverCopySummaryBtn">Copy Ringkasan</button>
+                            <button type="button" id="approverDownloadCsvBtn">Download CSV</button>
+                        </div>
+                    </section>
+
+                    <section class="kpi-grid officer-kpis" aria-label="Ringkasan prestasi pelulus">
+                        <article class="kpi-card"><span>Jumlah Selesai</span><strong id="approverTotalCompleted">0</strong></article>
+                        <article class="kpi-card approved"><span>Purata Hari Bekerja</span><strong id="approverDailyAverage">0</strong><small>Target 30 sehari</small></article>
+                        <article class="kpi-card percent"><span>Hari Capai Target</span><strong id="approverHitRate">0%</strong><small id="approverHitRateNote">(Tiada data)</small></article>
+                        <article class="kpi-card pending"><span>Capai Hari Terkini</span><strong id="approverLatestHitCount">0</strong><small id="approverLatestDateNote">(Tiada data)</small></article>
+                        <article class="kpi-card risk"><span>Gap Target Terkini</span><strong id="approverLatestGap">0</strong></article>
+                    </section>
+
+                    <section class="officer-screen-view" id="approverScreenView">
+                        <section class="officer-leaderboard" id="approverLeaderboard"></section>
+                    </section>
+
+                    <section class="officer-management-view" id="approverManagementView" hidden>
+                        <section class="chart-card">
+                            <div class="panel-heading"><div><h2>Trend Harian Pelulus</h2></div></div>
+                            <canvas id="approverDailyChart"></canvas>
+                        </section>
+                        <section class="table-card">
+                            <div class="panel-heading"><div><h2>Heatmap Target Harian</h2><p id="approverHeatmapNote">-</p></div></div>
+                            <div class="officer-heatmap" id="approverHeatmap"></div>
+                        </section>
+                        <section class="table-card">
+                            <div class="panel-heading"><div><h2>Jadual Prestasi Pelulus</h2><p id="approverVisibleRows">0 pegawai dipapar</p></div></div>
+                            <div class="table-wrap"><table><thead><tr><th>Pegawai</th><th>Jumlah</th><th>Purata</th><th>Hari Capai</th><th>Terkini</th><th>Gap Terkini</th></tr></thead><tbody id="approverOfficerTableBody"></tbody></table></div>
+                        </section>
                     </section>
                 </section>
 
@@ -654,6 +754,6 @@
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="template-data.js"></script>
-    <script src="script.js?v=20260721-scheme-preset"></script>
+    <script src="script.js?v=20260723-officer-performance"></script>
 </body>
 </html>

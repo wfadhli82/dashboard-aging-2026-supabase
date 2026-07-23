@@ -41,6 +41,58 @@ const applicationTypeColors = {
     other: '#64748b'
 };
 const pendingValidationMonthLabels = ['JAN', 'FEB', 'MAC', 'APRIL', 'MEI', 'JUN', 'JULAI', 'OGOS', 'SEPT', 'OKT', 'NOV', 'DIS'];
+const officerRoleConfigs = {
+    certifier: {
+        label: 'Peraku',
+        target: 15,
+        panelId: 'certifierPerformancePanel',
+        color: '#0f6bce'
+    },
+    approver: {
+        label: 'Pelulus',
+        target: 30,
+        panelId: 'approverPerformancePanel',
+        color: '#00a88f'
+    }
+};
+const officerShortNameOverrides = new Map([
+    ['ABDUL RASHID BIN ABD AZIZ', 'Abdul Rashid'],
+    ['ABDUL RAUF BIN ABD AZIZ', 'Abdul Rauf'],
+    ['AHMAD AKMALLUDDIN BIN AB AZIZ', 'Akmal'],
+    ['AHMAD SAFWAN BIN AZHAR', 'Safwan Azhar'],
+    ['AYUB BIN ABDULLAH', 'Ayub'],
+    ['FAIZ IKMAL BIN AHMAD RAFIE', 'Faiz Ikmal'],
+    ['KHAIRUNNISAK BINTI ISMAIL', 'Khairunnisak'],
+    ['MOHAMMAD FAIZAL BIN ZAINURDIN', 'Faizal Zainurdin'],
+    ['MOHD IZHAM BIN BAHAROM', 'Izham'],
+    ['MOHD YASIER BIN ZANIL', 'Yasier'],
+    ['MUHAMAD NOORFIRDAUS BIN ABU BAKAR', 'Noor Firdaus'],
+    ['MUHAMMAD ALI HUSSINI BIN YAHYA', 'Ali Hussini'],
+    ['MUHAMMAD FARHAN BIN DARUS', 'Farhan'],
+    ['MUHAMMAD FIRDZUAN BIN AHMAD AZIZI', 'Firdzuan'],
+    ['MUHAMMAD ISHAK BIN ZULKIFLY', 'Ishak'],
+    ['MUHAMMAD MUADZ BIN ROSLI', 'Muadz'],
+    ['MUHAMMAD NUR IZZAT BIN KAMARUDDIN (MAIWP)', 'Nur Izzat'],
+    ['MUHAMMAD SHAHIR BIN JIMI', 'Shahir'],
+    ['MUHAMMAD SYAFIQ BIN SALLEH', 'Syafiq'],
+    ['MUHAMMAD YASIR BIN ABD SAMAD CHEAM', 'Yasir Cheam'],
+    ['NIK NOOR SYAFAWATI BINTI NIK MOHAMED NASIR', 'Nik Syafawati'],
+    ['NORROL ASIKIN BINTI MD SHARIF', 'Norrol Ashikin'],
+    ['NUR NAJIHAH BINTI ABDULLAH SAMPIT (MAIWP)', 'Najiha'],
+    ['PUTRA MIRZA MIFZAL BIN MOHD FAFLI', 'Putra Mirza'],
+    ['SHAHRUL ZAMAN BIN SHAHRUDIN', 'Shahrul Zaman'],
+    ['HELMI BIN MOHD SAAD', 'Helmi'],
+    ['MOHD ZULHIMI BIN MOHD ZAMBERI', 'Zulhimi'],
+    ['MUHAMAD SAFWAN BIN SAIDIN', 'Safwan Saidin'],
+    ['WAN AHMAD FADHLI SHAH BIN WAN MOHAMAD ZAIN (MAIWP)', 'Wan Fadhli'],
+    ['WAN MAIZATUN BINTI WAN HASSAN', 'Wan Maizatun']
+]);
+const excludedApproverNames = new Set([
+    'ABDUL HALIM BIN ABDULLAH',
+    'AHMAD SAIFUDDIN B HJ MD TAHIR',
+    'DATUK MOHD NIZAM BIN HAJI YAHYA',
+    'SYED KAMARULZAMAN BIN SYED KABEER'
+]);
 const schemePengagihanPreset = [
     'BANTUAN DEPOSIT SEWA RUMAH',
     'BANTUAN KHAIRAT ASNAF',
@@ -84,6 +136,7 @@ let officialBranchOptions = [];
 let officialSchemeOptions = [];
 let officialTypeOptions = [];
 let applicationRows = [];
+let officerRows = [];
 let pendingValidationRows = [];
 let pendingValidationTemplateRows = [];
 let pendingValidationBranchOptions = [];
@@ -112,6 +165,10 @@ let latestVisitorRun = null;
 let visitorRows = [];
 let visitorStaffRows = [];
 let selectedVisitorMonth = 'all';
+let officerFilterState = {
+    certifier: { month: '', branch: 'all', scheme: 'all', type: 'all', mode: 'screen' },
+    approver: { month: '', branch: 'all', scheme: 'all', type: 'all', mode: 'screen' }
+};
 let officialSchemes = [];
 let mappingsBySystemScheme = new Map();
 
@@ -180,9 +237,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('pendingValidationScrollLeftBtn').addEventListener('click', () => scrollPendingValidationTable(-560));
     document.getElementById('pendingValidationScrollRightBtn').addEventListener('click', () => scrollPendingValidationTable(560));
+    ['certifier', 'approver'].forEach(setupOfficerEvents);
 
     initializeSupabase();
 });
+
+function setupOfficerEvents(role) {
+    ['Month', 'Branch', 'Scheme', 'Type'].forEach(suffix => {
+        const element = document.getElementById(`${role}${suffix}Filter`);
+        if (!element) return;
+        element.addEventListener('change', event => {
+            officerFilterState[role][suffix.toLowerCase()] = event.target.value;
+            updateOfficerDashboard(role);
+        });
+    });
+    document.querySelectorAll(`input[name="${role}ViewMode"]`).forEach(input => {
+        input.addEventListener('change', event => {
+            officerFilterState[role].mode = event.target.value;
+            updateOfficerDashboard(role);
+        });
+    });
+    document.getElementById(`${role}CopySummaryBtn`)?.addEventListener('click', () => copyOfficerSummary(role));
+    document.getElementById(`${role}DownloadCsvBtn`)?.addEventListener('click', () => downloadOfficerCsv(role));
+}
 
 async function initializeSupabase() {
     const config = window.DASHBOARD_SUPABASE_CONFIG || {};
@@ -256,6 +333,7 @@ async function handleLogout() {
     pendingValidationRows = [];
     pendingValidationTemplateRows = [];
     currentPendingValidationRows = [];
+    officerRows = [];
     latestVisitorRun = null;
     visitorRows = [];
     visitorStaffRows = [];
@@ -291,9 +369,10 @@ async function loadSupabaseData() {
     }
 
     latestRun = runRows[0];
-    const [aggregateResult, dailyAggregateResult, officialResult, mappingResult, pendingTemplateResult, pendingRowsResult] = await Promise.all([
+    const [aggregateResult, dailyAggregateResult, officerDailyResult, officialResult, mappingResult, pendingTemplateResult, pendingRowsResult] = await Promise.all([
         fetchAllAggregates(latestRun.run_id),
         fetchAllDailyApplicationAggregates(latestRun.run_id),
+        fetchAllOfficerDailyAggregates(latestRun.run_id),
         supabaseClient
             .from('dashboard_official_schemes')
             .select('name,cluster,display_order')
@@ -306,6 +385,7 @@ async function loadSupabaseData() {
     ]);
     const { data: aggregates, error: aggregateError } = aggregateResult;
     const { data: dailyAggregates, error: dailyAggregateError } = dailyAggregateResult;
+    const { data: officerDailyAggregates, error: officerDailyError } = officerDailyResult;
 
     if (aggregateError) {
         showAuthMessage(`Agregat tidak dapat dibaca: ${aggregateError.message}`, true);
@@ -327,6 +407,7 @@ async function loadSupabaseData() {
 
     rows = applySchemeMappings(expandAggregateRows(aggregates || []));
     applicationRows = applySchemeMappingsToApplicationRows(normalizeDailyApplicationRows(dailyAggregates || []));
+    officerRows = normalizeOfficerDailyRows(officerDailyAggregates || []);
     if (!rows.length) {
         showAuthMessage('Agregat Supabase kosong untuk run terkini.', true);
         return;
@@ -339,18 +420,21 @@ async function loadSupabaseData() {
     setupFilters();
     setupOfficialFilters();
     setupApplicationFilters();
+    setupOfficerFilters();
     setupPendingValidationFilters();
     updateDashboard();
     updateSummaryTable();
     updateOfficialDashboard();
     updateApplicationDashboard();
+    updateOfficerDashboard('certifier');
+    updateOfficerDashboard('approver');
     updatePendingValidationDashboard();
     updateVisitorDashboard();
     updateAllDataRangeLabels();
 
     document.getElementById('fileStatus').textContent = `Data Supabase dimuatkan (${Number(latestRun.source_record_count || rows.length).toLocaleString('ms-MY')} rekod sumber).`;
     document.getElementById('dashboard').hidden = false;
-    const optionalErrors = [dailyAggregateError, pendingTemplateResult.error, pendingRowsResult.error, visitorResult.error].filter(Boolean);
+    const optionalErrors = [dailyAggregateError, officerDailyError, pendingTemplateResult.error, pendingRowsResult.error, visitorResult.error].filter(Boolean);
     showAuthMessage(optionalErrors.length
         ? `Data Supabase berjaya dimuatkan. Nota: sebahagian data tambahan belum tersedia (${optionalErrors.map(error => error.message).join('; ')}).`
         : 'Data Supabase berjaya dimuatkan.', false);
@@ -454,6 +538,36 @@ async function fetchAllDailyApplicationAggregatesWithoutStatus(runId) {
             .order('application_date')
             .order('branch')
             .order('scheme')
+            .range(start, start + pageSize - 1);
+
+        if (error) return { data, error };
+        data.push(...(page || []));
+        if (!page || page.length < pageSize) return { data, error: null };
+    }
+}
+
+async function fetchAllOfficerDailyAggregates(runId) {
+    const pageSize = 1000;
+    const data = [];
+    const fields = [
+        'role',
+        'work_date',
+        'officer_name',
+        'branch',
+        'sub_branch',
+        'scheme',
+        'application_type',
+        'completed_count'
+    ].join(',');
+
+    for (let start = 0; ; start += pageSize) {
+        const { data: page, error } = await supabaseClient
+            .from('dashboard_officer_daily_aggregates')
+            .select(fields)
+            .eq('run_id', runId)
+            .order('role')
+            .order('work_date')
+            .order('officer_name')
             .range(start, start + pageSize - 1);
 
         if (error) return { data, error };
@@ -576,6 +690,54 @@ function normalizeDailyApplicationRows(aggregates) {
             }
         };
     }).filter(Boolean);
+}
+
+function normalizeOfficerDailyRows(aggregates) {
+    return aggregates.map(item => {
+        const workDate = parseAppDate(item.work_date);
+        const role = item.role === 'approver' ? 'approver' : 'certifier';
+        const officerName = normalizeOfficerName(item.officer_name);
+        if (!workDate || !officerName) return null;
+        if (role === 'approver' && excludedApproverNames.has(normalizeKey(officerName))) return null;
+
+        const scheme = item.scheme || '(Tiada skim)';
+        const mapping = mappingsBySystemScheme.get(scheme);
+        const official = mapping ? officialSchemes.find(option => option.name === mapping.official_scheme) : null;
+        const applicationType = item.application_type || 'lain-lain';
+        return {
+            role,
+            workDate,
+            dateKey: toIsoDate(workDate),
+            monthKey: `${workDate.getFullYear()}-${String(workDate.getMonth() + 1).padStart(2, '0')}`,
+            officerName,
+            displayName: getOfficerDisplayName(officerName),
+            branch: item.branch || '(Tiada cawangan)',
+            subBranch: item.sub_branch || '(Tiada sub cawangan)',
+            scheme,
+            displayScheme: official?.name || toProperCaps(scheme),
+            applicationType,
+            applicationTypeLabel: typeLabels[applicationType] || titleCase(applicationType),
+            completedCount: Number(item.completed_count || 0)
+        };
+    }).filter(Boolean);
+}
+
+function normalizeOfficerName(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function getOfficerDisplayName(fullName) {
+    const normalized = normalizeKey(fullName);
+    return officerShortNameOverrides.get(normalized) || autoShortOfficerName(fullName);
+}
+
+function autoShortOfficerName(fullName) {
+    const cleaned = normalizeOfficerName(fullName).replace(/\s+\(MAIWP\)$/i, '');
+    const parts = cleaned.split(/\s+/).filter(part => !/^(BIN|BINTI|BT|B)$/.test(part.toLocaleUpperCase('ms-MY')));
+    if (!parts.length) return cleaned || '-';
+    const first = parts[0];
+    const second = parts.find((part, index) => index > 0 && !/^MOHD$|^MUHAMMAD$|^MUHAMAD$|^AHMAD$/i.test(part));
+    return toProperCaps([first, second].filter(Boolean).join(' '));
 }
 
 function normalizePendingValidationRows(sourceRows) {
@@ -836,6 +998,53 @@ function setupApplicationFilters() {
     getMultiSelectConfigs().forEach(renderMultiSelect);
 }
 
+function setupOfficerFilters() {
+    Object.keys(officerRoleConfigs).forEach(role => {
+        const rowsForRole = officerRows.filter(row => row.role === role);
+        const months = getOfficerMonthOptions(rowsForRole);
+        const latestMonth = months.length ? months[months.length - 1].value : '';
+        officerFilterState[role] = {
+            month: latestMonth,
+            branch: 'all',
+            scheme: 'all',
+            type: 'all',
+            mode: officerFilterState[role]?.mode || 'screen'
+        };
+        populateOfficerSelect(`${role}MonthFilter`, months, 'Tiada bulan', false);
+        if (latestMonth) document.getElementById(`${role}MonthFilter`).value = latestMonth;
+        populateOfficerSelect(`${role}BranchFilter`, getUniqueValues(rowsForRole.map(row => row.branch)).map(toOption), 'Semua cawangan');
+        populateOfficerSelect(`${role}SchemeFilter`, getUniqueValues(rowsForRole.map(row => row.displayScheme)).map(toOption), 'Semua skim');
+        populateOfficerSelect(`${role}TypeFilter`, getUniqueValues(rowsForRole.map(row => row.applicationTypeLabel)).map(toOption), 'Semua jenis');
+        const selectedMode = officerFilterState[role].mode;
+        document.querySelectorAll(`input[name="${role}ViewMode"]`).forEach(input => {
+            input.checked = input.value === selectedMode;
+        });
+    });
+}
+
+function getOfficerMonthOptions(rowsForRole) {
+    return [...new Set(rowsForRole.map(row => row.monthKey))]
+        .sort()
+        .map(monthKey => {
+            const [, month] = monthKey.split('-').map(Number);
+            return { value: monthKey, label: monthLabels[month - 1] };
+        });
+}
+
+function toOption(value) {
+    return { value, label: value };
+}
+
+function populateOfficerSelect(id, options, allLabel, includeAll = true) {
+    const element = document.getElementById(id);
+    if (!element) return;
+    const allOption = includeAll ? [`<option value="all">${escapeHtml(allLabel)}</option>`] : [];
+    const optionHtml = options.length
+        ? options.map(option => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`)
+        : [`<option value="">${escapeHtml(allLabel)}</option>`];
+    element.innerHTML = [...allOption, ...optionHtml].join('');
+}
+
 function setupPendingValidationFilters() {
     pendingValidationBranchOptions = getUniqueValues(pendingValidationRows.map(row => row.branch));
     selectedPendingValidationBranches = [...pendingValidationBranchOptions];
@@ -927,6 +1136,226 @@ function updateApplicationDashboard() {
     updateApplicationKpis(activeRows);
     updateApplicationCharts(activeRows);
     updateApplicationLeaderboards(activeRows);
+}
+
+function updateOfficerDashboard(role) {
+    const config = officerRoleConfigs[role];
+    if (!config) return;
+
+    const activeRows = getFilteredOfficerRows(role);
+    const metrics = buildOfficerMetrics(activeRows, config.target, role);
+    updateOfficerKpis(role, metrics, config);
+    renderOfficerLeaderboard(role, metrics, config);
+    renderOfficerManagement(role, metrics, config);
+    const isManagement = officerFilterState[role].mode === 'management';
+    document.getElementById(`${role}ScreenView`).hidden = isManagement;
+    document.getElementById(`${role}ManagementView`).hidden = !isManagement;
+}
+
+function getFilteredOfficerRows(role) {
+    const state = officerFilterState[role];
+    return officerRows.filter(row => {
+        return row.role === role
+            && (!state.month || row.monthKey === state.month)
+            && (state.branch === 'all' || row.branch === state.branch)
+            && (state.scheme === 'all' || row.displayScheme === state.scheme)
+            && (state.type === 'all' || row.applicationTypeLabel === state.type);
+    });
+}
+
+function buildOfficerMetrics(activeRows, target, role) {
+    const dates = getOfficerWorkingDateKeys(activeRows);
+    const sortedActiveDates = activeRows.map(row => row.dateKey).sort();
+    const latestDate = sortedActiveDates.length ? sortedActiveDates[sortedActiveDates.length - 1] : '';
+    const officers = new Map();
+    const dailyTotals = new Map();
+    const officerDayCounts = new Map();
+
+    activeRows.forEach(row => {
+        const officerKey = normalizeKey(row.officerName);
+        if (!officers.has(officerKey)) {
+            officers.set(officerKey, {
+                officerName: row.officerName,
+                displayName: row.displayName,
+                total: 0,
+                latestCount: 0,
+                hitDays: 0,
+                dayCounts: new Map()
+            });
+        }
+        const officer = officers.get(officerKey);
+        officer.total += row.completedCount;
+        officer.dayCounts.set(row.dateKey, (officer.dayCounts.get(row.dateKey) || 0) + row.completedCount);
+        dailyTotals.set(row.dateKey, (dailyTotals.get(row.dateKey) || 0) + row.completedCount);
+    });
+
+    const officerItems = [...officers.values()].map(officer => {
+        dates.forEach(dateKey => {
+            const count = officer.dayCounts.get(dateKey) || 0;
+            if (count >= target) officer.hitDays++;
+            officerDayCounts.set(`${officer.officerName}\u001f${dateKey}`, count);
+        });
+        officer.latestCount = latestDate ? (officer.dayCounts.get(latestDate) || 0) : 0;
+        officer.latestGap = Math.max(target - officer.latestCount, 0);
+        officer.average = dates.length ? officer.total / dates.length : 0;
+        officer.hitPercent = dates.length ? (officer.hitDays / dates.length) * 100 : 0;
+        return officer;
+    }).sort((a, b) => b.latestCount - a.latestCount || b.total - a.total || a.displayName.localeCompare(b.displayName, 'ms-MY'));
+
+    const totalCompleted = officerItems.reduce((sum, item) => sum + item.total, 0);
+    const latestHitCount = officerItems.filter(item => item.latestCount >= target).length;
+    const latestGap = officerItems.reduce((sum, item) => sum + item.latestGap, 0);
+    const possibleOfficerDays = officerItems.length * dates.length;
+    const achievedOfficerDays = officerItems.reduce((sum, item) => sum + item.hitDays, 0);
+    const monthLabel = formatOfficerSelectedMonth(role);
+
+    return {
+        activeRows,
+        dates,
+        dailyTotals,
+        officerItems,
+        officerDayCounts,
+        latestDate,
+        totalCompleted,
+        dailyAverage: dates.length ? totalCompleted / dates.length : 0,
+        latestHitCount,
+        latestGap,
+        hitRate: possibleOfficerDays ? (achievedOfficerDays / possibleOfficerDays) * 100 : 0,
+        achievedOfficerDays,
+        possibleOfficerDays,
+        monthLabel
+    };
+}
+
+function getOfficerWorkingDateKeys(activeRows) {
+    const range = getDateRangeFromDates(activeRows.map(row => row.workDate));
+    if (!range.first || !range.last) return [];
+    const keys = [];
+    const current = toDateOnly(range.first);
+    const end = toDateOnly(range.last);
+    while (current <= end) {
+        if (isWorkingDay(current)) keys.push(toIsoDate(current));
+        current.setDate(current.getDate() + 1);
+    }
+    return keys;
+}
+
+function updateOfficerKpis(role, metrics, config) {
+    document.getElementById(`${role}TotalCompleted`).textContent = metrics.totalCompleted.toLocaleString('ms-MY');
+    document.getElementById(`${role}DailyAverage`).textContent = metrics.dailyAverage.toFixed(1);
+    document.getElementById(`${role}HitRate`).textContent = `${metrics.hitRate.toFixed(1)}%`;
+    document.getElementById(`${role}HitRateNote`).textContent = metrics.possibleOfficerDays
+        ? `(${metrics.achievedOfficerDays.toLocaleString('ms-MY')} / ${metrics.possibleOfficerDays.toLocaleString('ms-MY')} hari pegawai)`
+        : '(Tiada data)';
+    document.getElementById(`${role}LatestHitCount`).textContent = metrics.latestHitCount.toLocaleString('ms-MY');
+    document.getElementById(`${role}LatestDateNote`).textContent = metrics.latestDate
+        ? `(${formatDateFromIso(metrics.latestDate)}, target ${config.target})`
+        : '(Tiada data)';
+    document.getElementById(`${role}LatestGap`).textContent = metrics.latestGap.toLocaleString('ms-MY');
+}
+
+function renderOfficerLeaderboard(role, metrics, config) {
+    const element = document.getElementById(`${role}Leaderboard`);
+    if (!metrics.officerItems.length) {
+        element.innerHTML = '<article class="table-card"><h2>Tiada data prestasi harian.</h2><p class="muted">Jalankan schema dan import CSV weekly terkini untuk paparan ini.</p></article>';
+        return;
+    }
+    element.innerHTML = metrics.officerItems.map((item, index) => {
+        const percent = config.target ? (item.latestCount / config.target) * 100 : 0;
+        const status = percent >= 100 ? 'hit' : (percent >= 80 ? 'near' : 'miss');
+        const label = status === 'hit' ? 'Capai' : (status === 'near' ? 'Hampir' : 'Perlu pecut');
+        return `
+            <article class="officer-rank-card ${status}">
+                <div class="officer-rank-card-header">
+                    <span class="officer-rank">${index + 1}</span>
+                    <h3 class="officer-name">${escapeHtml(item.displayName)}</h3>
+                    <span class="officer-badge">${label}</span>
+                </div>
+                <div class="officer-score-row">
+                    <strong class="officer-score">${item.latestCount.toLocaleString('ms-MY')}</strong>
+                    <div class="officer-progress"><span style="width:${Math.min(percent, 100).toFixed(1)}%"></span></div>
+                    <span class="officer-target">/${config.target}</span>
+                </div>
+                <div class="officer-card-meta">
+                    <span>Jumlah ${metrics.monthLabel}: ${item.total.toLocaleString('ms-MY')}</span>
+                    <span>Purata: ${item.average.toFixed(1)}</span>
+                    <span>Capai: ${item.hitDays}/${metrics.dates.length}</span>
+                </div>
+            </article>
+        `;
+    }).join('');
+}
+
+function renderOfficerManagement(role, metrics, config) {
+    renderOfficerDailyChart(role, metrics, config);
+    renderOfficerHeatmap(role, metrics, config);
+    renderOfficerTable(role, metrics);
+}
+
+function renderOfficerDailyChart(role, metrics, config) {
+    renderMultiSeriesLineChart(`${role}DailyChart`, metrics.dates.map(formatDateFromIso), [{
+        label: config.label,
+        color: config.color,
+        data: metrics.dates.map(dateKey => metrics.dailyTotals.get(dateKey) || 0)
+    }, {
+        label: `Target ${config.target}`,
+        color: '#d72657',
+        data: metrics.dates.map(() => config.target * Math.max(metrics.officerItems.length, 1))
+    }], {
+        labelEvery: getGroupedLabelStep(metrics.dates.length),
+        valueLabels: 'peak'
+    });
+}
+
+function renderOfficerHeatmap(role, metrics, config) {
+    const note = document.getElementById(`${role}HeatmapNote`);
+    const element = document.getElementById(`${role}Heatmap`);
+    note.textContent = metrics.dates.length
+        ? `${metrics.monthLabel}. Hijau capai target, kuning 80% ke atas, merah bawah target.`
+        : 'Tiada data untuk filter ini.';
+    if (!metrics.officerItems.length || !metrics.dates.length) {
+        element.innerHTML = '<div class="empty-state">Tiada data untuk heatmap.</div>';
+        return;
+    }
+
+    const columns = metrics.dates.length + 1;
+    element.innerHTML = `
+        <div class="officer-heatmap-grid" style="grid-template-columns: 156px repeat(${metrics.dates.length}, 42px)">
+            <div class="officer-heatmap-cell name header">Pegawai</div>
+            ${metrics.dates.map(dateKey => `<div class="officer-heatmap-cell header">${Number(dateKey.slice(-2))}</div>`).join('')}
+            ${metrics.officerItems.map(item => `
+                <div class="officer-heatmap-cell name">${escapeHtml(item.displayName)}</div>
+                ${metrics.dates.map(dateKey => {
+                    const count = metrics.officerDayCounts.get(`${item.officerName}\u001f${dateKey}`) || 0;
+                    const className = count >= config.target ? 'hit' : (count >= config.target * 0.8 ? 'near' : (count ? 'miss' : 'empty'));
+                    return `<div class="officer-heatmap-cell ${className}" title="${escapeHtml(item.displayName)} - ${formatDateFromIso(dateKey)}">${count || '-'}</div>`;
+                }).join('')}
+            `).join('')}
+        </div>
+    `;
+}
+
+function renderOfficerTable(role, metrics) {
+    document.getElementById(`${role}VisibleRows`).textContent = `${metrics.officerItems.length.toLocaleString('ms-MY')} pegawai dipapar`;
+    document.getElementById(`${role}OfficerTableBody`).innerHTML = metrics.officerItems.length
+        ? metrics.officerItems.map(item => `
+            <tr>
+                <td>${escapeHtml(item.displayName)}<br><small>${escapeHtml(item.officerName)}</small></td>
+                <td>${item.total.toLocaleString('ms-MY')}</td>
+                <td>${item.average.toFixed(1)}</td>
+                <td>${item.hitDays.toLocaleString('ms-MY')}</td>
+                <td>${item.latestCount.toLocaleString('ms-MY')}</td>
+                <td>${item.latestGap.toLocaleString('ms-MY')}</td>
+            </tr>
+        `).join('')
+        : '<tr><td colspan="6" class="empty-state">Tiada data untuk filter ini.</td></tr>';
+}
+
+function formatOfficerSelectedMonth(role) {
+    const monthKey = officerFilterState[role].month;
+    if (!monthKey) return '-';
+    const [year, month] = monthKey.split('-').map(Number);
+    return `${monthLabels[month - 1]} ${year}`;
 }
 
 function updatePendingValidationDashboard() {
@@ -1655,6 +2084,64 @@ function downloadSummaryTable() {
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `jadual-prestasi-keseluruhan-${toIsoDate(new Date())}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+
+async function copyOfficerSummary(role) {
+    const config = officerRoleConfigs[role];
+    const metrics = buildOfficerMetrics(getFilteredOfficerRows(role), config.target, role);
+    const latestDate = metrics.latestDate ? formatDateFromIso(metrics.latestDate) : '-';
+    const hitNames = metrics.officerItems
+        .filter(item => item.latestCount >= config.target)
+        .map(item => `${item.displayName} (${item.latestCount})`);
+    const needPushNames = metrics.officerItems
+        .filter(item => item.latestCount < config.target)
+        .slice(0, 8)
+        .map(item => `${item.displayName} (${item.latestCount}/${config.target})`);
+    const text = [
+        `Ringkasan Prestasi Harian ${config.label}`,
+        `Bulan: ${metrics.monthLabel}`,
+        `Tarikh terkini: ${latestDate}`,
+        `Jumlah selesai: ${metrics.totalCompleted.toLocaleString('ms-MY')}`,
+        `Capai target hari terkini: ${metrics.latestHitCount}/${metrics.officerItems.length} pegawai`,
+        `Capai target: ${hitNames.length ? hitNames.join(', ') : 'Tiada'}`,
+        `Perlu pecut: ${needPushNames.length ? needPushNames.join(', ') : 'Tiada'}`
+    ].join('\n');
+
+    try {
+        await navigator.clipboard.writeText(text);
+        showAuthMessage(`Ringkasan ${config.label.toLowerCase()} telah disalin.`, false);
+    } catch (_error) {
+        showAuthMessage(text, false);
+    }
+}
+
+function downloadOfficerCsv(role) {
+    const config = officerRoleConfigs[role];
+    const metrics = buildOfficerMetrics(getFilteredOfficerRows(role), config.target, role);
+    if (!metrics.officerItems.length) {
+        showAuthMessage(`Tiada data ${config.label.toLowerCase()} untuk download.`, true);
+        return;
+    }
+
+    const headers = ['Peranan', 'Bulan', 'Pegawai Ringkas', 'Nama Penuh', 'Jumlah', 'Purata Hari Bekerja', 'Hari Capai Target', 'Kiraan Terkini', 'Gap Terkini'];
+    const body = metrics.officerItems.map(item => [
+        config.label,
+        metrics.monthLabel,
+        item.displayName,
+        item.officerName,
+        item.total,
+        item.average.toFixed(1),
+        item.hitDays,
+        item.latestCount,
+        item.latestGap
+    ]);
+    const csv = [headers, ...body].map(row => row.map(csvEscape).join(',')).join('\r\n');
+    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `prestasi-harian-${role}-${officerFilterState[role].month || toIsoDate(new Date())}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
 }
@@ -2637,6 +3124,8 @@ function switchTab(panelId) {
     if (panelId === 'fiveDayPanel') updateTrendChart(approvedFilteredRows);
     if (panelId === 'applicationPanel') updateApplicationDashboard();
     if (panelId === 'pendingValidationPanel') updatePendingValidationDashboard();
+    if (panelId === 'certifierPerformancePanel') updateOfficerDashboard('certifier');
+    if (panelId === 'approverPerformancePanel') updateOfficerDashboard('approver');
     if (panelId === 'visitorPanel') updateVisitorDashboard();
 }
 
