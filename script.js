@@ -87,6 +87,7 @@ const officerShortNameOverrides = new Map([
     ['WAN AHMAD FADHLI SHAH BIN WAN MOHAMAD ZAIN (MAIWP)', 'Wan Fadhli'],
     ['WAN MAIZATUN BINTI WAN HASSAN', 'Wan Maizatun']
 ]);
+const allowedOfficerNameKeys = new Set([...officerShortNameOverrides.keys()]);
 const excludedApproverNames = new Set([
     'ABDUL HALIM BIN ABDULLAH',
     'AHMAD SAIFUDDIN B HJ MD TAHIR',
@@ -166,8 +167,8 @@ let visitorRows = [];
 let visitorStaffRows = [];
 let selectedVisitorMonth = 'all';
 let officerFilterState = {
-    certifier: { month: '', branch: 'all', scheme: 'all', type: 'all', mode: 'screen' },
-    approver: { month: '', branch: 'all', scheme: 'all', type: 'all', mode: 'screen' }
+    certifier: { month: '', day: '', branch: 'all', scheme: 'all', type: 'all', mode: 'screen' },
+    approver: { month: '', day: '', branch: 'all', scheme: 'all', type: 'all', mode: 'screen' }
 };
 let officialSchemes = [];
 let mappingsBySystemScheme = new Map();
@@ -243,11 +244,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupOfficerEvents(role) {
-    ['Month', 'Branch', 'Scheme', 'Type'].forEach(suffix => {
+    ['Month', 'Day', 'Branch', 'Scheme', 'Type'].forEach(suffix => {
         const element = document.getElementById(`${role}${suffix}Filter`);
         if (!element) return;
         element.addEventListener('change', event => {
             officerFilterState[role][suffix.toLowerCase()] = event.target.value;
+            if (suffix === 'Month') {
+                populateOfficerDayFilter(role);
+            }
             updateOfficerDashboard(role);
         });
     });
@@ -698,6 +702,7 @@ function normalizeOfficerDailyRows(aggregates) {
         const role = item.role === 'approver' ? 'approver' : 'certifier';
         const officerName = normalizeOfficerName(item.officer_name);
         if (!workDate || !officerName) return null;
+        if (!allowedOfficerNameKeys.has(normalizeKey(officerName))) return null;
         if (role === 'approver' && excludedApproverNames.has(normalizeKey(officerName))) return null;
 
         const scheme = item.scheme || '(Tiada skim)';
@@ -728,7 +733,7 @@ function normalizeOfficerName(value) {
 
 function getOfficerDisplayName(fullName) {
     const normalized = normalizeKey(fullName);
-    return officerShortNameOverrides.get(normalized) || autoShortOfficerName(fullName);
+    return officerShortNameOverrides.get(normalized) || normalizeOfficerName(fullName);
 }
 
 function autoShortOfficerName(fullName) {
@@ -1005,6 +1010,7 @@ function setupOfficerFilters() {
         const latestMonth = months.length ? months[months.length - 1].value : '';
         officerFilterState[role] = {
             month: latestMonth,
+            day: '',
             branch: 'all',
             scheme: 'all',
             type: 'all',
@@ -1012,6 +1018,7 @@ function setupOfficerFilters() {
         };
         populateOfficerSelect(`${role}MonthFilter`, months, 'Tiada bulan', false);
         if (latestMonth) document.getElementById(`${role}MonthFilter`).value = latestMonth;
+        populateOfficerDayFilter(role);
         populateOfficerSelect(`${role}BranchFilter`, getUniqueValues(rowsForRole.map(row => row.branch)).map(toOption), 'Semua cawangan');
         populateOfficerSelect(`${role}SchemeFilter`, getUniqueValues(rowsForRole.map(row => row.displayScheme)).map(toOption), 'Semua skim');
         populateOfficerSelect(`${role}TypeFilter`, getUniqueValues(rowsForRole.map(row => row.applicationTypeLabel)).map(toOption), 'Semua jenis');
@@ -1029,6 +1036,20 @@ function getOfficerMonthOptions(rowsForRole) {
             const [, month] = monthKey.split('-').map(Number);
             return { value: monthKey, label: monthLabels[month - 1] };
         });
+}
+
+function populateOfficerDayFilter(role) {
+    const state = officerFilterState[role];
+    const rowsForMonth = officerRows.filter(row => row.role === role && (!state.month || row.monthKey === state.month));
+    const days = [...new Set(rowsForMonth.map(row => row.dateKey))]
+        .sort()
+        .map(dateKey => ({ value: dateKey, label: formatDateFromIso(dateKey) }));
+    const previousDay = state.day;
+    const latestDay = days.length ? days[days.length - 1].value : '';
+    state.day = days.some(option => option.value === previousDay) ? previousDay : latestDay;
+    populateOfficerSelect(`${role}DayFilter`, days, 'Tiada hari', false);
+    const element = document.getElementById(`${role}DayFilter`);
+    if (element && state.day) element.value = state.day;
 }
 
 function toOption(value) {
@@ -1142,34 +1163,67 @@ function updateOfficerDashboard(role) {
     const config = officerRoleConfigs[role];
     if (!config) return;
 
-    const activeRows = getFilteredOfficerRows(role);
-    const metrics = buildOfficerMetrics(activeRows, config.target, role);
-    updateOfficerKpis(role, metrics, config);
-    renderOfficerLeaderboard(role, metrics, config);
-    renderOfficerManagement(role, metrics, config);
-    const isManagement = officerFilterState[role].mode === 'management';
+    const { isManagement, screenMetrics, managementMetrics, currentMetrics } = getOfficerDashboardMetrics(role, config);
+    updateOfficerKpis(role, currentMetrics, config);
+    renderOfficerLeaderboard(role, screenMetrics, config);
+    renderOfficerManagement(role, managementMetrics, config);
     document.getElementById(`${role}ScreenView`).hidden = isManagement;
     document.getElementById(`${role}ManagementView`).hidden = !isManagement;
 }
 
-function getFilteredOfficerRows(role) {
+function getOfficerDashboardMetrics(role, config) {
+    const isManagement = officerFilterState[role].mode === 'management';
+    const monthRows = getFilteredOfficerRows(role, { applyDay: false });
+    const screenRows = getFilteredOfficerRows(role, { applyDay: true });
+    const selectedDay = officerFilterState[role].day;
+    const screenMetrics = buildOfficerMetrics(screenRows, config.target, role, {
+        dateKeys: selectedDay ? [selectedDay] : undefined,
+        rosterRows: monthRows
+    });
+    const managementMetrics = buildOfficerMetrics(monthRows, config.target, role);
+    return {
+        isManagement,
+        screenMetrics,
+        managementMetrics,
+        currentMetrics: isManagement ? managementMetrics : screenMetrics
+    };
+}
+
+function getFilteredOfficerRows(role, options = {}) {
     const state = officerFilterState[role];
+    const applyDay = Boolean(options.applyDay);
     return officerRows.filter(row => {
         return row.role === role
             && (!state.month || row.monthKey === state.month)
+            && (!applyDay || !state.day || row.dateKey === state.day)
             && (state.branch === 'all' || row.branch === state.branch)
             && (state.scheme === 'all' || row.displayScheme === state.scheme)
             && (state.type === 'all' || row.applicationTypeLabel === state.type);
     });
 }
 
-function buildOfficerMetrics(activeRows, target, role) {
-    const dates = getOfficerWorkingDateKeys(activeRows);
+function buildOfficerMetrics(activeRows, target, role, options = {}) {
+    const dates = options.dateKeys || getOfficerWorkingDateKeys(activeRows);
     const sortedActiveDates = activeRows.map(row => row.dateKey).sort();
-    const latestDate = sortedActiveDates.length ? sortedActiveDates[sortedActiveDates.length - 1] : '';
+    const latestDate = dates.length ? dates[dates.length - 1] : (sortedActiveDates.length ? sortedActiveDates[sortedActiveDates.length - 1] : '');
     const officers = new Map();
     const dailyTotals = new Map();
     const officerDayCounts = new Map();
+
+    const rosterRows = options.rosterRows?.length ? options.rosterRows : activeRows;
+    rosterRows.forEach(row => {
+        const officerKey = normalizeKey(row.officerName);
+        if (!officers.has(officerKey)) {
+            officers.set(officerKey, {
+                officerName: row.officerName,
+                displayName: row.displayName,
+                total: 0,
+                latestCount: 0,
+                hitDays: 0,
+                dayCounts: new Map()
+            });
+        }
+    });
 
     activeRows.forEach(row => {
         const officerKey = normalizeKey(row.officerName);
@@ -1223,7 +1277,8 @@ function buildOfficerMetrics(activeRows, target, role) {
         hitRate: possibleOfficerDays ? (achievedOfficerDays / possibleOfficerDays) * 100 : 0,
         achievedOfficerDays,
         possibleOfficerDays,
-        monthLabel
+        monthLabel,
+        periodLabel: dates.length === 1 ? formatDateFromIso(dates[0]) : monthLabel
     };
 }
 
@@ -1277,7 +1332,7 @@ function renderOfficerLeaderboard(role, metrics, config) {
                     <span class="officer-target">/${config.target}</span>
                 </div>
                 <div class="officer-card-meta">
-                    <span>Jumlah ${metrics.monthLabel}: ${item.total.toLocaleString('ms-MY')}</span>
+                    <span>Jumlah ${metrics.periodLabel}: ${item.total.toLocaleString('ms-MY')}</span>
                     <span>Purata: ${item.average.toFixed(1)}</span>
                     <span>Capai: ${item.hitDays}/${metrics.dates.length}</span>
                 </div>
@@ -2090,7 +2145,7 @@ function downloadSummaryTable() {
 
 async function copyOfficerSummary(role) {
     const config = officerRoleConfigs[role];
-    const metrics = buildOfficerMetrics(getFilteredOfficerRows(role), config.target, role);
+    const metrics = getOfficerDashboardMetrics(role, config).currentMetrics;
     const latestDate = metrics.latestDate ? formatDateFromIso(metrics.latestDate) : '-';
     const hitNames = metrics.officerItems
         .filter(item => item.latestCount >= config.target)
@@ -2101,10 +2156,10 @@ async function copyOfficerSummary(role) {
         .map(item => `${item.displayName} (${item.latestCount}/${config.target})`);
     const text = [
         `Ringkasan Prestasi Harian ${config.label}`,
-        `Bulan: ${metrics.monthLabel}`,
-        `Tarikh terkini: ${latestDate}`,
+        `Tempoh: ${metrics.periodLabel}`,
+        `Tarikh paparan: ${latestDate}`,
         `Jumlah selesai: ${metrics.totalCompleted.toLocaleString('ms-MY')}`,
-        `Capai target hari terkini: ${metrics.latestHitCount}/${metrics.officerItems.length} pegawai`,
+        `Capai target: ${metrics.latestHitCount}/${metrics.officerItems.length} pegawai`,
         `Capai target: ${hitNames.length ? hitNames.join(', ') : 'Tiada'}`,
         `Perlu pecut: ${needPushNames.length ? needPushNames.join(', ') : 'Tiada'}`
     ].join('\n');
@@ -2119,16 +2174,16 @@ async function copyOfficerSummary(role) {
 
 function downloadOfficerCsv(role) {
     const config = officerRoleConfigs[role];
-    const metrics = buildOfficerMetrics(getFilteredOfficerRows(role), config.target, role);
+    const metrics = getOfficerDashboardMetrics(role, config).currentMetrics;
     if (!metrics.officerItems.length) {
         showAuthMessage(`Tiada data ${config.label.toLowerCase()} untuk download.`, true);
         return;
     }
 
-    const headers = ['Peranan', 'Bulan', 'Pegawai Ringkas', 'Nama Penuh', 'Jumlah', 'Purata Hari Bekerja', 'Hari Capai Target', 'Kiraan Terkini', 'Gap Terkini'];
+    const headers = ['Peranan', 'Tempoh', 'Pegawai Ringkas', 'Nama Penuh', 'Jumlah', 'Purata Hari Bekerja', 'Hari Capai Target', 'Kiraan Terkini', 'Gap Terkini'];
     const body = metrics.officerItems.map(item => [
         config.label,
-        metrics.monthLabel,
+        metrics.periodLabel,
         item.displayName,
         item.officerName,
         item.total,
@@ -2141,7 +2196,7 @@ function downloadOfficerCsv(role) {
     const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `prestasi-harian-${role}-${officerFilterState[role].month || toIsoDate(new Date())}.csv`;
+    link.download = `prestasi-harian-${role}-${officerFilterState[role].day || officerFilterState[role].month || toIsoDate(new Date())}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
 }

@@ -731,6 +731,10 @@ select:focus {
     min-width: 160px;
 }
 
+.officer-day-filter {
+    min-width: 160px;
+}
+
 .officer-kpis {
     grid-template-columns: repeat(5, minmax(0, 1fr));
 }
