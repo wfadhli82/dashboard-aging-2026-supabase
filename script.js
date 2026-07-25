@@ -33,6 +33,8 @@ const defaultAgingThreshold = 5;
 const minAgingThreshold = 1;
 const maxAgingThreshold = 30;
 const agingThresholdStorageKey = 'dashboard-aging-threshold';
+const defaultUsernameDomain = 'maiwp.gov.my';
+const legacyUsernameDomain = 'dashboard.local';
 const visitorStaffRankingTitle = 'KEDUDUKAN 5 PENYIASAT TERTINGGI MENGIKUT BILANGAN URUSAN PENGUNJUNG';
 const typeLabels = { new: 'Baharu', renewal: 'Penyambungan', appeal: 'Rayuan', addrate: 'Tambah Kadar' };
 const applicationTypeOrder = ['new', 'renewal', 'appeal', 'addrate'];
@@ -409,7 +411,7 @@ async function handleLogin(event) {
         showAuthMessage('Masukkan nama pengguna atau alamat emel yang sah.', true);
         return;
     }
-    const email = isEmail ? username : `${username}@dashboard.local`;
+    const email = isEmail ? username : `${username}@${defaultUsernameDomain}`;
 
     const loginButton = document.getElementById('loginBtn');
     loginButton.disabled = true;
@@ -940,7 +942,7 @@ function appendSyntheticRows(target, count, row) {
 function updateAuthUi(session) {
     const isLoggedIn = Boolean(session);
     const email = session?.user?.email?.toLowerCase() || '';
-    const username = email.endsWith('@dashboard.local') ? email.slice(0, -'@dashboard.local'.length) : email;
+    const username = getDisplayUsername(email);
     const uploadCard = document.getElementById('uploadCard');
     document.getElementById('loginView').hidden = isLoggedIn;
     document.getElementById('appContent').hidden = !isLoggedIn;
@@ -950,6 +952,14 @@ function updateAuthUi(session) {
     document.getElementById('profileInitial').textContent = username ? username.charAt(0).toUpperCase() : '?';
     uploadCard.hidden = true;
     uploadCard.style.display = 'none';
+}
+
+function getDisplayUsername(email) {
+    for (const domain of [defaultUsernameDomain, legacyUsernameDomain]) {
+        const suffix = `@${domain}`;
+        if (email.endsWith(suffix)) return email.slice(0, -suffix.length);
+    }
+    return email;
 }
 
 function toggleProfileMenu(event) {
