@@ -29,6 +29,10 @@ const HOLIDAY_DATES_2026 = new Set([
 ]);
 
 const monthLabels = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogos', 'Sept', 'Okt', 'Nov', 'Dis'];
+const defaultAgingThreshold = 5;
+const minAgingThreshold = 1;
+const maxAgingThreshold = 30;
+const agingThresholdStorageKey = 'dashboard-aging-threshold';
 const visitorStaffRankingTitle = 'KEDUDUKAN 5 PENYIASAT TERTINGGI MENGIKUT BILANGAN URUSAN PENGUNJUNG';
 const typeLabels = { new: 'Baharu', renewal: 'Penyambungan', appeal: 'Rayuan', addrate: 'Tambah Kadar' };
 const applicationTypeOrder = ['new', 'renewal', 'appeal', 'addrate'];
@@ -156,6 +160,7 @@ let selectedApplicationSchemes = [];
 let selectedApplicationTypes = [];
 let metricMode = 'count';
 let officialMetricMode = 'count';
+let agingThreshold = defaultAgingThreshold;
 let currentSummaryRows = [];
 let dataRange = { first: null, last: null };
 let dailyZoom = { start: 0, end: 0 };
@@ -180,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.holiday-count').forEach(element => {
         element.textContent = 365 - getWorkingDaysIn2026().length;
     });
+    setupAgingThresholdControl();
 
     document.getElementById('authForm').addEventListener('submit', handleLogin);
     document.getElementById('profileButton').addEventListener('click', toggleProfileMenu);
@@ -263,6 +269,101 @@ function setupOfficerEvents(role) {
     });
     document.getElementById(`${role}CopySummaryBtn`)?.addEventListener('click', () => copyOfficerSummary(role));
     document.getElementById(`${role}DownloadCsvBtn`)?.addEventListener('click', () => downloadOfficerCsv(role));
+}
+
+function setupAgingThresholdControl() {
+    const select = document.getElementById('agingThresholdSelect');
+    if (!select) return;
+    select.innerHTML = Array.from(
+        { length: maxAgingThreshold - minAgingThreshold + 1 },
+        (_item, index) => {
+            const value = minAgingThreshold + index;
+            return `<option value="${value}">${value}</option>`;
+        }
+    ).join('');
+    agingThreshold = getStoredAgingThreshold();
+    select.value = String(agingThreshold);
+    select.addEventListener('change', event => {
+        agingThreshold = clampAgingThreshold(event.target.value);
+        event.target.value = String(agingThreshold);
+        try {
+            window.localStorage?.setItem(agingThresholdStorageKey, String(agingThreshold));
+        } catch (_error) {
+            // Ignore storage errors; the selected value still applies for this session.
+        }
+        refreshAgingThresholdViews();
+    });
+    updateAgingThresholdLabels();
+}
+
+function getStoredAgingThreshold() {
+    try {
+        return clampAgingThreshold(window.localStorage?.getItem(agingThresholdStorageKey));
+    } catch (_error) {
+        return defaultAgingThreshold;
+    }
+}
+
+function clampAgingThreshold(value) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return defaultAgingThreshold;
+    return Math.min(maxAgingThreshold, Math.max(minAgingThreshold, Math.floor(parsed)));
+}
+
+function getAgingThresholdLabels() {
+    const lateStart = agingThreshold + 1;
+    return {
+        tab: `Dashboard Kelulusan ${agingThreshold} Hari`,
+        kicker: `Prestasi ${agingThreshold} hari`,
+        dashboardTitle: `Dashboard Kelulusan ${agingThreshold} Hari`,
+        officialTitle: `Dashboard Kelulusan ${agingThreshold} Hari Mengikut Skim Rasmi`,
+        onTime: `${agingThreshold} Hari Ke Bawah`,
+        late: `${lateStart} Hari Ke Atas`,
+        percent: `Peratus ${agingThreshold} Hari`,
+        trend: `Trend Kelulusan Dalam Tempoh ${agingThreshold} Hari Bekerja`,
+        ranking: `% Purata Kelulusan ${agingThreshold} Hari`,
+        latePercent: `% ${lateStart} Hari`
+    };
+}
+
+function updateAgingThresholdLabels() {
+    const labels = getAgingThresholdLabels();
+    setElementText('fiveDayTabButton', labels.tab);
+    setElementText('fiveDayKicker', labels.kicker);
+    setElementText('fiveDayTitle', labels.dashboardTitle);
+    setElementText('onTimeApplicationsLabel', labels.onTime);
+    setElementText('lateApplicationsLabel', labels.late);
+    setElementText('onTimePercentLabel', labels.percent);
+    setElementText('trendChartTitle', labels.trend);
+    setElementText('rankingPercentHeader', labels.ranking);
+    setElementText('summaryOnTimeHeader', labels.onTime);
+    setElementText('summaryLateHeader', labels.late);
+    setElementText('summaryOnTimePercentHeader', labels.ranking);
+    setElementText('summaryLatePercentHeader', labels.latePercent);
+    setElementText('officialTitle', labels.officialTitle);
+    setElementText('officialOnTimeApplicationsLabel', labels.onTime);
+    setElementText('officialLateApplicationsLabel', labels.late);
+    setElementText('officialOnTimePercentLabel', labels.percent);
+    setElementText('officialTrendChartTitle', labels.trend);
+    setElementText('officialRankingPercentHeader', labels.ranking);
+}
+
+function setElementText(id, text) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = text;
+}
+
+function refreshAgingThresholdViews() {
+    updateAgingThresholdLabels();
+    if (!rows.length) return;
+    updateDashboard();
+    updateSummaryTable();
+    updateOfficialDashboard();
+}
+
+function isWithinAgingThreshold(row) {
+    const value = Number(row?.aging);
+    return Number.isFinite(value) && value <= agingThreshold;
 }
 
 async function initializeSupabase() {
@@ -475,14 +576,27 @@ async function fetchLatestVisitorData() {
     return { run, rows: data || [], staffRows: staffRows || [], error: error || staffError };
 }
 
-async function fetchAllAggregates(runId) {
+async function fetchAllAggregates(runId, includeAgingDayCounts = true) {
     const pageSize = 1000;
     const data = [];
+    const fields = [
+        'year',
+        'month',
+        'branch',
+        'scheme',
+        'application_type',
+        'total_applications',
+        'approved_count',
+        'pending_count',
+        'approved_5_days_count',
+        'approved_over_5_days_count',
+        includeAgingDayCounts ? 'approved_aging_day_counts' : ''
+    ].filter(Boolean).join(',');
 
     for (let start = 0; ; start += pageSize) {
         const { data: page, error } = await supabaseClient
             .from('dashboard_aging_aggregates')
-            .select('year,month,branch,scheme,application_type,total_applications,approved_count,pending_count,approved_5_days_count,approved_over_5_days_count')
+            .select(fields)
             .eq('run_id', runId)
             .order('year')
             .order('month')
@@ -490,10 +604,19 @@ async function fetchAllAggregates(runId) {
             .order('scheme')
             .range(start, start + pageSize - 1);
 
+        if (error && includeAgingDayCounts && isMissingAgingDayCountsColumn(error)) {
+            return fetchAllAggregates(runId, false);
+        }
         if (error) return { data: null, error };
         data.push(...(page || []));
         if (!page || page.length < pageSize) return { data, error: null };
     }
+}
+
+function isMissingAgingDayCountsColumn(error) {
+    const message = String(error?.message || error?.details || '');
+    return /approved_aging_day_counts/i.test(message)
+        && (/column .* does not exist/i.test(message) || /could not find/i.test(message));
 }
 
 async function fetchAllDailyApplicationAggregates(runId) {
@@ -630,20 +753,33 @@ function expandAggregateRows(aggregates) {
             applicationTypeLabel
         };
 
-        appendSyntheticRows(expanded, item.approved_5_days_count, {
-            ...base,
-            appliedDate: new Date(year, monthIndex, 1),
-            approvedDate: new Date(year, monthIndex, 1),
-            aging: 5,
-            isApproved: true
-        });
-        appendSyntheticRows(expanded, item.approved_over_5_days_count, {
-            ...base,
-            appliedDate: new Date(year, monthIndex, 1),
-            approvedDate: new Date(year, monthIndex, 8),
-            aging: 6,
-            isApproved: true
-        });
+        const agingDayCounts = normalizeAgingDayCounts(item.approved_aging_day_counts);
+        if (agingDayCounts.length) {
+            agingDayCounts.forEach(([aging, count]) => {
+                appendSyntheticRows(expanded, count, {
+                    ...base,
+                    appliedDate: new Date(year, monthIndex, 1),
+                    approvedDate: new Date(year, monthIndex, Math.max(1, Number(aging || 1))),
+                    aging,
+                    isApproved: true
+                });
+            });
+        } else {
+            appendSyntheticRows(expanded, item.approved_5_days_count, {
+                ...base,
+                appliedDate: new Date(year, monthIndex, 1),
+                approvedDate: new Date(year, monthIndex, 1),
+                aging: 5,
+                isApproved: true
+            });
+            appendSyntheticRows(expanded, item.approved_over_5_days_count, {
+                ...base,
+                appliedDate: new Date(year, monthIndex, 1),
+                approvedDate: new Date(year, monthIndex, 8),
+                aging: 6,
+                isApproved: true
+            });
+        }
         appendSyntheticRows(expanded, item.pending_count, {
             ...base,
             appliedDate: new Date(year, monthIndex, 1),
@@ -653,6 +789,22 @@ function expandAggregateRows(aggregates) {
         });
     });
     return expanded;
+}
+
+function normalizeAgingDayCounts(value) {
+    let source = value;
+    if (typeof source === 'string') {
+        try {
+            source = JSON.parse(source);
+        } catch (_error) {
+            source = null;
+        }
+    }
+    if (!source || typeof source !== 'object' || Array.isArray(source)) return [];
+    return Object.entries(source)
+        .map(([key, count]) => [Number(key), Number(count)])
+        .filter(([key, count]) => Number.isFinite(key) && Number.isFinite(count) && count > 0)
+        .sort((a, b) => a[0] - b[0]);
 }
 
 function applySchemeMappings(sourceRows) {
@@ -1993,7 +2145,7 @@ function updateKpis(activeRows, approvedRows) {
     const total = activeRows.length;
     const approved = approvedRows.length;
     const pending = total - approved;
-    const onTime = approvedRows.filter(row => row.aging <= 5).length;
+    const onTime = approvedRows.filter(isWithinAgingThreshold).length;
     const late = approved - onTime;
 
     document.getElementById('totalApplications').textContent = total.toLocaleString('ms-MY');
@@ -2007,7 +2159,7 @@ function updateKpis(activeRows, approvedRows) {
 function updateOfficialKpis(activeRows, approvedRows) {
     const total = activeRows.length;
     const approved = approvedRows.length;
-    const onTime = approvedRows.filter(row => row.aging <= 5).length;
+    const onTime = approvedRows.filter(isWithinAgingThreshold).length;
     const late = approved - onTime;
     document.getElementById('officialTotalApplications').textContent = total.toLocaleString('ms-MY');
     document.getElementById('officialApprovedApplications').textContent = approved.toLocaleString('ms-MY');
@@ -2024,7 +2176,7 @@ function updateTrendChart(approvedRows, canvasId = 'trendChart', mode = metricMo
     approvedRows.forEach(row => {
         const month = row.appliedDate.getMonth();
         denominator[month]++;
-        if (row.aging <= 5) numerator[month]++;
+        if (isWithinAgingThreshold(row)) numerator[month]++;
     });
 
     const data = mode === 'percent'
@@ -2043,7 +2195,7 @@ function updateRankingTable(approvedRows, bodyId = 'rankingTableBody', schemeKey
         }
         const item = grouped.get(scheme);
         item.approved++;
-        if (row.aging <= 5) item.onTime++;
+        if (isWithinAgingThreshold(row)) item.onTime++;
     });
 
     const rankingRows = [...grouped.values()]
@@ -2083,7 +2235,7 @@ function updateSummaryTable() {
     const grouped = monthLabels.map((month, index) => ({ month, monthIndex: index, underFive: 0, overFive: 0 }));
     approvedRows.forEach(row => {
         const item = grouped[row.appliedDate.getMonth()];
-        if (row.aging <= 5) item.underFive++;
+        if (isWithinAgingThreshold(row)) item.underFive++;
         else item.overFive++;
     });
 
@@ -2121,7 +2273,8 @@ function downloadSummaryTable() {
         return;
     }
 
-    const headers = ['Bulan', 'Jumlah', '5 Hari Ke Bawah', '6 Hari Ke Atas', '% Purata Kelulusan 5 Hari', '% 6 Hari'];
+    const labels = getAgingThresholdLabels();
+    const headers = ['Bulan', 'Jumlah', labels.onTime, labels.late, labels.ranking, labels.latePercent];
     const body = currentSummaryRows.map(row => {
         const total = row.underFive + row.overFive;
         return [
@@ -2138,7 +2291,7 @@ function downloadSummaryTable() {
     const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `jadual-prestasi-keseluruhan-${toIsoDate(new Date())}.csv`;
+    link.download = `jadual-prestasi-keseluruhan-${agingThreshold}-hari-${toIsoDate(new Date())}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
 }

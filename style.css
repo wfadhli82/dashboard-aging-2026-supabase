@@ -149,6 +149,42 @@ body {
     align-items: center;
 }
 
+.aging-threshold-control {
+    min-width: 170px;
+    gap: 6px;
+    color: #e3f1f8;
+}
+
+.aging-threshold-control span:first-child {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.aging-threshold-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.94);
+    border-radius: 8px;
+}
+
+.aging-threshold-input select {
+    width: 74px;
+    min-height: 34px;
+    padding: 4px 28px 4px 10px;
+    font-weight: 800;
+}
+
+.aging-threshold-input small {
+    color: #40556a;
+    font-size: 0.78rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
 .profile-menu {
     position: relative;
 }
@@ -1256,6 +1292,11 @@ tfoot td {
     .topbar-actions {
         align-items: stretch;
         justify-content: space-between;
+    }
+
+    .aging-threshold-control {
+        min-width: 0;
+        flex: 1;
     }
 
     .calendar-chip {

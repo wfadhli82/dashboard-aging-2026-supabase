@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Bahagian Agihan Zakat</title>
-    <link rel="stylesheet" href="style.css?v=20260724-officer-day-filter">
+    <link rel="stylesheet" href="style.css?v=20260725-aging-threshold">
 </head>
 <body>
     <div class="app-shell">
@@ -43,6 +43,13 @@
                     <p id="dateRangeText">Paparan prestasi kelulusan, permohonan masuk dan perakuan bantuan.</p>
                 </div>
                 <div class="topbar-actions">
+                    <label class="aging-threshold-control" for="agingThresholdSelect">
+                        <span>Had ageing</span>
+                        <span class="aging-threshold-input">
+                            <select id="agingThresholdSelect" aria-label="Had ageing hari bekerja"></select>
+                            <small>hari bekerja</small>
+                        </span>
+                    </label>
                     <div class="profile-menu">
                         <button type="button" class="profile-button" id="profileButton" aria-expanded="false" aria-controls="profileMenu">
                             <span id="profileInitial">?</span>
@@ -73,7 +80,7 @@
                 <div class="dashboard-layout">
                 <nav class="tabs" id="dashboardTabs" aria-label="Tab dashboard">
                     <button type="button" class="tab-button active" data-tab="applicationPanel">Analisis Permohonan</button>
-                    <button type="button" class="tab-button" data-tab="fiveDayPanel">Dashboard Kelulusan 5 Hari</button>
+                    <button type="button" class="tab-button" data-tab="fiveDayPanel" id="fiveDayTabButton">Dashboard Kelulusan 5 Hari</button>
                     <button type="button" class="tab-button" data-tab="officialPanel">Dashboard Skim Rasmi</button>
                     <button type="button" class="tab-button" data-tab="performancePanel">Jadual Prestasi Keseluruhan</button>
                     <button type="button" class="tab-button" data-tab="pendingValidationPanel">Permohonan Belum Diperaku</button>
@@ -86,8 +93,8 @@
                 <section class="tab-panel" id="fiveDayPanel">
                     <section class="filter-card">
                         <div>
-                            <p class="section-kicker">Prestasi 5 hari</p>
-                            <h2>Dashboard Kelulusan 5 Hari</h2>
+                            <p class="section-kicker" id="fiveDayKicker">Prestasi 5 hari</p>
+                            <h2 id="fiveDayTitle">Dashboard Kelulusan 5 Hari</h2>
                             <p class="muted tab-data-range" id="fiveDayDateRange" data-range-prefix="Data permohonan">Data permohonan: -</p>
                             <div class="calendar-chip tab-calendar-chip" aria-label="Ringkasan kalendar 2026">
                                 <span><strong class="working-day-count">246</strong> hari bekerja</span>
@@ -154,15 +161,15 @@
                             <strong id="pendingApplications">0</strong>
                         </article>
                         <article class="kpi-card good">
-                            <span>5 Hari Ke Bawah</span>
+                            <span id="onTimeApplicationsLabel">5 Hari Ke Bawah</span>
                             <strong id="onTimeApplications">0</strong>
                         </article>
                         <article class="kpi-card risk">
-                            <span>6 Hari Ke Atas</span>
+                            <span id="lateApplicationsLabel">6 Hari Ke Atas</span>
                             <strong id="lateApplications">0</strong>
                         </article>
                         <article class="kpi-card percent">
-                            <span>Peratus 5 Hari</span>
+                            <span id="onTimePercentLabel">Peratus 5 Hari</span>
                             <strong id="onTimePercent">0%</strong>
                         </article>
                     </section>
@@ -170,7 +177,7 @@
                     <section class="chart-card">
                         <div class="panel-heading">
                             <div>
-                                <h2>Trend Kelulusan Dalam Tempoh 5 Hari Bekerja</h2>
+                                <h2 id="trendChartTitle">Trend Kelulusan Dalam Tempoh 5 Hari Bekerja</h2>
                             </div>
                             <div class="segmented" role="radiogroup" aria-label="Metrik carta">
                                 <label>
@@ -198,7 +205,7 @@
                                     <tr>
                                         <th>Rank</th>
                                         <th>Skim Bantuan</th>
-                                        <th>% Purata Kelulusan 5 Hari</th>
+                                        <th id="rankingPercentHeader">% Purata Kelulusan 5 Hari</th>
                                         <th>Bilangan Kelulusan</th>
                                     </tr>
                                 </thead>
@@ -653,10 +660,10 @@
                                     <tr>
                                         <th>Bulan</th>
                                         <th>Jumlah</th>
-                                        <th>5 Hari Ke Bawah</th>
-                                        <th>6 Hari Ke Atas</th>
-                                        <th>% Purata Kelulusan 5 Hari</th>
-                                        <th>% 6 Hari</th>
+                                        <th id="summaryOnTimeHeader">5 Hari Ke Bawah</th>
+                                        <th id="summaryLateHeader">6 Hari Ke Atas</th>
+                                        <th id="summaryOnTimePercentHeader">% Purata Kelulusan 5 Hari</th>
+                                        <th id="summaryLatePercentHeader">% 6 Hari</th>
                                     </tr>
                                 </thead>
                                 <tbody id="summaryTableBody"></tbody>
@@ -670,7 +677,7 @@
                     <section class="filter-card">
                         <div>
                             <p class="section-kicker">Skim rasmi</p>
-                            <h2>Dashboard Kelulusan 5 Hari Mengikut Skim Rasmi</h2>
+                            <h2 id="officialTitle">Dashboard Kelulusan 5 Hari Mengikut Skim Rasmi</h2>
                             <p class="muted tab-data-range" id="officialDateRange" data-range-prefix="Data permohonan">Data permohonan: -</p>
                             <div class="calendar-chip tab-calendar-chip" aria-label="Ringkasan kalendar 2026">
                                 <span><strong class="working-day-count">246</strong> hari bekerja</span>
@@ -718,14 +725,14 @@
                         <article class="kpi-card"><span>Jumlah Permohonan</span><strong id="officialTotalApplications">0</strong></article>
                         <article class="kpi-card approved"><span>Telah Diluluskan</span><strong id="officialApprovedApplications">0</strong></article>
                         <article class="kpi-card pending"><span>Belum Diluluskan</span><strong id="officialPendingApplications">0</strong></article>
-                        <article class="kpi-card good"><span>5 Hari Ke Bawah</span><strong id="officialOnTimeApplications">0</strong></article>
-                        <article class="kpi-card risk"><span>6 Hari Ke Atas</span><strong id="officialLateApplications">0</strong></article>
-                        <article class="kpi-card percent"><span>Peratus 5 Hari</span><strong id="officialOnTimePercent">0%</strong></article>
+                        <article class="kpi-card good"><span id="officialOnTimeApplicationsLabel">5 Hari Ke Bawah</span><strong id="officialOnTimeApplications">0</strong></article>
+                        <article class="kpi-card risk"><span id="officialLateApplicationsLabel">6 Hari Ke Atas</span><strong id="officialLateApplications">0</strong></article>
+                        <article class="kpi-card percent"><span id="officialOnTimePercentLabel">Peratus 5 Hari</span><strong id="officialOnTimePercent">0%</strong></article>
                     </section>
 
                     <section class="chart-card">
                         <div class="panel-heading">
-                            <div><h2>Trend Kelulusan Dalam Tempoh 5 Hari Bekerja</h2></div>
+                            <div><h2 id="officialTrendChartTitle">Trend Kelulusan Dalam Tempoh 5 Hari Bekerja</h2></div>
                             <div class="segmented" role="radiogroup" aria-label="Metrik carta skim rasmi">
                                 <label><input type="radio" name="officialMetricMode" value="count" checked><span>Bilangan</span></label>
                                 <label><input type="radio" name="officialMetricMode" value="percent"><span>Peratus</span></label>
@@ -738,7 +745,7 @@
                         <div class="panel-heading"><div><h2>Ranking Prestasi Skim Rasmi</h2></div></div>
                         <div class="table-wrap">
                             <table class="ranking-table">
-                                <thead><tr><th>Rank</th><th>Skim Rasmi</th><th>% Purata Kelulusan 5 Hari</th><th>Bilangan Kelulusan</th></tr></thead>
+                                <thead><tr><th>Rank</th><th>Skim Rasmi</th><th id="officialRankingPercentHeader">% Purata Kelulusan 5 Hari</th><th>Bilangan Kelulusan</th></tr></thead>
                                 <tbody id="officialRankingTableBody"></tbody>
                             </table>
                         </div>
@@ -756,6 +763,6 @@
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="template-data.js"></script>
-    <script src="script.js?v=20260724-officer-day-filter"></script>
+    <script src="script.js?v=20260725-aging-threshold"></script>
 </body>
 </html>
