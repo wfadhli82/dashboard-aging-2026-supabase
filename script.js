@@ -46,6 +46,11 @@ const applicationTypeColors = {
     addrate: '#f4b400',
     other: '#64748b'
 };
+const applicationChartDetailMeta = {
+    daily: { title: 'Carta Harian Permohonan' },
+    weekly: { title: 'Carta Mingguan Permohonan' },
+    monthly: { title: 'Carta Bulanan Permohonan' }
+};
 const pendingValidationMonthLabels = ['JAN', 'FEB', 'MAC', 'APRIL', 'MEI', 'JUN', 'JULAI', 'OGOS', 'SEPT', 'OKT', 'NOV', 'DIS'];
 const officerRoleConfigs = {
     certifier: {
@@ -122,6 +127,27 @@ const schemePengagihanPreset = [
     'BANTUAN TAMBANG DAN KEPERLUAN DIRI LUAR NEGERI',
     'BANTUAN ORANG KELAINAN UPAYA (OKU)'
 ];
+const schemePengagihanSet = new Set(schemePengagihanPreset);
+const schemeViewModeConfig = {
+    detailed: {
+        label: 'Skim Terperinci',
+        filterLabel: 'Skim Terperinci',
+        allLabel: 'Semua skim terperinci',
+        slug: 'skim-terperinci'
+    },
+    official: {
+        label: 'Skim Rasmi',
+        filterLabel: 'Skim Rasmi',
+        allLabel: 'Semua skim rasmi',
+        slug: 'skim-rasmi'
+    },
+    distribution: {
+        label: 'Skim Pengagihan',
+        filterLabel: 'Skim Pengagihan (Rasmi)',
+        allLabel: 'Semua skim pengagihan',
+        slug: 'skim-pengagihan'
+    }
+};
 
 let headerMap = {};
 let rows = [];
@@ -139,9 +165,6 @@ let selectedTypes = [];
 let selectedTableTypes = [];
 let typeOptions = [];
 let tableTypeOptions = [];
-let officialBranchOptions = [];
-let officialSchemeOptions = [];
-let officialTypeOptions = [];
 let applicationRows = [];
 let officerRows = [];
 let pendingValidationRows = [];
@@ -154,19 +177,19 @@ let pendingValidationSearchTerm = '';
 let applicationBranchOptions = [];
 let applicationSchemeOptions = [];
 let applicationTypeOptions = [];
-let selectedOfficialBranches = [];
-let selectedOfficialSchemes = [];
-let selectedOfficialTypes = [];
 let selectedApplicationBranches = [];
 let selectedApplicationSchemes = [];
 let selectedApplicationTypes = [];
 let metricMode = 'count';
-let officialMetricMode = 'count';
+let schemeViewMode = 'detailed';
 let agingThreshold = defaultAgingThreshold;
 let currentSummaryRows = [];
 let dataRange = { first: null, last: null };
 let dailyZoom = { start: 0, end: 0 };
+let dailyZoomInitialized = false;
 let dailyLabels = [];
+let applicationChartData = {};
+let activeApplicationChartDetail = null;
 let supabaseClient = null;
 let latestRun = null;
 let latestVisitorRun = null;
@@ -203,8 +226,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('drawerToggle').addEventListener('click', toggleDashboardDrawer);
 
     getMultiSelectConfigs().forEach(setupMultiSelectEvents);
-    document.querySelectorAll('[data-preset-key]').forEach(button => {
-        button.addEventListener('click', () => applySchemePreset(button.dataset.presetKey));
+    document.querySelectorAll('[data-scheme-mode]').forEach(input => {
+        input.addEventListener('change', event => {
+            if (event.target.checked) setSchemeViewMode(event.target.value);
+        });
     });
     document.addEventListener('click', () => {
         closeMultiSelectMenus();
@@ -218,16 +243,13 @@ document.addEventListener('DOMContentLoaded', () => {
             updateTrendChart(approvedFilteredRows);
         });
     });
-    document.querySelectorAll('input[name="officialMetricMode"]').forEach(input => {
-        input.addEventListener('change', event => {
-            officialMetricMode = event.target.value;
-            updateOfficialDashboard();
-        });
-    });
-
     document.getElementById('dailyStartRange').addEventListener('input', updateDailyZoomFromInputs);
     document.getElementById('dailyEndRange').addEventListener('input', updateDailyZoomFromInputs);
     document.getElementById('dailyZoomResetBtn').addEventListener('click', resetDailyZoom);
+    document.querySelectorAll('[data-application-chart]').forEach(button => {
+        button.addEventListener('click', () => openApplicationChartDetail(button.dataset.applicationChart));
+    });
+    document.getElementById('applicationChartDetailBackBtn').addEventListener('click', closeApplicationChartDetail);
     document.getElementById('downloadSummaryBtn').addEventListener('click', downloadSummaryTable);
     document.getElementById('downloadPendingValidationBtn').addEventListener('click', downloadPendingValidationExcel);
     document.getElementById('downloadVisitorExcelBtn').addEventListener('click', downloadVisitorExcel);
@@ -318,7 +340,6 @@ function getAgingThresholdLabels() {
         tab: `Dashboard Kelulusan ${agingThreshold} Hari`,
         kicker: `Prestasi ${agingThreshold} hari`,
         dashboardTitle: `Dashboard Kelulusan ${agingThreshold} Hari`,
-        officialTitle: `Dashboard Kelulusan ${agingThreshold} Hari Mengikut Skim Rasmi`,
         onTime: `${agingThreshold} Hari Ke Bawah`,
         late: `${lateStart} Hari Ke Atas`,
         percent: `Peratus ${agingThreshold} Hari`,
@@ -342,12 +363,7 @@ function updateAgingThresholdLabels() {
     setElementText('summaryLateHeader', labels.late);
     setElementText('summaryOnTimePercentHeader', labels.ranking);
     setElementText('summaryLatePercentHeader', labels.latePercent);
-    setElementText('officialTitle', labels.officialTitle);
-    setElementText('officialOnTimeApplicationsLabel', labels.onTime);
-    setElementText('officialLateApplicationsLabel', labels.late);
-    setElementText('officialOnTimePercentLabel', labels.percent);
-    setElementText('officialTrendChartTitle', labels.trend);
-    setElementText('officialRankingPercentHeader', labels.ranking);
+    updateSchemeViewLabels();
 }
 
 function setElementText(id, text) {
@@ -360,7 +376,6 @@ function refreshAgingThresholdViews() {
     if (!rows.length) return;
     updateDashboard();
     updateSummaryTable();
-    updateOfficialDashboard();
 }
 
 function isWithinAgingThreshold(row) {
@@ -445,6 +460,11 @@ async function handleLogout() {
     visitorRows = [];
     visitorStaffRows = [];
     latestRun = null;
+    schemeViewMode = 'detailed';
+    dailyZoom = { start: 0, end: 0 };
+    dailyZoomInitialized = false;
+    syncSchemeModeControls();
+    updateSchemeViewLabels();
     dataRange = { first: null, last: null };
     document.getElementById('dashboard').hidden = true;
     document.getElementById('dateRangeText').textContent = 'Paparan prestasi kelulusan, permohonan masuk dan perakuan bantuan.';
@@ -525,13 +545,12 @@ async function loadSupabaseData() {
         last: parseAppDate(latestRun.data_end_date) || getDateRange(rows).last
     };
     setupFilters();
-    setupOfficialFilters();
     setupApplicationFilters();
+    updateSchemeViewLabels();
     setupOfficerFilters();
     setupPendingValidationFilters();
     updateDashboard();
     updateSummaryTable();
-    updateOfficialDashboard();
     updateApplicationDashboard();
     updateOfficerDashboard('certifier');
     updateOfficerDashboard('approver');
@@ -1003,10 +1022,9 @@ function handleFile(file) {
 
             dataRange = getDateRange(rows);
             setupFilters();
-            setupOfficialFilters();
+            updateSchemeViewLabels();
             updateDashboard();
             updateSummaryTable();
-            updateOfficialDashboard();
             updateAllDataRangeLabels();
 
             document.getElementById('fileStatus').textContent = `${file.name} dimuatkan (${rows.length.toLocaleString('ms-MY')} rekod).`;
@@ -1133,7 +1151,7 @@ function getApplicationState(record, approvedDate) {
 function setupFilters() {
     branchOptions = getUniqueValues(rows.map(row => row.branch));
     tableBranchOptions = [...branchOptions];
-    schemeOptions = getUniqueValues(rows.map(row => row.scheme));
+    schemeOptions = getSchemeViewOptions(rows);
     tableSchemeOptions = [...schemeOptions];
     typeOptions = getUniqueValues(rows.map(row => row.applicationTypeLabel));
     tableTypeOptions = [...typeOptions];
@@ -1145,24 +1163,78 @@ function setupFilters() {
     selectedTableTypes = [...tableTypeOptions];
 }
 
-function setupOfficialFilters() {
-    officialBranchOptions = getUniqueValues(rows.map(row => row.branch));
-    officialSchemeOptions = officialSchemes.map(item => item.name);
-    officialTypeOptions = getUniqueValues(rows.map(row => row.applicationTypeLabel));
-    selectedOfficialBranches = [...officialBranchOptions];
-    selectedOfficialSchemes = [...officialSchemeOptions];
-    selectedOfficialTypes = [...officialTypeOptions];
-    getMultiSelectConfigs().forEach(renderMultiSelect);
-}
-
 function setupApplicationFilters() {
     applicationBranchOptions = getUniqueValues(applicationRows.map(row => row.branch));
-    applicationSchemeOptions = officialSchemes.map(item => item.name).filter(name => applicationRows.some(row => row.officialScheme === name));
+    applicationSchemeOptions = getSchemeViewOptions(applicationRows);
     applicationTypeOptions = getUniqueValues(applicationRows.map(row => row.applicationTypeLabel));
     selectedApplicationBranches = [...applicationBranchOptions];
     selectedApplicationSchemes = [...applicationSchemeOptions];
     selectedApplicationTypes = [...applicationTypeOptions];
     getMultiSelectConfigs().forEach(renderMultiSelect);
+}
+
+function setSchemeViewMode(mode) {
+    if (!schemeViewModeConfig[mode] || mode === schemeViewMode) {
+        syncSchemeModeControls();
+        return;
+    }
+
+    schemeViewMode = mode;
+    syncSchemeModeControls();
+    schemeOptions = getSchemeViewOptions(rows);
+    tableSchemeOptions = [...schemeOptions];
+    applicationSchemeOptions = getSchemeViewOptions(applicationRows);
+    selectedSchemes = [...schemeOptions];
+    selectedTableSchemes = [...tableSchemeOptions];
+    selectedApplicationSchemes = [...applicationSchemeOptions];
+    updateSchemeViewLabels();
+
+    ['dashboardScheme', 'tableScheme', 'applicationScheme'].forEach(selectedKey => {
+        const config = getMultiSelectConfigs().find(item => item.selectedKey === selectedKey);
+        if (config) refreshMultiSelect(config);
+    });
+
+    if (!rows.length) return;
+    updateDashboard();
+    updateSummaryTable();
+    if (applicationRows.length) updateApplicationDashboard();
+}
+
+function syncSchemeModeControls() {
+    document.querySelectorAll('[data-scheme-mode]').forEach(input => {
+        input.checked = input.value === schemeViewMode;
+    });
+}
+
+function getSchemeViewRows(sourceRows) {
+    if (schemeViewMode !== 'distribution') return sourceRows;
+    return sourceRows.filter(row => schemePengagihanSet.has(row.scheme));
+}
+
+function getSchemeViewValue(row) {
+    return schemeViewMode === 'detailed' ? row.scheme : row.officialScheme;
+}
+
+function getSchemeViewOptions(sourceRows) {
+    return getUniqueValues(getSchemeViewRows(sourceRows).map(getSchemeViewValue));
+}
+
+function getSchemeViewLabels() {
+    return schemeViewModeConfig[schemeViewMode];
+}
+
+function updateSchemeViewLabels() {
+    const config = getSchemeViewLabels();
+    setElementText('fiveDayTitle', `Dashboard Kelulusan ${agingThreshold} Hari - ${config.label}`);
+    setElementText('applicationTitle', `Analisis Permohonan Masuk - ${config.label}`);
+    setElementText('performanceTitle', `Jadual Prestasi Keseluruhan - ${config.label}`);
+    setElementText('trendChartTitle', `Trend Kelulusan Dalam Tempoh ${agingThreshold} Hari Bekerja - ${config.label}`);
+    setElementText('dashboardSchemeFilterLabel', config.filterLabel);
+    setElementText('applicationSchemeFilterLabel', config.filterLabel);
+    setElementText('tableSchemeFilterLabel', config.filterLabel);
+    setElementText('rankingTitle', `Ranking Prestasi ${config.label}`);
+    setElementText('rankingSchemeHeader', config.filterLabel);
+    setElementText('applicationTopSchemesTitle', `Top ${config.label}`);
 }
 
 function setupOfficerFilters() {
@@ -1244,20 +1316,19 @@ function setupPendingValidationFilters() {
 }
 
 function getMultiSelectConfigs() {
+    const schemeLabels = getSchemeViewLabels();
+    const preserveSchemeCase = schemeViewMode !== 'detailed';
     return [
         multiConfig('dashboardBranch', 'Semua cawangan', 'branchFilter', updateDashboard),
-        multiConfig('dashboardScheme', 'Semua skim', 'schemeFilter', updateDashboard),
+        multiConfig('dashboardScheme', schemeLabels.allLabel, 'schemeFilter', updateDashboard, preserveSchemeCase),
         multiConfig('dashboardType', 'Semua jenis', 'typeFilter', updateDashboard),
         multiConfig('tableBranch', 'Semua cawangan', 'tableBranchFilter', updateSummaryTable),
-        multiConfig('tableScheme', 'Semua skim', 'tableSchemeFilter', updateSummaryTable),
+        multiConfig('tableScheme', schemeLabels.allLabel, 'tableSchemeFilter', updateSummaryTable, preserveSchemeCase),
         multiConfig('tableType', 'Semua jenis', 'tableTypeFilter', updateSummaryTable),
         multiConfig('applicationBranch', 'Semua cawangan', 'applicationBranchFilter', updateApplicationDashboard),
-        multiConfig('applicationScheme', 'Semua skim rasmi', 'applicationSchemeFilter', updateApplicationDashboard, true),
+        multiConfig('applicationScheme', schemeLabels.allLabel, 'applicationSchemeFilter', updateApplicationDashboard, preserveSchemeCase),
         multiConfig('applicationType', 'Semua jenis', 'applicationTypeFilter', updateApplicationDashboard),
-        multiConfig('pendingValidationBranch', 'Semua cawangan', 'pendingValidationBranchFilter', updatePendingValidationDashboard, true),
-        multiConfig('officialBranch', 'Semua cawangan', 'officialBranchFilter', updateOfficialDashboard),
-        multiConfig('officialScheme', 'Semua skim rasmi', 'officialSchemeFilter', updateOfficialDashboard, true),
-        multiConfig('officialType', 'Semua jenis', 'officialTypeFilter', updateOfficialDashboard)
+        multiConfig('pendingValidationBranch', 'Semua cawangan', 'pendingValidationBranchFilter', updatePendingValidationDashboard, true)
     ];
 }
 
@@ -1281,9 +1352,9 @@ function multiConfig(selectedKey, allLabel, prefix, onChange, preserveCase = fal
 }
 
 function updateDashboard() {
-    filteredRows = rows.filter(row => {
+    filteredRows = getSchemeViewRows(rows).filter(row => {
         const branchMatch = selectedBranches.includes(row.branch);
-        const schemeMatch = selectedSchemes.includes(row.scheme);
+        const schemeMatch = selectedSchemes.includes(getSchemeViewValue(row));
         const typeMatch = selectedTypes.includes(row.applicationTypeLabel);
         return branchMatch && schemeMatch && typeMatch;
     });
@@ -1294,23 +1365,10 @@ function updateDashboard() {
     updateRankingTable(approvedFilteredRows);
 }
 
-function updateOfficialDashboard() {
-    if (!rows.length) return;
-    const activeRows = rows.filter(row => {
-        return selectedOfficialBranches.includes(row.branch)
-            && selectedOfficialSchemes.includes(row.officialScheme)
-            && selectedOfficialTypes.includes(row.applicationTypeLabel);
-    });
-    const approvedRows = activeRows.filter(row => row.isApproved);
-    updateOfficialKpis(activeRows, approvedRows);
-    updateTrendChart(approvedRows, 'officialTrendChart', officialMetricMode);
-    updateRankingTable(approvedRows, 'officialRankingTableBody', 'officialScheme');
-}
-
 function updateApplicationDashboard() {
-    const activeRows = applicationRows.filter(row => {
+    const activeRows = getSchemeViewRows(applicationRows).filter(row => {
         return selectedApplicationBranches.includes(row.branch)
-            && selectedApplicationSchemes.includes(row.officialScheme)
+            && selectedApplicationSchemes.includes(getSchemeViewValue(row))
             && selectedApplicationTypes.includes(row.applicationTypeLabel);
     });
 
@@ -1986,12 +2044,14 @@ function updateApplicationCharts(activeRows) {
     renderMultiSeriesLineChart('applicationDailyChart', slicedDaily.labels, slicedDaily.series, {
         labelEvery: getDailyLabelStep(slicedDaily.labels.length),
         large: true,
+        tooltipId: 'applicationDailyChartTooltip',
         valueLabels: 'peak'
     });
 
     const weekly = buildGroupedApplicationSeries(activeRows, getWeekKey, formatWeekLabel);
     renderMultiSeriesLineChart('applicationWeeklyChart', weekly.labels, weekly.series, {
         labelEvery: getGroupedLabelStep(weekly.labels.length),
+        tooltipId: 'applicationWeeklyChartTooltip',
         valueLabels: 'peak'
     });
 
@@ -2000,12 +2060,84 @@ function updateApplicationCharts(activeRows) {
         return monthLabels[month - 1];
     });
     renderMultiSeriesLineChart('applicationMonthlyChart', monthly.labels, monthly.series, {
+        tooltipId: 'applicationMonthlyChartTooltip',
         valueLabels: 'all'
+    });
+
+    applicationChartData = {
+        daily: {
+            labels: slicedDaily.labels,
+            series: slicedDaily.series,
+            labelEvery: getDailyLabelStep(slicedDaily.labels.length),
+            rangeLabel: slicedDaily.keys.length
+                ? `${formatDateFromIso(slicedDaily.keys[0])} hingga ${formatDateFromIso(slicedDaily.keys[slicedDaily.keys.length - 1])}`
+                : 'Tiada data'
+        },
+        weekly: {
+            labels: weekly.labels,
+            series: weekly.series,
+            labelEvery: getGroupedLabelStep(weekly.labels.length),
+            rangeLabel: getApplicationChartRangeLabel(activeRows)
+        },
+        monthly: {
+            labels: monthly.labels,
+            series: monthly.series,
+            labelEvery: 1,
+            rangeLabel: getApplicationChartRangeLabel(activeRows)
+        }
+    };
+
+    if (activeApplicationChartDetail) renderApplicationChartDetail();
+}
+
+function getApplicationChartRangeLabel(activeRows) {
+    const range = getApplicationAggregateRange(activeRows);
+    if (!range.first || !range.last) return 'Tiada data';
+    return `${formatShortDate(range.first)} hingga ${formatShortDate(range.last)}`;
+}
+
+function openApplicationChartDetail(chartKey) {
+    if (!applicationChartDetailMeta[chartKey] || !applicationChartData[chartKey]) return;
+    activeApplicationChartDetail = chartKey;
+    switchTab('applicationChartDetailPanel');
+}
+
+function closeApplicationChartDetail() {
+    activeApplicationChartDetail = null;
+    hideApplicationChartTooltip();
+    switchTab('applicationPanel');
+}
+
+function renderApplicationChartDetail() {
+    const chartKey = activeApplicationChartDetail;
+    const chartData = applicationChartData[chartKey];
+    const chartMeta = applicationChartDetailMeta[chartKey];
+    if (!chartData || !chartMeta) return;
+
+    const modeLabel = getSchemeViewLabels().label;
+    setElementText('applicationChartDetailTitle', `${chartMeta.title} - ${modeLabel}`);
+    setElementText(
+        'applicationChartDetailContext',
+        `${chartData.rangeLabel} | ${selectedApplicationSchemes.length.toLocaleString('ms-MY')} skim | ${selectedApplicationBranches.length.toLocaleString('ms-MY')} cawangan`
+    );
+
+    const canvas = document.getElementById('applicationChartDetailCanvas');
+    canvas.setAttribute('aria-label', `${chartMeta.title}, ${modeLabel}`);
+    renderMultiSeriesLineChart('applicationChartDetailCanvas', chartData.labels, chartData.series, {
+        height: window.innerWidth < 820 ? 430 : 580,
+        labelEvery: chartData.labelEvery,
+        tooltipId: 'applicationChartDetailTooltip',
+        valueLabels: 'none'
     });
 }
 
+function hideApplicationChartTooltip() {
+    const tooltip = document.getElementById('applicationChartDetailTooltip');
+    if (tooltip) tooltip.hidden = true;
+}
+
 function updateApplicationLeaderboards(activeRows) {
-    renderLeaderboard('applicationTopSchemes', getTopAggregateCounts(activeRows, row => row.officialScheme, 5));
+    renderLeaderboard('applicationTopSchemes', getTopAggregateCounts(activeRows, getSchemeViewValue, 5));
     renderLeaderboard('applicationTopDays', getTopAggregateCounts(activeRows, row => row.dateKey, 5).map(item => ({ ...item, label: formatDateFromIso(item.label) })));
     renderLeaderboard('applicationTopWeeks', getTopAggregateCounts(activeRows, getWeekKey, 5).map(item => ({ ...item, label: formatWeekLabel(item.label) })));
 }
@@ -2106,8 +2238,14 @@ function syncDailyZoomInputs(length) {
     const startInput = document.getElementById('dailyStartRange');
     const endInput = document.getElementById('dailyEndRange');
     const max = Math.max(length - 1, 0);
-    if (dailyZoom.end > max || dailyZoom.start > max || dailyZoom.end === 0) {
+    if (!dailyZoomInitialized) {
         dailyZoom = { start: 0, end: max };
+        dailyZoomInitialized = true;
+    } else {
+        dailyZoom = {
+            start: Math.min(dailyZoom.start, max),
+            end: Math.min(Math.max(dailyZoom.end, dailyZoom.start), max)
+        };
     }
     [startInput, endInput].forEach(input => {
         input.max = String(max);
@@ -2115,6 +2253,7 @@ function syncDailyZoomInputs(length) {
     });
     startInput.value = String(dailyZoom.start);
     endInput.value = String(dailyZoom.end);
+    updateDailyRangeControl();
 }
 
 function updateDailyZoomFromInputs() {
@@ -2129,12 +2268,33 @@ function updateDailyZoomFromInputs() {
     dailyZoom = { start, end };
     startInput.value = String(start);
     endInput.value = String(end);
+    dailyZoomInitialized = true;
+    updateDailyRangeControl();
     updateApplicationDashboard();
 }
 
 function resetDailyZoom() {
     dailyZoom = { start: 0, end: Math.max(dailyLabels.length - 1, 0) };
+    dailyZoomInitialized = true;
     updateApplicationDashboard();
+}
+
+function updateDailyRangeControl() {
+    const startInput = document.getElementById('dailyStartRange');
+    const endInput = document.getElementById('dailyEndRange');
+    const selection = document.getElementById('dailyRangeSelection');
+    const max = Math.max(Number(startInput.max || 0), 0);
+    const start = Math.max(0, Math.min(Number(startInput.value || 0), max));
+    const end = Math.max(start, Math.min(Number(endInput.value || 0), max));
+    const startPercent = max ? (start / max) * 100 : 0;
+    const endPercent = max ? (end / max) * 100 : 100;
+
+    selection.style.left = `${startPercent}%`;
+    selection.style.right = `${Math.max(0, 100 - endPercent)}%`;
+    startInput.style.zIndex = start >= max - 1 ? '5' : '3';
+    endInput.style.zIndex = '4';
+    setElementText('dailyStartDateLabel', dailyLabels[start] ? formatDateFromIso(dailyLabels[start]) : '-');
+    setElementText('dailyEndDateLabel', dailyLabels[end] ? formatDateFromIso(dailyLabels[end]) : '-');
 }
 
 function getDailyLabelStep(count) {
@@ -2166,19 +2326,6 @@ function updateKpis(activeRows, approvedRows) {
     document.getElementById('onTimePercent').textContent = approved ? `${((onTime / approved) * 100).toFixed(1)}%` : '0%';
 }
 
-function updateOfficialKpis(activeRows, approvedRows) {
-    const total = activeRows.length;
-    const approved = approvedRows.length;
-    const onTime = approvedRows.filter(isWithinAgingThreshold).length;
-    const late = approved - onTime;
-    document.getElementById('officialTotalApplications').textContent = total.toLocaleString('ms-MY');
-    document.getElementById('officialApprovedApplications').textContent = approved.toLocaleString('ms-MY');
-    document.getElementById('officialPendingApplications').textContent = (total - approved).toLocaleString('ms-MY');
-    document.getElementById('officialOnTimeApplications').textContent = onTime.toLocaleString('ms-MY');
-    document.getElementById('officialLateApplications').textContent = late.toLocaleString('ms-MY');
-    document.getElementById('officialOnTimePercent').textContent = approved ? `${((onTime / approved) * 100).toFixed(1)}%` : '0%';
-}
-
 function updateTrendChart(approvedRows, canvasId = 'trendChart', mode = metricMode) {
     const denominator = Array(12).fill(0);
     const numerator = Array(12).fill(0);
@@ -2196,10 +2343,10 @@ function updateTrendChart(approvedRows, canvasId = 'trendChart', mode = metricMo
     renderLineChart(canvasId, monthLabels, data, mode === 'percent');
 }
 
-function updateRankingTable(approvedRows, bodyId = 'rankingTableBody', schemeKey = 'scheme') {
+function updateRankingTable(approvedRows, bodyId = 'rankingTableBody') {
     const grouped = new Map();
     approvedRows.forEach(row => {
-        const scheme = row[schemeKey];
+        const scheme = getSchemeViewValue(row);
         if (!grouped.has(scheme)) {
             grouped.set(scheme, { scheme, approved: 0, onTime: 0 });
         }
@@ -2225,7 +2372,7 @@ function updateRankingTable(approvedRows, bodyId = 'rankingTableBody', schemeKey
     tbody.innerHTML = rankingRows.map((row, index) => `
         <tr>
             <td>${index + 1}</td>
-            <td>${escapeHtml(schemeKey === 'officialScheme' ? row.scheme : toProperCaps(row.scheme))}</td>
+            <td>${escapeHtml(schemeViewMode === 'detailed' ? toProperCaps(row.scheme) : row.scheme)}</td>
             <td><span class="${getPerformanceBadgeClass(row.percent)}">${formatPercent(row.percent)}</span></td>
             <td>${row.approved.toLocaleString('ms-MY')}</td>
         </tr>
@@ -2235,9 +2382,9 @@ function updateRankingTable(approvedRows, bodyId = 'rankingTableBody', schemeKey
 function updateSummaryTable() {
     if (!rows.length) return;
 
-    const approvedRows = rows.filter(row => {
+    const approvedRows = getSchemeViewRows(rows).filter(row => {
         const branchMatch = selectedTableBranches.includes(row.branch);
-        const schemeMatch = selectedTableSchemes.includes(row.scheme);
+        const schemeMatch = selectedTableSchemes.includes(getSchemeViewValue(row));
         const typeMatch = selectedTableTypes.includes(row.applicationTypeLabel);
         return row.isApproved && branchMatch && schemeMatch && typeMatch;
     });
@@ -2301,7 +2448,7 @@ function downloadSummaryTable() {
     const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `jadual-prestasi-keseluruhan-${agingThreshold}-hari-${toIsoDate(new Date())}.csv`;
+    link.download = `jadual-prestasi-keseluruhan-${getSchemeViewLabels().slug}-${agingThreshold}-hari-${toIsoDate(new Date())}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
 }
@@ -3190,10 +3337,14 @@ function renderMultiSeriesLineChart(canvasId, labels, series, options = {}) {
     const rect = canvas.getBoundingClientRect();
     const ratio = window.devicePixelRatio || 1;
     const width = Math.max(460, Math.floor(rect.width || canvas.parentElement.clientWidth || 640));
-    const height = options.large ? (window.innerWidth < 820 ? 340 : 410) : (window.innerWidth < 820 ? 280 : 310);
+    const requestedHeight = Number(options.height || 0);
+    const height = requestedHeight > 0
+        ? requestedHeight
+        : (options.large ? (window.innerWidth < 820 ? 340 : 410) : (window.innerWidth < 820 ? 280 : 310));
     canvas.width = width * ratio;
     canvas.height = height * ratio;
     canvas.style.height = `${height}px`;
+    canvas._chartCssWidth = width;
 
     const ctx = canvas.getContext('2d');
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -3266,6 +3417,101 @@ function renderMultiSeriesLineChart(canvasId, labels, series, options = {}) {
         ctx.font = '800 14px Segoe UI, Arial';
         ctx.fillText('Tiada data untuk filter ini', chart.left + chart.width / 2, chart.top + chart.height / 2);
     }
+
+    setupLineChartTooltip(canvas, labels, series, chart, step, options.tooltipId);
+}
+
+function setupLineChartTooltip(canvas, labels, series, chart, step, tooltipId) {
+    const tooltip = tooltipId ? document.getElementById(tooltipId) : null;
+    if (!tooltip || !labels.length) {
+        if (tooltip) tooltip.hidden = true;
+        canvas.onpointermove = null;
+        canvas.onpointerdown = null;
+        canvas.onpointerleave = null;
+        canvas.onkeydown = null;
+        canvas.onblur = null;
+        return;
+    }
+
+    tooltip.hidden = true;
+    canvas._tooltipIndex = Math.min(Number(canvas._tooltipIndex || 0), labels.length - 1);
+
+    const showAtIndex = (index, displayX, displayY) => {
+        const safeIndex = Math.max(0, Math.min(labels.length - 1, index));
+        canvas._tooltipIndex = safeIndex;
+        tooltip.replaceChildren();
+
+        const heading = document.createElement('strong');
+        heading.textContent = labels[safeIndex] || '-';
+        tooltip.appendChild(heading);
+
+        let total = 0;
+        series.forEach(item => {
+            const value = Number(item.data[safeIndex] || 0);
+            total += value;
+            const row = document.createElement('span');
+            row.className = 'chart-tooltip-row';
+            const swatch = document.createElement('i');
+            swatch.style.backgroundColor = item.color;
+            const label = document.createElement('span');
+            label.textContent = item.label;
+            const number = document.createElement('b');
+            number.textContent = value.toLocaleString('ms-MY');
+            row.append(swatch, label, number);
+            tooltip.appendChild(row);
+        });
+
+        const totalRow = document.createElement('span');
+        totalRow.className = 'chart-tooltip-total';
+        const totalLabel = document.createElement('span');
+        totalLabel.textContent = 'Jumlah';
+        const totalValue = document.createElement('b');
+        totalValue.textContent = total.toLocaleString('ms-MY');
+        totalRow.append(totalLabel, totalValue);
+        tooltip.appendChild(totalRow);
+        tooltip.hidden = false;
+
+        const wrap = tooltip.parentElement;
+        const maxLeft = Math.max(8, wrap.clientWidth - tooltip.offsetWidth - 8);
+        const maxTop = Math.max(8, wrap.clientHeight - tooltip.offsetHeight - 8);
+        tooltip.style.left = `${Math.max(8, Math.min(displayX + 14, maxLeft))}px`;
+        tooltip.style.top = `${Math.max(8, Math.min(displayY - tooltip.offsetHeight - 14, maxTop))}px`;
+    };
+
+    const showFromPointer = event => {
+        const bounds = canvas.getBoundingClientRect();
+        const displayX = event.clientX - bounds.left;
+        const displayY = event.clientY - bounds.top;
+        const chartX = displayX * ((canvas._chartCssWidth || bounds.width) / Math.max(bounds.width, 1));
+        const chartY = displayY * ((canvas.height / (window.devicePixelRatio || 1)) / Math.max(bounds.height, 1));
+        if (chartX < chart.left || chartX > chart.right || chartY < chart.top || chartY > chart.bottom) {
+            if (event.pointerType === 'mouse') tooltip.hidden = true;
+            return;
+        }
+        const index = labels.length === 1 ? 0 : Math.round((chartX - chart.left) / Math.max(step, 1));
+        showAtIndex(index, displayX, displayY);
+    };
+
+    canvas.onpointermove = showFromPointer;
+    canvas.onpointerdown = showFromPointer;
+    canvas.onpointerleave = event => {
+        if (event.pointerType === 'mouse') tooltip.hidden = true;
+    };
+    canvas.onkeydown = event => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        let index = Number(canvas._tooltipIndex || 0);
+        if (event.key === 'ArrowLeft') index--;
+        if (event.key === 'ArrowRight') index++;
+        if (event.key === 'Home') index = 0;
+        if (event.key === 'End') index = labels.length - 1;
+        index = Math.max(0, Math.min(labels.length - 1, index));
+        const bounds = canvas.getBoundingClientRect();
+        const chartPointX = chart.left + index * step;
+        const displayX = chartPointX * (bounds.width / Math.max(canvas._chartCssWidth || bounds.width, 1));
+        showAtIndex(index, displayX, Math.max(80, bounds.height / 2));
+    };
+    canvas.onblur = () => { tooltip.hidden = true; };
 }
 
 function drawPointValueLabels(ctx, chart, points, mode, seriesIndex) {
@@ -3332,8 +3578,13 @@ function drawMultiSeriesLegend(ctx, chart, series) {
 }
 
 function switchTab(panelId) {
+    if (panelId !== 'applicationChartDetailPanel' && document.getElementById('applicationChartDetailPanel')?.classList.contains('active')) {
+        activeApplicationChartDetail = null;
+        hideApplicationChartTooltip();
+    }
+    const menuPanelId = panelId === 'applicationChartDetailPanel' ? 'applicationPanel' : panelId;
     document.querySelectorAll('.tab-button').forEach(button => {
-        button.classList.toggle('active', button.dataset.tab === panelId);
+        button.classList.toggle('active', button.dataset.tab === menuPanelId);
     });
     document.querySelectorAll('.tab-panel').forEach(panel => {
         panel.classList.toggle('active', panel.id === panelId);
@@ -3341,6 +3592,7 @@ function switchTab(panelId) {
     closeDashboardDrawer();
     if (panelId === 'fiveDayPanel') updateTrendChart(approvedFilteredRows);
     if (panelId === 'applicationPanel') updateApplicationDashboard();
+    if (panelId === 'applicationChartDetailPanel') window.requestAnimationFrame(renderApplicationChartDetail);
     if (panelId === 'pendingValidationPanel') updatePendingValidationDashboard();
     if (panelId === 'certifierPerformancePanel') updateOfficerDashboard('certifier');
     if (panelId === 'approverPerformancePanel') updateOfficerDashboard('approver');
@@ -3391,28 +3643,6 @@ function setupMultiSelectEvents(config) {
     }
 }
 
-function applySchemePreset(selectedKey) {
-    const config = getMultiSelectConfigs().find(item => item.selectedKey === selectedKey);
-    if (!config) return;
-
-    const options = getMultiSelectOptions(selectedKey);
-    const selected = getSchemePresetValues(selectedKey, options);
-    setMultiSelectSelection(selectedKey, selected);
-    refreshMultiSelect(config);
-    config.onChange();
-}
-
-function getSchemePresetValues(selectedKey, options) {
-    const available = new Set(options);
-    if (selectedKey === 'applicationScheme') {
-        const officialValues = schemePengagihanPreset
-            .map(scheme => mappingsBySystemScheme.get(scheme)?.official_scheme)
-            .filter(Boolean);
-        return getUniqueValues(officialValues).filter(value => available.has(value));
-    }
-    return schemePengagihanPreset.filter(value => available.has(value));
-}
-
 function renderMultiSelect(config) {
     const optionsElement = document.getElementById(config.optionsId);
     if (!config.options.length) {
@@ -3445,10 +3675,11 @@ function renderMultiSelect(config) {
 }
 
 function refreshMultiSelect(config) {
+    const currentConfig = getMultiSelectConfigs().find(item => item.selectedKey === config.selectedKey) || config;
     renderMultiSelect({
-        ...config,
-        options: getMultiSelectOptions(config.selectedKey),
-        selected: getMultiSelectSelection(config.selectedKey)
+        ...currentConfig,
+        options: getMultiSelectOptions(currentConfig.selectedKey),
+        selected: getMultiSelectSelection(currentConfig.selectedKey)
     });
 }
 
@@ -3463,10 +3694,7 @@ function getMultiSelectOptions(key) {
         applicationBranch: applicationBranchOptions,
         applicationScheme: applicationSchemeOptions,
         applicationType: applicationTypeOptions,
-        pendingValidationBranch: pendingValidationBranchOptions,
-        officialBranch: officialBranchOptions,
-        officialScheme: officialSchemeOptions,
-        officialType: officialTypeOptions
+        pendingValidationBranch: pendingValidationBranchOptions
     };
     return options[key] || [];
 }
@@ -3482,10 +3710,7 @@ function getMultiSelectSelection(key) {
         applicationBranch: selectedApplicationBranches,
         applicationScheme: selectedApplicationSchemes,
         applicationType: selectedApplicationTypes,
-        pendingValidationBranch: selectedPendingValidationBranches,
-        officialBranch: selectedOfficialBranches,
-        officialScheme: selectedOfficialSchemes,
-        officialType: selectedOfficialTypes
+        pendingValidationBranch: selectedPendingValidationBranches
     };
     return selections[key] || [];
 }
@@ -3502,9 +3727,6 @@ function setMultiSelectSelection(key, selected) {
     else if (key === 'applicationScheme') selectedApplicationSchemes = values;
     else if (key === 'applicationType') selectedApplicationTypes = values;
     else if (key === 'pendingValidationBranch') selectedPendingValidationBranches = values;
-    else if (key === 'officialBranch') selectedOfficialBranches = values;
-    else if (key === 'officialScheme') selectedOfficialSchemes = values;
-    else if (key === 'officialType') selectedOfficialTypes = values;
 }
 
 function updateMultiSelectToggle(toggleId, selected, options, allLabel, preserveCase = false, emptyLabel = 'Tiada skim dipilih') {
@@ -3540,10 +3762,7 @@ function closeMultiSelectMenus() {
         ['applicationBranchFilterMenu', 'applicationBranchFilterToggle'],
         ['applicationSchemeFilterMenu', 'applicationSchemeFilterToggle'],
         ['applicationTypeFilterMenu', 'applicationTypeFilterToggle'],
-        ['pendingValidationBranchFilterMenu', 'pendingValidationBranchFilterToggle'],
-        ['officialBranchFilterMenu', 'officialBranchFilterToggle'],
-        ['officialSchemeFilterMenu', 'officialSchemeFilterToggle'],
-        ['officialTypeFilterMenu', 'officialTypeFilterToggle']
+        ['pendingValidationBranchFilterMenu', 'pendingValidationBranchFilterToggle']
     ].forEach(([menuId, toggleId]) => {
         const menu = document.getElementById(menuId);
         const toggle = document.getElementById(toggleId);
