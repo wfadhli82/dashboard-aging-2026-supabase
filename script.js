@@ -1612,17 +1612,40 @@ function renderOfficerHeatmap(role, metrics, config) {
 }
 
 function renderOfficerTable(role, metrics) {
-    const monthlyItems = [...metrics.officerItems]
+    const monthlyItems = buildOfficerAnnualTableRows(role)
         .sort((a, b) => b.total - a.total || a.displayName.localeCompare(b.displayName, 'ms-MY'));
-    document.getElementById(`${role}VisibleRows`).textContent = `${metrics.officerItems.length.toLocaleString('ms-MY')} pegawai dipapar`;
+    document.getElementById(`${role}VisibleRows`).textContent = `${monthlyItems.length.toLocaleString('ms-MY')} pegawai, semua bulan`;
     document.getElementById(`${role}OfficerTableBody`).innerHTML = monthlyItems.length
         ? monthlyItems.map(item => `
             <tr>
                 <td>${escapeHtml(item.displayName)}</td>
-                <td>${item.total.toLocaleString('ms-MY')}</td>
+                ${item.monthTotals.map(total => `<td>${total ? total.toLocaleString('ms-MY') : '-'}</td>`).join('')}
+                <td><strong>${item.total.toLocaleString('ms-MY')}</strong></td>
             </tr>
         `).join('')
-        : '<tr><td colspan="2" class="empty-state">Tiada data untuk filter ini.</td></tr>';
+        : '<tr><td colspan="14" class="empty-state">Tiada data untuk jadual tahunan.</td></tr>';
+}
+
+function buildOfficerAnnualTableRows(role) {
+    const officers = new Map();
+    officerRows
+        .filter(row => row.role === role)
+        .forEach(row => {
+            const officerKey = normalizeKey(row.officerName);
+            if (!officers.has(officerKey)) {
+                officers.set(officerKey, {
+                    officerName: row.officerName,
+                    displayName: row.displayName,
+                    monthTotals: Array(12).fill(0),
+                    total: 0
+                });
+            }
+            const officer = officers.get(officerKey);
+            const monthIndex = row.workDate.getMonth();
+            officer.monthTotals[monthIndex] += row.completedCount;
+            officer.total += row.completedCount;
+        });
+    return [...officers.values()];
 }
 
 function formatOfficerSelectedMonth(role) {
