@@ -84,11 +84,12 @@ const officerShortNameOverrides = new Map([
     ['MUHAMMAD ISHAK BIN ZULKIFLY', 'Ishak'],
     ['MUHAMMAD MUADZ BIN ROSLI', 'Muadz'],
     ['MUHAMMAD NUR IZZAT BIN KAMARUDDIN (MAIWP)', 'Nur Izzat'],
-    ['MUHAMMAD SHAHIR BIN JIMI', 'Shahir'],
+    ['MUHAMMAD SHAHIR BIN JIMI', 'Shahir Jimi'],
+    ['MUHAMMAD SYAHMIRUL BIN RABUAN', 'Syahmirul'],
     ['MUHAMMAD SYAFIQ BIN SALLEH', 'Syafiq'],
     ['MUHAMMAD YASIR BIN ABD SAMAD CHEAM', 'Yasir Cheam'],
     ['NIK NOOR SYAFAWATI BINTI NIK MOHAMED NASIR', 'Nik Syafawati'],
-    ['NORROL ASIKIN BINTI MD SHARIF', 'Norrol Ashikin'],
+    ['NORROL ASIKIN BINTI MD SHARIF', 'Norrol Asikin'],
     ['NUR NAJIHAH BINTI ABDULLAH SAMPIT (MAIWP)', 'Najiha'],
     ['PUTRA MIRZA MIFZAL BIN MOHD FAFLI', 'Putra Mirza'],
     ['SHAHRUL ZAMAN BIN SHAHRUDIN', 'Shahrul Zaman'],
@@ -1611,19 +1612,17 @@ function renderOfficerHeatmap(role, metrics, config) {
 }
 
 function renderOfficerTable(role, metrics) {
+    const monthlyItems = [...metrics.officerItems]
+        .sort((a, b) => b.total - a.total || a.displayName.localeCompare(b.displayName, 'ms-MY'));
     document.getElementById(`${role}VisibleRows`).textContent = `${metrics.officerItems.length.toLocaleString('ms-MY')} pegawai dipapar`;
-    document.getElementById(`${role}OfficerTableBody`).innerHTML = metrics.officerItems.length
-        ? metrics.officerItems.map(item => `
+    document.getElementById(`${role}OfficerTableBody`).innerHTML = monthlyItems.length
+        ? monthlyItems.map(item => `
             <tr>
-                <td>${escapeHtml(item.displayName)}<br><small>${escapeHtml(item.officerName)}</small></td>
+                <td>${escapeHtml(item.displayName)}</td>
                 <td>${item.total.toLocaleString('ms-MY')}</td>
-                <td>${item.average.toFixed(1)}</td>
-                <td>${item.hitDays.toLocaleString('ms-MY')}</td>
-                <td>${item.latestCount.toLocaleString('ms-MY')}</td>
-                <td>${item.latestGap.toLocaleString('ms-MY')}</td>
             </tr>
         `).join('')
-        : '<tr><td colspan="6" class="empty-state">Tiada data untuk filter ini.</td></tr>';
+        : '<tr><td colspan="2" class="empty-state">Tiada data untuk filter ini.</td></tr>';
 }
 
 function formatOfficerSelectedMonth(role) {
