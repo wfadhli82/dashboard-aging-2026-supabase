@@ -192,6 +192,8 @@ let dailyLabels = [];
 let applicationChartData = {};
 let activeApplicationChartDetail = null;
 let supabaseClient = null;
+let supabaseLoadPromise = null;
+let supabaseLoadToken = 0;
 let latestRun = null;
 let latestVisitorRun = null;
 let visitorRows = [];
@@ -448,6 +450,8 @@ async function handleLogin(event) {
 }
 
 async function handleLogout() {
+    supabaseLoadToken += 1;
+    supabaseLoadPromise = null;
     if (supabaseClient) await supabaseClient.auth.signOut();
     rows = [];
     filteredRows = [];
@@ -477,6 +481,16 @@ async function handleLogout() {
 }
 
 async function loadSupabaseData() {
+    if (supabaseLoadPromise) return supabaseLoadPromise;
+    const loadToken = ++supabaseLoadToken;
+    supabaseLoadPromise = loadSupabaseDataInternal(loadToken)
+        .finally(() => {
+            if (supabaseLoadToken === loadToken) supabaseLoadPromise = null;
+        });
+    return supabaseLoadPromise;
+}
+
+async function loadSupabaseDataInternal(loadToken) {
     clearError();
     showAuthMessage('Memuatkan data Supabase...', false);
 
@@ -532,6 +546,7 @@ async function loadSupabaseData() {
     latestVisitorRun = visitorResult.run;
     visitorRows = normalizeVisitorAggregateRows(visitorResult.rows || []);
     visitorStaffRows = normalizeVisitorStaffRows(visitorResult.staffRows || []);
+    if (supabaseLoadToken !== loadToken) return;
 
     rows = applySchemeMappings(expandAggregateRows(aggregates || []));
     applicationRows = applySchemeMappingsToApplicationRows(normalizeDailyApplicationRows(dailyAggregates || []));
