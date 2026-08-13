@@ -198,7 +198,9 @@ let latestRun = null;
 let latestVisitorRun = null;
 let visitorRows = [];
 let visitorStaffRows = [];
+let visitorDailyRows = [];
 let selectedVisitorMonth = 'all';
+let visitorDailyDateRange = { from: '', to: '' };
 let officerFilterState = {
     certifier: { month: '', day: '', branch: 'all', scheme: 'all', type: 'all', mode: 'screen' },
     approver: { month: '', day: '', branch: 'all', scheme: 'all', type: 'all', mode: 'screen' }
@@ -261,6 +263,15 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedVisitorMonth = event.target.value;
         updateVisitorDashboard();
     });
+    document.getElementById('visitorDailyFromDate').addEventListener('change', event => {
+        visitorDailyDateRange.from = event.target.value;
+        renderVisitorDailyPazaTable();
+    });
+    document.getElementById('visitorDailyToDate').addEventListener('change', event => {
+        visitorDailyDateRange.to = event.target.value;
+        renderVisitorDailyPazaTable();
+    });
+    document.getElementById('visitorDailyResetBtn').addEventListener('click', resetVisitorDailyDateRange);
     document.getElementById('pendingValidationShowAllRows').addEventListener('change', event => {
         showAllPendingValidationRows = event.target.checked;
         updatePendingValidationDashboard();
@@ -464,6 +475,8 @@ async function handleLogout() {
     latestVisitorRun = null;
     visitorRows = [];
     visitorStaffRows = [];
+    visitorDailyRows = [];
+    visitorDailyDateRange = { from: '', to: '' };
     latestRun = null;
     schemeViewMode = 'detailed';
     dailyZoom = { start: 0, end: 0 };
@@ -546,6 +559,8 @@ async function loadSupabaseDataInternal(loadToken) {
     latestVisitorRun = visitorResult.run;
     visitorRows = normalizeVisitorAggregateRows(visitorResult.rows || []);
     visitorStaffRows = normalizeVisitorStaffRows(visitorResult.staffRows || []);
+    visitorDailyRows = normalizeVisitorDailyRows(visitorResult.dailyRows || []);
+    setupVisitorDailyDateFilters();
     if (supabaseLoadToken !== loadToken) return;
 
     rows = applySchemeMappings(expandAggregateRows(aggregates || []));
@@ -590,8 +605,8 @@ async function fetchLatestVisitorData() {
         .order('started_at', { ascending: false })
         .limit(1);
 
-    if (runError) return { run: null, rows: [], staffRows: [], error: runError };
-    if (!runRows?.length) return { run: null, rows: [], staffRows: [], error: null };
+    if (runError) return { run: null, rows: [], staffRows: [], dailyRows: [], error: runError };
+    if (!runRows?.length) return { run: null, rows: [], staffRows: [], dailyRows: [], error: null };
 
     const run = runRows[0];
     const { data, error } = await supabaseClient
@@ -610,7 +625,14 @@ async function fetchLatestVisitorData() {
         .order('month')
         .order('visitor_count', { ascending: false });
 
-    return { run, rows: data || [], staffRows: staffRows || [], error: error || staffError };
+    const { data: dailyRows, error: dailyError } = await supabaseClient
+        .from('dashboard_visitor_daily_paza_aggregates')
+        .select('visit_date,paza,visitor_count')
+        .eq('run_id', run.run_id)
+        .order('visit_date')
+        .order('paza');
+
+    return { run, rows: data || [], staffRows: staffRows || [], dailyRows: dailyRows || [], error: error || staffError || dailyError };
 }
 
 async function fetchAllAggregates(runId, includeAgingDayCounts = true) {
@@ -1723,6 +1745,14 @@ function normalizeVisitorStaffRows(data) {
     })).filter(row => row.emailHash && Number.isFinite(row.year) && row.month >= 1 && row.month <= 12);
 }
 
+function normalizeVisitorDailyRows(data) {
+    return data.map(item => ({
+        visitDate: String(item.visit_date || ''),
+        paza: item.paza || '(Tiada PAZA)',
+        visitorCount: Number(item.visitor_count || 0)
+    })).filter(row => isIsoDateString(row.visitDate) && row.visitorCount > 0);
+}
+
 function normalizeVisitorPazaBreakdown(value) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
     return Object.fromEntries(Object.entries(value)
@@ -1748,8 +1778,50 @@ function updateVisitorDashboard() {
     document.getElementById('visitorDateRange').textContent = getVisitorDataRangeLabel();
 
     renderVisitorPazaChart(byPaza);
+    renderVisitorDailyPazaTable();
     renderVisitorStaffTable(activeStaffRows);
     renderVisitorMonthlyTable(activeRows);
+}
+
+function setupVisitorDailyDateFilters() {
+    const fromInput = document.getElementById('visitorDailyFromDate');
+    const toInput = document.getElementById('visitorDailyToDate');
+    const range = getVisitorDailyAvailableRange();
+    if (!range.first || !range.last) {
+        fromInput.value = '';
+        toInput.value = '';
+        fromInput.removeAttribute('min');
+        fromInput.removeAttribute('max');
+        toInput.removeAttribute('min');
+        toInput.removeAttribute('max');
+        return;
+    }
+
+    fromInput.min = range.first;
+    fromInput.max = range.last;
+    toInput.min = range.first;
+    toInput.max = range.last;
+
+    if (!isIsoDateString(visitorDailyDateRange.from)
+        || visitorDailyDateRange.from < range.first
+        || visitorDailyDateRange.from > range.last) {
+        visitorDailyDateRange.from = range.first;
+    }
+    if (!isIsoDateString(visitorDailyDateRange.to)
+        || visitorDailyDateRange.to < range.first
+        || visitorDailyDateRange.to > range.last) {
+        visitorDailyDateRange.to = range.last;
+    }
+    fromInput.value = visitorDailyDateRange.from;
+    toInput.value = visitorDailyDateRange.to;
+}
+
+function resetVisitorDailyDateRange() {
+    const range = getVisitorDailyAvailableRange();
+    visitorDailyDateRange = { from: range.first || '', to: range.last || '' };
+    document.getElementById('visitorDailyFromDate').value = visitorDailyDateRange.from;
+    document.getElementById('visitorDailyToDate').value = visitorDailyDateRange.to;
+    renderVisitorDailyPazaTable();
 }
 
 function getFilteredVisitorRows() {
@@ -1812,6 +1884,65 @@ function renderVisitorPazaChart(byPaza) {
         .slice(0, 10)
         .map(([label, value]) => ({ label, value }));
     renderHorizontalBarChart('visitorPazaChart', items);
+}
+
+function getVisitorDailyAvailableRange() {
+    const dates = visitorDailyRows.map(row => row.visitDate).filter(isIsoDateString).sort();
+    return { first: dates[0] || '', last: dates[dates.length - 1] || '' };
+}
+
+function getFilteredVisitorDailyRows() {
+    const from = visitorDailyDateRange.from;
+    const to = visitorDailyDateRange.to;
+    if (!from || !to || from > to) return [];
+    return visitorDailyRows.filter(row => row.visitDate >= from && row.visitDate <= to);
+}
+
+function renderVisitorDailyPazaTable() {
+    const body = document.getElementById('visitorDailyPazaTableBody');
+    const foot = document.getElementById('visitorDailyPazaTableFoot');
+    const summary = document.getElementById('visitorDailyPazaSummary');
+    const range = getVisitorDailyAvailableRange();
+
+    if (!visitorDailyRows.length || !range.first || !range.last) {
+        summary.textContent = 'Data harian belum tersedia.';
+        body.innerHTML = '<tr><td colspan="3" class="empty-state">Tiada data harian rekod pengunjung.</td></tr>';
+        foot.innerHTML = '';
+        return;
+    }
+
+    const from = visitorDailyDateRange.from || range.first;
+    const to = visitorDailyDateRange.to || range.last;
+    if (from > to) {
+        summary.textContent = 'Tarikh mula melebihi tarikh akhir.';
+        body.innerHTML = '<tr><td colspan="3" class="empty-state">Sila pilih julat tarikh yang sah.</td></tr>';
+        foot.innerHTML = '';
+        return;
+    }
+
+    const rows = getFilteredVisitorDailyRows();
+    const grouped = groupVisitorByPaza(rows);
+    const items = [...grouped.entries()]
+        .map(([paza, total]) => ({ paza, total }))
+        .sort((a, b) => b.total - a.total || a.paza.localeCompare(b.paza, 'ms-MY'));
+    const grandTotal = items.reduce((sum, item) => sum + item.total, 0);
+
+    summary.textContent = `${formatDateFromIso(from)} hingga ${formatDateFromIso(to)}. ${items.length.toLocaleString('ms-MY')} PAZA dipapar.`;
+    body.innerHTML = items.length
+        ? items.map((item, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${escapeHtml(item.paza)}</td>
+                <td><strong>${item.total.toLocaleString('ms-MY')}</strong></td>
+            </tr>
+        `).join('')
+        : '<tr><td colspan="3" class="empty-state">Tiada data rekod pengunjung untuk julat tarikh ini.</td></tr>';
+    foot.innerHTML = `
+        <tr>
+            <td colspan="2">Jumlah</td>
+            <td>${grandTotal.toLocaleString('ms-MY')}</td>
+        </tr>
+    `;
 }
 
 function renderVisitorStaffTable(sourceRows) {
@@ -3917,6 +4048,10 @@ function formatWeekLabel(key) {
 function parseIsoDate(value) {
     const [year, month, day] = String(value).split('-').map(Number);
     return new Date(year, month - 1, day);
+}
+
+function isIsoDateString(value) {
+    return /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''));
 }
 
 function formatDateFromIso(value) {

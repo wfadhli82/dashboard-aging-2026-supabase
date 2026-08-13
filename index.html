@@ -510,6 +510,39 @@
                     </section>
 
                     <section class="table-card">
+                        <div class="panel-heading visitor-daily-heading">
+                            <div>
+                                <h2>Jumlah Pengunjung Mengikut PAZA</h2>
+                                <p id="visitorDailyPazaSummary">Pilih julat tarikh untuk table ini sahaja.</p>
+                            </div>
+                            <div class="filters visitor-date-actions">
+                                <label class="field-label">
+                                    <span>Dari</span>
+                                    <input type="date" id="visitorDailyFromDate">
+                                </label>
+                                <label class="field-label">
+                                    <span>Hingga</span>
+                                    <input type="date" id="visitorDailyToDate">
+                                </label>
+                                <button type="button" id="visitorDailyResetBtn">Reset</button>
+                            </div>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="visitor-daily-table">
+                                <thead>
+                                    <tr>
+                                        <th>Bil</th>
+                                        <th>PAZA</th>
+                                        <th>Jumlah Pengunjung</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="visitorDailyPazaTableBody"></tbody>
+                                <tfoot id="visitorDailyPazaTableFoot"></tfoot>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section class="table-card">
                         <div class="panel-heading"><div><h2>Top 5 Staf Entertain Pengunjung</h2><p id="visitorStaffVisibleRows">0 staf dipapar</p></div></div>
                         <div class="table-wrap">
                             <table>
