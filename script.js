@@ -617,22 +617,53 @@ async function fetchLatestVisitorData() {
         .order('month')
         .order('paza');
 
-    const { data: staffRows, error: staffError } = await supabaseClient
-        .from('dashboard_visitor_staff_aggregates')
-        .select('year,month,email_hash,staff_name,staff_paza,visitor_count,paza_breakdown')
-        .eq('run_id', run.run_id)
-        .order('year')
-        .order('month')
-        .order('visitor_count', { ascending: false });
+    const staffResult = await fetchAllVisitorStaffAggregates(run.run_id);
+    const dailyResult = await fetchAllVisitorDailyPazaAggregates(run.run_id);
 
-    const { data: dailyRows, error: dailyError } = await supabaseClient
-        .from('dashboard_visitor_daily_paza_aggregates')
-        .select('visit_date,paza,visitor_count')
-        .eq('run_id', run.run_id)
-        .order('visit_date')
-        .order('paza');
+    return {
+        run,
+        rows: data || [],
+        staffRows: staffResult.data || [],
+        dailyRows: dailyResult.data || [],
+        error: error || staffResult.error || dailyResult.error
+    };
+}
 
-    return { run, rows: data || [], staffRows: staffRows || [], dailyRows: dailyRows || [], error: error || staffError || dailyError };
+async function fetchAllVisitorStaffAggregates(runId) {
+    const pageSize = 1000;
+    const data = [];
+    for (let start = 0; ; start += pageSize) {
+        const { data: page, error } = await supabaseClient
+            .from('dashboard_visitor_staff_aggregates')
+            .select('year,month,email_hash,staff_name,staff_paza,visitor_count,paza_breakdown')
+            .eq('run_id', runId)
+            .order('year')
+            .order('month')
+            .order('visitor_count', { ascending: false })
+            .range(start, start + pageSize - 1);
+
+        if (error) return { data, error };
+        data.push(...(page || []));
+        if (!page || page.length < pageSize) return { data, error: null };
+    }
+}
+
+async function fetchAllVisitorDailyPazaAggregates(runId) {
+    const pageSize = 1000;
+    const data = [];
+    for (let start = 0; ; start += pageSize) {
+        const { data: page, error } = await supabaseClient
+            .from('dashboard_visitor_daily_paza_aggregates')
+            .select('visit_date,paza,visitor_count')
+            .eq('run_id', runId)
+            .order('visit_date')
+            .order('paza')
+            .range(start, start + pageSize - 1);
+
+        if (error) return { data, error };
+        data.push(...(page || []));
+        if (!page || page.length < pageSize) return { data, error: null };
+    }
 }
 
 async function fetchAllAggregates(runId, includeAgingDayCounts = true) {
