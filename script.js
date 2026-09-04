@@ -38,7 +38,7 @@ const legacyUsernameDomain = 'dashboard.local';
 const visitorStaffRankingTitle = 'KEDUDUKAN 5 PENYIASAT TERTINGGI MENGIKUT BILANGAN URUSAN PENGUNJUNG';
 const typeLabels = { new: 'Baharu', renewal: 'Penyambungan', appeal: 'Rayuan', addrate: 'Tambah Kadar' };
 const applicationTypeOrder = ['new', 'renewal', 'appeal', 'addrate'];
-const applicationStatusKeys = ['processing', 'rejected', 'cancel', 'terminated'];
+const applicationStatusKeys = ['processing', 'rejected', 'pending', 'cancel', 'terminated'];
 const applicationTypeColors = {
     new: '#0f6bce',
     renewal: '#00a88f',
@@ -722,6 +722,7 @@ async function fetchAllDailyApplicationAggregates(runId) {
         'pending_count',
         'status_processing_count',
         'status_rejected_count',
+        'status_pending_count',
         'status_cancel_count',
         'status_terminated_count'
     ].join(',');
@@ -795,7 +796,7 @@ async function fetchAllOfficerDailyAggregates(runId) {
 
 function isMissingStatusAggregateColumn(error) {
     const message = String(error?.message || error?.details || '');
-    return /status_(processing|rejected|cancel|terminated)_count/i.test(message)
+    return /status_(processing|rejected|pending|cancel|terminated)_count/i.test(message)
         || /column .* does not exist/i.test(message);
 }
 
@@ -931,6 +932,7 @@ function normalizeDailyApplicationRows(aggregates) {
             statusCounts: {
                 processing: Number(item.status_processing_count || 0),
                 rejected: Number(item.status_rejected_count || 0),
+                pending: Number(item.status_pending_count || 0),
                 cancel: Number(item.status_cancel_count || 0),
                 terminated: Number(item.status_terminated_count || 0)
             }
@@ -2193,6 +2195,7 @@ function updateApplicationKpis(activeRows) {
     document.getElementById('applicationAddrateTotal').textContent = (totals.addrate || 0).toLocaleString('ms-MY');
     updateStatusKpi('Processing', statusTotals.processing, statusTotals.total);
     updateStatusKpi('Rejected', statusTotals.rejected, statusTotals.total);
+    updateStatusKpi('Pending', statusTotals.pending, statusTotals.total);
     updateStatusKpi('Cancel', statusTotals.cancel, statusTotals.total);
     updateStatusKpi('Terminated', statusTotals.terminated, statusTotals.total);
 }
@@ -2210,7 +2213,7 @@ function getApplicationStatusTotals(activeRows) {
             totals[key] += Number(row.statusCounts?.[key] || 0);
         });
         return totals;
-    }, { processing: 0, rejected: 0, cancel: 0, terminated: 0 });
+    }, { processing: 0, rejected: 0, pending: 0, cancel: 0, terminated: 0 });
     totals.total = applicationStatusKeys.reduce((sum, key) => sum + totals[key], 0);
     return totals;
 }
