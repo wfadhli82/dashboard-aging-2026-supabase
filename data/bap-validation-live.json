@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T13:47:41.328Z",
+  "generatedAt": "2026-09-07T14:02:44.312Z",
   "dataStart": "2026-09-07",
   "dataEnd": "2026-09-07",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
@@ -8,12 +8,12 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 5267,
-  "completedSinceStart": 732,
-  "estimatedRemaining": 4535,
+  "completedSinceStart": 735,
+  "estimatedRemaining": 4532,
   "csvFile": "belum_diperaku_2026-01-01_to_2026-09-07.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 137812,
+  "sourceLineCount": 137813,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
@@ -104,20 +104,20 @@
       "gap": 83
     },
     {
+      "name": "NORROL ASIKIN BINTI MD SHARIF",
+      "displayName": "Norrol Asikin",
+      "hasShortName": true,
+      "count": 4,
+      "target": 100,
+      "gap": 96
+    },
+    {
       "name": "MUHAMMAD NUR IZZAT BIN KAMARUDDIN",
       "displayName": "Nur Izzat",
       "hasShortName": true,
       "count": 3,
       "target": 100,
       "gap": 97
-    },
-    {
-      "name": "NORROL ASIKIN BINTI MD SHARIF",
-      "displayName": "Norrol Asikin",
-      "hasShortName": true,
-      "count": 1,
-      "target": 100,
-      "gap": 99
     },
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
