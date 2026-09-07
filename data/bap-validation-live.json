@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T02:32:44.732Z",
+  "generatedAt": "2026-09-07T02:47:40.992Z",
   "dataStart": "2026-09-07",
   "dataEnd": "2026-09-07",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
@@ -8,37 +8,13 @@
   "targetDays": 1,
   "cumulativeTarget": 30,
   "startingBacklog": 5267,
-  "completedSinceStart": 43,
-  "estimatedRemaining": 5224,
+  "completedSinceStart": 0,
+  "estimatedRemaining": 5267,
   "csvFile": "belum_diperaku_2026-01-01_to_2026-09-07.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 137455,
+  "sourceLineCount": 26892,
   "officers": [
-    {
-      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
-      "displayName": "Najiha",
-      "hasShortName": true,
-      "count": 28,
-      "target": 30,
-      "gap": 2
-    },
-    {
-      "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
-      "displayName": "Putra Mirza",
-      "hasShortName": true,
-      "count": 14,
-      "target": 30,
-      "gap": 16
-    },
-    {
-      "name": "MOHD YASIER BIN ZANIL",
-      "displayName": "MOHD YASIER BIN ZANIL",
-      "hasShortName": false,
-      "count": 1,
-      "target": 30,
-      "gap": 29
-    },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
@@ -96,6 +72,14 @@
       "gap": 30
     },
     {
+      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
+      "displayName": "Najiha",
+      "hasShortName": true,
+      "count": 0,
+      "target": 30,
+      "gap": 30
+    },
+    {
       "name": "NORROL ASIKIN BINTI MD SHARIF",
       "displayName": "Norrol Asikin",
       "hasShortName": true,
@@ -106,6 +90,14 @@
     {
       "name": "MUHAMMAD NUR IZZAT BIN KAMARUDDIN",
       "displayName": "Nur Izzat",
+      "hasShortName": true,
+      "count": 0,
+      "target": 30,
+      "gap": 30
+    },
+    {
+      "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
+      "displayName": "Putra Mirza",
       "hasShortName": true,
       "count": 0,
       "target": 30,
