@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prestasi Perakuan BAP Live</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --ink: #162033;
+      --muted: #64748b;
+      --line: #d9e2ec;
+      --red: #b91c1c;
+      --green: #13803d;
+      --amber: #b45309;
+      --blue: #1d4ed8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    main {
+      width: min(1320px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 18px 0 28px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: end;
+      padding: 10px 0 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(24px, 3vw, 38px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .status {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      white-space: nowrap;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .metric {
+      min-height: 96px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      display: grid;
+      align-content: space-between;
+      gap: 12px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .metric strong {
+      font-size: clamp(22px, 2.8vw, 34px);
+      line-height: 1;
+    }
+
+    .metric small {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) 360px;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .chart-panel,
+    .table-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .chart-wrap {
+      padding: 10px;
+      overflow-x: auto;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      min-width: 820px;
+      height: auto;
+    }
+
+    .axis { fill: #475569; font-size: 11px; font-weight: 700; }
+    .axis-title { fill: #334155; font-size: 12px; font-weight: 800; }
+    .target-label { fill: #dc2626; font-size: 12px; font-weight: 800; }
+    .point-label { font-size: 12px; font-weight: 800; }
+    .bar-name { fill: #1e293b; font-size: 12px; font-weight: 800; }
+    .bar-name.long { font-size: 9px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      background: #f8fafc;
+    }
+
+    td.num,
+    th.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .rank {
+      display: inline-flex;
+      width: 26px;
+      height: 26px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #e2e8f0;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .ok { color: var(--green); }
+    .warn { color: var(--amber); }
+    .bad { color: var(--red); }
+
+    .error {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      background: #fff1f2;
+      color: #991b1b;
+      display: none;
+    }
+
+    @media (max-width: 980px) {
+      main { width: min(100% - 20px, 1320px); padding-top: 10px; }
+      header { grid-template-columns: 1fr; align-items: start; }
+      .status { justify-content: flex-start; }
+      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .board { grid-template-columns: 1fr; }
+      .table-panel { overflow-x: auto; }
+    }
+
+    @media (max-width: 560px) {
+      .summary { grid-template-columns: 1fr; }
+      .panel-head { align-items: flex-start; flex-direction: column; }
+      th,
+      td { padding: 9px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Prestasi Perakuan Bantuan Am Persekolahan</h1>
+        <p id="rangeText">Memuatkan data...</p>
+      </div>
+      <div class="status" aria-live="polite">
+        <span class="pill" id="refreshText">Auto refresh: 15 minit</span>
+        <span class="pill" id="updatedText">Kemas kini: -</span>
+      </div>
+    </header>
+
+    <section class="summary" aria-label="Ringkasan prestasi">
+      <article class="metric">
+        <span>Perakuan minggu ini</span>
+        <strong id="completedValue">0</strong>
+        <small id="schemeText">BANTUAN AM PERSEKOLAHAN</small>
+      </article>
+      <article class="metric">
+        <span>Baki anggaran</span>
+        <strong id="remainingValue">0</strong>
+        <small>Baki mula minggu: 5,267</small>
+      </article>
+      <article class="metric">
+        <span>Target pegawai</span>
+        <strong id="targetValue">0</strong>
+        <small id="targetText">30 sehari</small>
+      </article>
+      <article class="metric">
+        <span>Capai target</span>
+        <strong id="hitValue">0/0</strong>
+        <small id="hitText">Mengikut target terkumpul</small>
+      </article>
+      <article class="metric">
+        <span>Sumber CSV</span>
+        <strong id="lineValue">0</strong>
+        <small id="csvText">-</small>
+      </article>
+    </section>
+
+    <section class="board">
+      <section class="chart-panel">
+        <div class="panel-head">
+          <h2>Carta Pegawai</h2>
+          <p id="targetLineText">Target terkumpul: -</p>
+        </div>
+        <div class="chart-wrap" id="chartWrap"></div>
+      </section>
+
+      <section class="table-panel">
+        <div class="panel-head">
+          <h2>Senarai Prestasi</h2>
+          <p id="officerCountText">- pegawai</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Ked.</th>
+              <th>Pegawai</th>
+              <th class="num">Jumlah</th>
+              <th class="num">Baki target</th>
+            </tr>
+          </thead>
+          <tbody id="officerTable"></tbody>
+        </table>
+      </section>
+    </section>
+
+    <div class="error" id="errorBox"></div>
+  </main>
+
+  <script>
+    const DATA_URL = "data/bap-validation-live.json";
+    const REFRESH_MS = 15 * 60 * 1000;
+    const numberFormat = new Intl.NumberFormat("ms-MY");
+    const dateTimeFormat = new Intl.DateTimeFormat("ms-MY", {
+      timeZone: "Asia/Singapore",
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function formatDate(isoDate) {
+      if (!isoDate) return "-";
+      const [year, month, day] = isoDate.split("-").map(Number);
+      return new Intl.DateTimeFormat("ms-MY", {
+        timeZone: "Asia/Singapore",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }).format(new Date(Date.UTC(year, month - 1, day)));
+    }
+
+    function renderChart(data) {
+      const items = data.officers?.length ? data.officers : [{ displayName: "Tiada data", count: 0, target: data.cumulativeTarget || 0 }];
+      const width = 1080;
+      const height = Math.max(560, 66 + items.length * 34);
+      const left = 290;
+      const right = 1008;
+      const top = 36;
+      const bottom = height - 58;
+      const plotWidth = right - left;
+      const maxValue = Math.max(...items.map((item) => item.count || 0), data.cumulativeTarget || 0, 50);
+      let axisMax = Math.ceil(maxValue / 100) * 100;
+      if (axisMax - maxValue < 40) axisMax += 100;
+      const tickStep = axisMax > 800 ? 200 : 100;
+      const ticks = Array.from({ length: Math.floor(axisMax / tickStep) + 1 }, (_, index) => index * tickStep);
+      const rowHeight = (bottom - top) / items.length;
+      const sx = (value) => left + (plotWidth * value) / axisMax;
+      const targetX = sx(data.cumulativeTarget || 0);
+
+      const rows = items.map((item, index) => {
+        const y = top + index * rowHeight + rowHeight / 2;
+        const count = item.count || 0;
+        const barWidth = Math.max(1, sx(count) - left);
+        const color = count >= (data.cumulativeTarget || 0) && data.cumulativeTarget > 0 ? "#13803d" : "#b91c1c";
+        const labelX = Math.min(right + 8, left + barWidth + 8);
+        const name = item.displayName || item.name || "-";
+        const nameClass = name.length > 27 ? "bar-name long" : "bar-name";
+        return `
+          <text x="${left - 10}" y="${y + 4}" text-anchor="end" class="${nameClass}">${escapeHtml(name)}</text>
+          <rect x="${left}" y="${y - rowHeight * 0.31}" width="${barWidth}" height="${rowHeight * 0.62}" rx="4" fill="${color}" opacity="0.94"></rect>
+          <text x="${labelX}" y="${y + 4}" class="point-label" fill="${color}">${numberFormat.format(count)}</text>
+        `;
+      }).join("");
+
+      return `
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Carta palang prestasi perakuan">
+          <rect x="0" y="0" width="${width}" height="${height}" fill="#fff"></rect>
+          ${ticks.map((tick) => `
+            <line x1="${sx(tick)}" y1="${top}" x2="${sx(tick)}" y2="${bottom}" stroke="#e2e8f0"></line>
+            <text x="${sx(tick)}" y="${bottom + 22}" text-anchor="middle" class="axis">${numberFormat.format(tick)}</text>
+          `).join("")}
+          <line x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}" stroke="#334155" stroke-width="1.4"></line>
+          <line x1="${left}" y1="${bottom}" x2="${left}" y2="${top}" stroke="#334155" stroke-width="1.4"></line>
+          ${rows}
+          <line x1="${targetX}" y1="${top - 6}" x2="${targetX}" y2="${bottom}" stroke="#dc2626" stroke-width="2.2" stroke-dasharray="7 5"></line>
+          <text x="${Math.min(targetX + 8, right - 78)}" y="${top + 12}" class="target-label">Target ${numberFormat.format(data.cumulativeTarget || 0)}</text>
+          <text x="${left + plotWidth / 2}" y="${height - 16}" text-anchor="middle" class="axis-title">Jumlah perakuan</text>
+        </svg>
+      `;
+    }
+
+    function renderTable(data) {
+      const target = data.cumulativeTarget || 0;
+      const rows = (data.officers || []).map((item, index) => {
+        const count = item.count || 0;
+        const gap = Math.max(target - count, 0);
+        const statusClass = gap === 0 && target > 0 ? "ok" : count > 0 ? "warn" : "bad";
+        return `
+          <tr>
+            <td><span class="rank">${index + 1}</span></td>
+            <td>${escapeHtml(item.displayName || item.name || "-")}</td>
+            <td class="num ${statusClass}">${numberFormat.format(count)}</td>
+            <td class="num">${numberFormat.format(gap)}</td>
+          </tr>
+        `;
+      }).join("");
+      document.getElementById("officerTable").innerHTML = rows || `<tr><td colspan="4">Tiada data.</td></tr>`;
+    }
+
+    function render(data) {
+      const hitCount = (data.officers || []).filter((item) => (item.count || 0) >= (data.cumulativeTarget || 0) && data.cumulativeTarget > 0).length;
+      document.getElementById("rangeText").textContent = `${formatDate(data.dataStart)} hingga ${formatDate(data.dataEnd)} | ${data.targetBranch || "KUALA LUMPUR"}`;
+      document.getElementById("updatedText").textContent = `Kemas kini: ${dateTimeFormat.format(new Date(data.generatedAt))}`;
+      document.getElementById("completedValue").textContent = numberFormat.format(data.completedSinceStart || 0);
+      document.getElementById("remainingValue").textContent = numberFormat.format(data.estimatedRemaining || 0);
+      document.getElementById("targetValue").textContent = numberFormat.format(data.cumulativeTarget || 0);
+      document.getElementById("targetText").textContent = `${numberFormat.format(data.targetPerDay || 30)} sehari x ${numberFormat.format(data.targetDays || 0)} hari`;
+      document.getElementById("hitValue").textContent = `${hitCount}/${(data.officers || []).length}`;
+      document.getElementById("lineValue").textContent = numberFormat.format(data.sourceLineCount || 0);
+      document.getElementById("csvText").textContent = data.csvFile || "-";
+      document.getElementById("schemeText").textContent = data.targetScheme || "BANTUAN AM PERSEKOLAHAN";
+      document.getElementById("targetLineText").textContent = `Target terkumpul: ${numberFormat.format(data.cumulativeTarget || 0)}`;
+      document.getElementById("officerCountText").textContent = `${numberFormat.format((data.officers || []).length)} pegawai`;
+      document.getElementById("chartWrap").innerHTML = renderChart(data);
+      renderTable(data);
+      document.getElementById("errorBox").style.display = "none";
+    }
+
+    async function loadData() {
+      try {
+        const response = await fetch(`${DATA_URL}?t=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        render(await response.json());
+      } catch (error) {
+        const box = document.getElementById("errorBox");
+        box.textContent = `Data live belum dapat dibaca: ${error.message}`;
+        box.style.display = "block";
+      }
+    }
+
+    loadData();
+    setInterval(loadData, REFRESH_MS);
+  </script>
+</body>
+</html>
