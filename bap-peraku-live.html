@@ -140,6 +140,42 @@
       font-size: 16px;
     }
 
+    .panel-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-button {
+      display: inline-grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .icon-button:hover {
+      border-color: #9db0c4;
+      background: #f8fafc;
+    }
+
+    .icon-button:focus-visible {
+      outline: 3px solid rgba(29, 78, 216, 0.28);
+      outline-offset: 2px;
+    }
+
+    .icon-button svg {
+      width: 18px;
+      min-width: 0;
+      height: 18px;
+      stroke-width: 2.3;
+    }
+
     .chart-wrap {
       padding: 10px;
       overflow-x: auto;
@@ -158,6 +194,33 @@
     .point-label { font-size: 12px; font-weight: 800; }
     .bar-name { fill: #1e293b; font-size: 12px; font-weight: 800; }
     .bar-name.long { font-size: 9px; }
+
+    .chart-panel:fullscreen {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      flex-direction: column;
+      border: 0;
+      border-radius: 0;
+      background: #fff;
+    }
+
+    .chart-panel:fullscreen .panel-head {
+      flex: 0 0 auto;
+    }
+
+    .chart-panel:fullscreen .chart-wrap {
+      flex: 1 1 auto;
+      display: grid;
+      min-height: 0;
+      padding: 16px;
+      place-items: center;
+    }
+
+    .chart-panel:fullscreen svg {
+      max-width: 100%;
+      max-height: 100%;
+    }
 
     table {
       width: 100%;
@@ -224,6 +287,7 @@
     @media (max-width: 560px) {
       .summary { grid-template-columns: 1fr; }
       .panel-head { align-items: flex-start; flex-direction: column; }
+      .panel-actions { width: 100%; justify-content: space-between; }
       th,
       td { padding: 9px 8px; }
     }
@@ -271,10 +335,26 @@
     </section>
 
     <section class="board">
-      <section class="chart-panel">
+      <section class="chart-panel" id="chartPanel">
         <div class="panel-head">
           <h2>Carta Pegawai</h2>
-          <p id="targetLineText">Target terkumpul: -</p>
+          <div class="panel-actions">
+            <p id="targetLineText">Target terkumpul: -</p>
+            <button class="icon-button" type="button" id="fullscreenButton" title="Buka carta fullscreen" aria-label="Buka carta fullscreen" aria-pressed="false">
+              <svg class="icon-fullscreen-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+                <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+                <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+                <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+              </svg>
+              <svg class="icon-fullscreen-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" hidden>
+                <path d="M8 3v3a2 2 0 0 1-2 2H3"></path>
+                <path d="M21 8h-3a2 2 0 0 1-2-2V3"></path>
+                <path d="M3 16h3a2 2 0 0 1 2 2v3"></path>
+                <path d="M16 21v-3a2 2 0 0 1 2-2h3"></path>
+              </svg>
+            </button>
+          </div>
         </div>
         <div class="chart-wrap" id="chartWrap"></div>
       </section>
@@ -310,6 +390,10 @@
       dateStyle: "medium",
       timeStyle: "short",
     });
+    const chartPanel = document.getElementById("chartPanel");
+    const fullscreenButton = document.getElementById("fullscreenButton");
+    const fullscreenOpenIcon = fullscreenButton.querySelector(".icon-fullscreen-open");
+    const fullscreenCloseIcon = fullscreenButton.querySelector(".icon-fullscreen-close");
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -417,6 +501,29 @@
       document.getElementById("errorBox").style.display = "none";
     }
 
+    function syncFullscreenButton() {
+      const isFullscreen = document.fullscreenElement === chartPanel;
+      fullscreenButton.setAttribute("aria-pressed", String(isFullscreen));
+      fullscreenButton.setAttribute("aria-label", isFullscreen ? "Tutup fullscreen carta" : "Buka carta fullscreen");
+      fullscreenButton.title = isFullscreen ? "Tutup fullscreen carta" : "Buka carta fullscreen";
+      fullscreenOpenIcon.hidden = isFullscreen;
+      fullscreenCloseIcon.hidden = !isFullscreen;
+    }
+
+    async function toggleChartFullscreen() {
+      try {
+        if (document.fullscreenElement === chartPanel) {
+          await document.exitFullscreen();
+        } else if (chartPanel.requestFullscreen) {
+          await chartPanel.requestFullscreen();
+        }
+      } catch (error) {
+        const box = document.getElementById("errorBox");
+        box.textContent = `Fullscreen tidak dapat dibuka: ${error.message}`;
+        box.style.display = "block";
+      }
+    }
+
     async function loadData() {
       try {
         const response = await fetch(`${DATA_URL}?t=${Date.now()}`, { cache: "no-store" });
@@ -429,6 +536,9 @@
       }
     }
 
+    fullscreenButton.addEventListener("click", toggleChartFullscreen);
+    document.addEventListener("fullscreenchange", syncFullscreenButton);
+    syncFullscreenButton();
     loadData();
     setInterval(loadData, REFRESH_MS);
   </script>
