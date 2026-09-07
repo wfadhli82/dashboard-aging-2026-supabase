@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T05:02:47.341Z",
+  "generatedAt": "2026-09-07T05:17:40.792Z",
   "dataStart": "2026-09-07",
   "dataEnd": "2026-09-07",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
@@ -8,20 +8,20 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 5267,
-  "completedSinceStart": 357,
-  "estimatedRemaining": 4910,
+  "completedSinceStart": 368,
+  "estimatedRemaining": 4899,
   "csvFile": "belum_diperaku_2026-01-01_to_2026-09-07.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 137617,
+  "sourceLineCount": 137621,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 63,
+      "count": 64,
       "target": 100,
-      "gap": 37
+      "gap": 36
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
@@ -51,9 +51,9 @@
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
-      "count": 33,
+      "count": 37,
       "target": 100,
-      "gap": 67
+      "gap": 63
     },
     {
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
@@ -67,9 +67,17 @@
       "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
       "displayName": "Shahrul Zaman",
       "hasShortName": true,
-      "count": 23,
+      "count": 24,
       "target": 100,
-      "gap": 77
+      "gap": 76
+    },
+    {
+      "name": "MISLIA BINTI MISNON",
+      "displayName": "Mislia",
+      "hasShortName": true,
+      "count": 20,
+      "target": 100,
+      "gap": 80
     },
     {
       "name": "MOHD YASIER BIN ZANIL",
@@ -83,17 +91,9 @@
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
       "hasShortName": true,
-      "count": 16,
+      "count": 17,
       "target": 100,
-      "gap": 84
-    },
-    {
-      "name": "MISLIA BINTI MISNON",
-      "displayName": "Mislia",
-      "hasShortName": true,
-      "count": 16,
-      "target": 100,
-      "gap": 84
+      "gap": 83
     },
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
