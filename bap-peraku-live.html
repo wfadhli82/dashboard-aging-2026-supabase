@@ -301,7 +301,7 @@
         <p id="rangeText">Memuatkan data...</p>
       </div>
       <div class="status" aria-live="polite">
-        <span class="pill" id="refreshText">Auto refresh: 15 minit</span>
+        <span class="pill" id="refreshText">Auto check: 1 minit</span>
         <span class="pill" id="updatedText">Kemas kini: -</span>
       </div>
     </header>
@@ -383,7 +383,7 @@
 
   <script>
     const DATA_URL = "data/bap-validation-live.json";
-    const REFRESH_MS = 15 * 60 * 1000;
+    const REFRESH_MS = 60 * 1000;
     const numberFormat = new Intl.NumberFormat("ms-MY");
     const dateTimeFormat = new Intl.DateTimeFormat("ms-MY", {
       timeZone: "Asia/Singapore",
