@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T05:47:40.465Z",
+  "generatedAt": "2026-09-07T06:02:40.786Z",
   "dataStart": "2026-09-07",
   "dataEnd": "2026-09-07",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
@@ -8,20 +8,20 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 5267,
-  "completedSinceStart": 368,
-  "estimatedRemaining": 4899,
+  "completedSinceStart": 371,
+  "estimatedRemaining": 4896,
   "csvFile": "belum_diperaku_2026-01-01_to_2026-09-07.csv",
-  "csvFresh": false,
-  "csvStatus": "stale_after_download_failure",
-  "sourceLineCount": 137622,
+  "csvFresh": true,
+  "csvStatus": "recovered_crdownload",
+  "sourceLineCount": 137623,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 64,
+      "count": 67,
       "target": 100,
-      "gap": 36
+      "gap": 33
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
