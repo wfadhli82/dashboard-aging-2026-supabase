@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T05:17:40.792Z",
+  "generatedAt": "2026-09-07T05:32:41.252Z",
   "dataStart": "2026-09-07",
   "dataEnd": "2026-09-07",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
@@ -13,7 +13,7 @@
   "csvFile": "belum_diperaku_2026-01-01_to_2026-09-07.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 137621,
+  "sourceLineCount": 137622,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
