@@ -408,7 +408,7 @@
       document.getElementById("targetText").textContent = `${numberFormat.format(data.targetPerDay || 30)} sehari x ${numberFormat.format(data.targetDays || 0)} hari`;
       document.getElementById("hitValue").textContent = `${hitCount}/${(data.officers || []).length}`;
       document.getElementById("lineValue").textContent = numberFormat.format(data.sourceLineCount || 0);
-      document.getElementById("csvText").textContent = data.csvFile || "-";
+      document.getElementById("csvText").textContent = `${data.csvFile || "-"}${data.csvFresh === false ? " (stale)" : ""}`;
       document.getElementById("schemeText").textContent = data.targetScheme || "BANTUAN AM PERSEKOLAHAN";
       document.getElementById("targetLineText").textContent = `Target terkumpul: ${numberFormat.format(data.cumulativeTarget || 0)}`;
       document.getElementById("officerCountText").textContent = `${numberFormat.format((data.officers || []).length)} pegawai`;
