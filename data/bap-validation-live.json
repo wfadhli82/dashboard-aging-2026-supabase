@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T06:02:40.786Z",
+  "generatedAt": "2026-09-07T06:17:43.714Z",
   "dataStart": "2026-09-07",
   "dataEnd": "2026-09-07",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
@@ -8,28 +8,28 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 5267,
-  "completedSinceStart": 371,
-  "estimatedRemaining": 4896,
+  "completedSinceStart": 383,
+  "estimatedRemaining": 4884,
   "csvFile": "belum_diperaku_2026-01-01_to_2026-09-07.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 137623,
+  "sourceLineCount": 137625,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 67,
+      "count": 74,
       "target": 100,
-      "gap": 33
+      "gap": 26
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
       "displayName": "Putra Mirza",
       "hasShortName": true,
-      "count": 62,
+      "count": 63,
       "target": 100,
-      "gap": 38
+      "gap": 37
     },
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
@@ -56,20 +56,20 @@
       "gap": 63
     },
     {
+      "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
+      "displayName": "Shahrul Zaman",
+      "hasShortName": true,
+      "count": 27,
+      "target": 100,
+      "gap": 73
+    },
+    {
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
       "displayName": "Syafiq",
       "hasShortName": true,
       "count": 25,
       "target": 100,
       "gap": 75
-    },
-    {
-      "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
-      "displayName": "Shahrul Zaman",
-      "hasShortName": true,
-      "count": 24,
-      "target": 100,
-      "gap": 76
     },
     {
       "name": "MISLIA BINTI MISNON",
@@ -107,9 +107,9 @@
       "name": "MUHAMMAD NUR IZZAT BIN KAMARUDDIN",
       "displayName": "Nur Izzat",
       "hasShortName": true,
-      "count": 2,
+      "count": 3,
       "target": 100,
-      "gap": 98
+      "gap": 97
     },
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
