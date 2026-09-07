@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T09:32:06.371Z",
+  "generatedAt": "2026-09-07T09:47:40.625Z",
   "dataStart": "2026-09-07",
   "dataEnd": "2026-09-07",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
@@ -8,11 +8,11 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 5267,
-  "completedSinceStart": 720,
-  "estimatedRemaining": 4547,
+  "completedSinceStart": 731,
+  "estimatedRemaining": 4536,
   "csvFile": "belum_diperaku_2026-01-01_to_2026-09-07.csv",
-  "csvFresh": false,
-  "csvStatus": "stale_after_download_failure",
+  "csvFresh": true,
+  "csvStatus": "recovered_crdownload",
   "sourceLineCount": 137813,
   "officers": [
     {
@@ -51,9 +51,9 @@
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
-      "count": 73,
+      "count": 75,
       "target": 100,
-      "gap": 27
+      "gap": 25
     },
     {
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
@@ -75,9 +75,9 @@
       "name": "MISLIA BINTI MISNON",
       "displayName": "Mislia",
       "hasShortName": true,
-      "count": 38,
+      "count": 47,
       "target": 100,
-      "gap": 62
+      "gap": 53
     },
     {
       "name": "MOHD YASIER BIN ZANIL",
