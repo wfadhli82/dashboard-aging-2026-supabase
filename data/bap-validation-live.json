@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T08:03:00.167Z",
+  "generatedAt": "2026-09-07T08:17:43.223Z",
   "dataStart": "2026-09-07",
   "dataEnd": "2026-09-07",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
@@ -8,12 +8,12 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 5267,
-  "completedSinceStart": 560,
-  "estimatedRemaining": 4707,
+  "completedSinceStart": 595,
+  "estimatedRemaining": 4672,
   "csvFile": "belum_diperaku_2026-01-01_to_2026-09-07.csv",
   "csvFresh": true,
-  "csvStatus": "downloaded",
-  "sourceLineCount": 137766,
+  "csvStatus": "recovered_crdownload",
+  "sourceLineCount": 137786,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
@@ -24,28 +24,28 @@
       "gap": 0
     },
     {
-      "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
-      "displayName": "Putra Mirza",
-      "hasShortName": true,
-      "count": 82,
-      "target": 100,
-      "gap": 18
-    },
-    {
       "name": "MUHAMMAD FARHAN BIN DARUS",
       "displayName": "Farhan",
       "hasShortName": true,
-      "count": 80,
+      "count": 90,
       "target": 100,
-      "gap": 20
+      "gap": 10
+    },
+    {
+      "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
+      "displayName": "Putra Mirza",
+      "hasShortName": true,
+      "count": 85,
+      "target": 100,
+      "gap": 15
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 55,
+      "count": 61,
       "target": 100,
-      "gap": 45
+      "gap": 39
     },
     {
       "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
@@ -59,17 +59,17 @@
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
-      "count": 45,
+      "count": 49,
       "target": 100,
-      "gap": 55
+      "gap": 51
     },
     {
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
       "displayName": "Syafiq",
       "hasShortName": true,
-      "count": 34,
+      "count": 40,
       "target": 100,
-      "gap": 66
+      "gap": 60
     },
     {
       "name": "MOHD YASIER BIN ZANIL",
@@ -83,9 +83,9 @@
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 21,
+      "count": 27,
       "target": 100,
-      "gap": 79
+      "gap": 73
     },
     {
       "name": "MISLIA BINTI MISNON",
