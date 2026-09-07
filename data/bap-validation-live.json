@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T03:02:45.189Z",
+  "generatedAt": "2026-09-07T03:10:54.640Z",
   "dataStart": "2026-09-07",
   "dataEnd": "2026-09-07",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
@@ -8,18 +8,18 @@
   "targetDays": 1,
   "cumulativeTarget": 30,
   "startingBacklog": 5267,
-  "completedSinceStart": 66,
-  "estimatedRemaining": 5201,
+  "completedSinceStart": 76,
+  "estimatedRemaining": 5191,
   "csvFile": "belum_diperaku_2026-01-01_to_2026-09-07.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 137490,
+  "sourceLineCount": 137500,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 35,
+      "count": 38,
       "target": 30,
       "gap": 0
     },
@@ -27,25 +27,25 @@
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
       "displayName": "Putra Mirza",
       "hasShortName": true,
-      "count": 20,
+      "count": 23,
       "target": 30,
-      "gap": 10
+      "gap": 7
     },
     {
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
       "hasShortName": true,
-      "count": 4,
+      "count": 5,
       "target": 30,
-      "gap": 26
+      "gap": 25
     },
     {
       "name": "MISLIA BINTI MISNON",
       "displayName": "Mislia",
       "hasShortName": true,
-      "count": 3,
+      "count": 4,
       "target": 30,
-      "gap": 27
+      "gap": 26
     },
     {
       "name": "MOHD YASIER BIN ZANIL",
@@ -59,9 +59,9 @@
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
-      "count": 1,
+      "count": 3,
       "target": 30,
-      "gap": 29
+      "gap": 27
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
