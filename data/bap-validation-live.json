@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T06:32:44.792Z",
+  "generatedAt": "2026-09-07T06:47:43.062Z",
   "dataStart": "2026-09-07",
   "dataEnd": "2026-09-07",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
@@ -8,44 +8,44 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 5267,
-  "completedSinceStart": 402,
-  "estimatedRemaining": 4865,
+  "completedSinceStart": 424,
+  "estimatedRemaining": 4843,
   "csvFile": "belum_diperaku_2026-01-01_to_2026-09-07.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 137636,
+  "sourceLineCount": 137651,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 80,
+      "count": 87,
       "target": 100,
-      "gap": 20
+      "gap": 13
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
       "displayName": "Putra Mirza",
       "hasShortName": true,
-      "count": 63,
+      "count": 64,
       "target": 100,
-      "gap": 37
+      "gap": 36
     },
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
       "displayName": "Farhan",
       "hasShortName": true,
-      "count": 57,
+      "count": 60,
       "target": 100,
-      "gap": 43
+      "gap": 40
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 44,
+      "count": 46,
       "target": 100,
-      "gap": 56
+      "gap": 54
     },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
@@ -59,17 +59,17 @@
       "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
       "displayName": "Shahrul Zaman",
       "hasShortName": true,
-      "count": 31,
+      "count": 35,
       "target": 100,
-      "gap": 69
+      "gap": 65
     },
     {
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
       "displayName": "Syafiq",
       "hasShortName": true,
-      "count": 25,
+      "count": 27,
       "target": 100,
-      "gap": 75
+      "gap": 73
     },
     {
       "name": "MISLIA BINTI MISNON",
@@ -99,9 +99,9 @@
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 7,
+      "count": 10,
       "target": 100,
-      "gap": 93
+      "gap": 90
     },
     {
       "name": "MUHAMMAD NUR IZZAT BIN KAMARUDDIN",
