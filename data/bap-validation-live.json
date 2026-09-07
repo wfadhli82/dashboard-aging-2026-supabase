@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T04:32:46.518Z",
+  "generatedAt": "2026-09-07T04:47:42.753Z",
   "dataStart": "2026-09-07",
   "dataEnd": "2026-09-07",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
@@ -11,8 +11,8 @@
   "completedSinceStart": 271,
   "estimatedRemaining": 4996,
   "csvFile": "belum_diperaku_2026-01-01_to_2026-09-07.csv",
-  "csvFresh": true,
-  "csvStatus": "recovered_crdownload",
+  "csvFresh": false,
+  "csvStatus": "stale_after_download_failure",
   "sourceLineCount": 137588,
   "officers": [
     {
