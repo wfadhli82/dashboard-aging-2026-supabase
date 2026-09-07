@@ -320,7 +320,7 @@
       <article class="metric">
         <span>Target pegawai</span>
         <strong id="targetValue">0</strong>
-        <small id="targetText">30 sehari</small>
+        <small id="targetText">100 sehari</small>
       </article>
       <article class="metric">
         <span>Capai target</span>
@@ -489,7 +489,7 @@
       document.getElementById("completedValue").textContent = numberFormat.format(data.completedSinceStart || 0);
       document.getElementById("remainingValue").textContent = numberFormat.format(data.estimatedRemaining || 0);
       document.getElementById("targetValue").textContent = numberFormat.format(data.cumulativeTarget || 0);
-      document.getElementById("targetText").textContent = `${numberFormat.format(data.targetPerDay || 30)} sehari x ${numberFormat.format(data.targetDays || 0)} hari`;
+      document.getElementById("targetText").textContent = `${numberFormat.format(data.targetPerDay || 100)} sehari x ${numberFormat.format(data.targetDays || 0)} hari`;
       document.getElementById("hitValue").textContent = `${hitCount}/${(data.officers || []).length}`;
       document.getElementById("lineValue").textContent = numberFormat.format(data.sourceLineCount || 0);
       document.getElementById("csvText").textContent = `${data.csvFile || "-"}${data.csvFresh === false ? " (stale)" : ""}`;
