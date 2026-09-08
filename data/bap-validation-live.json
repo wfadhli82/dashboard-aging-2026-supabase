@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T02:15:25.631Z",
+  "generatedAt": "2026-09-08T02:30:24.653Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-08",
   "dataEnd": "2026-09-08",
@@ -10,29 +10,29 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 4532,
-  "completedToday": 88,
-  "completedSinceStart": 88,
-  "estimatedRemaining": 4444,
+  "completedToday": 93,
+  "completedSinceStart": 93,
+  "estimatedRemaining": 4439,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-08.csv",
   "csvFresh": true,
-  "csvStatus": "downloaded",
+  "csvStatus": "recovered_crdownload",
   "sourceLineCount": 10418,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 31,
+      "count": 34,
       "target": 100,
-      "gap": 69
+      "gap": 66
     },
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 17,
+      "count": 18,
       "target": 100,
-      "gap": 83
+      "gap": 82
     },
     {
       "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
@@ -54,9 +54,9 @@
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
       "hasShortName": true,
-      "count": 9,
+      "count": 10,
       "target": 100,
-      "gap": 91
+      "gap": 90
     },
     {
       "name": "MISLIA BINTI MISNON",
