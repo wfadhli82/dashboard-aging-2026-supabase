@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T04:15:24.908Z",
+  "generatedAt": "2026-09-08T04:30:23.319Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-08",
   "dataEnd": "2026-09-08",
@@ -10,69 +10,69 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 4532,
-  "completedToday": 298,
-  "completedSinceStart": 298,
-  "estimatedRemaining": 4234,
+  "completedToday": 346,
+  "completedSinceStart": 346,
+  "estimatedRemaining": 4186,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-08.csv",
-  "csvFresh": false,
-  "csvStatus": "stale_after_download_failure",
-  "sourceLineCount": 10421,
+  "csvFresh": true,
+  "csvStatus": "recovered_crdownload",
+  "sourceLineCount": 10418,
   "officers": [
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
       "displayName": "Farhan",
       "hasShortName": true,
-      "count": 71,
+      "count": 70,
       "target": 100,
-      "gap": 29
+      "gap": 30
     },
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 62,
+      "count": 70,
       "target": 100,
-      "gap": 38
+      "gap": 30
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
       "displayName": "Putra Mirza",
       "hasShortName": true,
-      "count": 37,
+      "count": 47,
       "target": 100,
-      "gap": 63
+      "gap": 53
     },
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
+      "hasShortName": true,
+      "count": 43,
+      "target": 100,
+      "gap": 57
+    },
+    {
+      "name": "MOHD YASIER BIN ZANIL",
+      "displayName": "MOHD YASIER BIN ZANIL",
+      "hasShortName": false,
+      "count": 35,
+      "target": 100,
+      "gap": 65
+    },
+    {
+      "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
+      "displayName": "Ali Hussini",
       "hasShortName": true,
       "count": 32,
       "target": 100,
       "gap": 68
     },
     {
-      "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
-      "displayName": "Ali Hussini",
-      "hasShortName": true,
-      "count": 29,
-      "target": 100,
-      "gap": 71
-    },
-    {
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
       "hasShortName": true,
-      "count": 26,
+      "count": 32,
       "target": 100,
-      "gap": 74
-    },
-    {
-      "name": "MOHD YASIER BIN ZANIL",
-      "displayName": "MOHD YASIER BIN ZANIL",
-      "hasShortName": false,
-      "count": 24,
-      "target": 100,
-      "gap": 76
+      "gap": 68
     },
     {
       "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
