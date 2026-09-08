@@ -308,14 +308,14 @@
 
     <section class="summary" aria-label="Ringkasan prestasi">
       <article class="metric">
-        <span>Perakuan minggu ini</span>
+        <span>Perakuan hari ini</span>
         <strong id="completedValue">0</strong>
         <small id="schemeText">BANTUAN AM PERSEKOLAHAN</small>
       </article>
       <article class="metric">
         <span>Baki anggaran</span>
         <strong id="remainingValue">0</strong>
-        <small>Baki mula minggu: 5,267</small>
+        <small id="backlogText">Baki mula hari: -</small>
       </article>
       <article class="metric">
         <span>Target pegawai</span>
@@ -325,7 +325,7 @@
       <article class="metric">
         <span>Capai target</span>
         <strong id="hitValue">0/0</strong>
-        <small id="hitText">Mengikut target terkumpul</small>
+        <small id="hitText">Mengikut target harian</small>
       </article>
       <article class="metric">
         <span>Sumber CSV</span>
@@ -339,7 +339,7 @@
         <div class="panel-head">
           <h2>Carta Pegawai</h2>
           <div class="panel-actions">
-            <p id="targetLineText">Target terkumpul: -</p>
+            <p id="targetLineText">Target harian: -</p>
             <button class="icon-button" type="button" id="fullscreenButton" title="Buka carta fullscreen" aria-label="Buka carta fullscreen" aria-pressed="false">
               <svg class="icon-fullscreen-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
                 <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
@@ -484,17 +484,18 @@
 
     function render(data) {
       const hitCount = (data.officers || []).filter((item) => (item.count || 0) >= (data.cumulativeTarget || 0) && data.cumulativeTarget > 0).length;
-      document.getElementById("rangeText").textContent = `${formatDate(data.dataStart)} hingga ${formatDate(data.dataEnd)} | ${data.targetBranch || "KUALA LUMPUR"}`;
+      document.getElementById("rangeText").textContent = `${formatDate(data.dataEnd)} | ${data.targetBranch || "KUALA LUMPUR"}`;
       document.getElementById("updatedText").textContent = `Kemas kini: ${dateTimeFormat.format(new Date(data.generatedAt))}`;
       document.getElementById("completedValue").textContent = numberFormat.format(data.completedSinceStart || 0);
       document.getElementById("remainingValue").textContent = numberFormat.format(data.estimatedRemaining || 0);
+      document.getElementById("backlogText").textContent = `Baki mula hari: ${numberFormat.format(data.startingBacklog || 0)}`;
       document.getElementById("targetValue").textContent = numberFormat.format(data.cumulativeTarget || 0);
-      document.getElementById("targetText").textContent = `${numberFormat.format(data.targetPerDay || 100)} sehari x ${numberFormat.format(data.targetDays || 0)} hari`;
+      document.getElementById("targetText").textContent = `${numberFormat.format(data.targetPerDay || 100)} sehari`;
       document.getElementById("hitValue").textContent = `${hitCount}/${(data.officers || []).length}`;
       document.getElementById("lineValue").textContent = numberFormat.format(data.sourceLineCount || 0);
       document.getElementById("csvText").textContent = `${data.csvFile || "-"}${data.csvFresh === false ? " (stale)" : ""}`;
       document.getElementById("schemeText").textContent = data.targetScheme || "BANTUAN AM PERSEKOLAHAN";
-      document.getElementById("targetLineText").textContent = `Target terkumpul: ${numberFormat.format(data.cumulativeTarget || 0)}`;
+      document.getElementById("targetLineText").textContent = `Target harian: ${numberFormat.format(data.cumulativeTarget || 0)}`;
       document.getElementById("officerCountText").textContent = `${numberFormat.format((data.officers || []).length)} pegawai`;
       document.getElementById("chartWrap").innerHTML = renderChart(data);
       renderTable(data);
