@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T05:00:24.414Z",
+  "generatedAt": "2026-09-08T05:15:25.901Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-08",
   "dataEnd": "2026-09-08",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 4532,
-  "completedToday": 389,
-  "completedSinceStart": 389,
-  "estimatedRemaining": 4143,
+  "completedToday": 402,
+  "completedSinceStart": 402,
+  "estimatedRemaining": 4130,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-08.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -22,9 +22,9 @@
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 90,
+      "count": 92,
       "target": 100,
-      "gap": 10
+      "gap": 8
     },
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
@@ -46,25 +46,25 @@
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 51,
+      "count": 52,
       "target": 100,
-      "gap": 49
+      "gap": 48
     },
     {
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
       "hasShortName": true,
-      "count": 37,
+      "count": 40,
       "target": 100,
-      "gap": 63
+      "gap": 60
     },
     {
       "name": "MOHD YASIER BIN ZANIL",
       "displayName": "MOHD YASIER BIN ZANIL",
       "hasShortName": false,
-      "count": 35,
+      "count": 39,
       "target": 100,
-      "gap": 65
+      "gap": 61
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
@@ -86,17 +86,17 @@
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
       "displayName": "Faiz Ikmal",
       "hasShortName": true,
-      "count": 4,
+      "count": 6,
       "target": 100,
-      "gap": 96
+      "gap": 94
     },
     {
       "name": "MISLIA BINTI MISNON",
       "displayName": "Mislia",
       "hasShortName": true,
-      "count": 3,
+      "count": 4,
       "target": 100,
-      "gap": 97
+      "gap": 96
     },
     {
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
