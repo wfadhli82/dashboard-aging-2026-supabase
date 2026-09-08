@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T08:46:30.386Z",
+  "generatedAt": "2026-09-08T09:00:25.205Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-08",
   "dataEnd": "2026-09-08",
@@ -10,19 +10,27 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 4532,
-  "completedToday": 766,
-  "completedSinceStart": 766,
-  "estimatedRemaining": 3766,
+  "completedToday": 824,
+  "completedSinceStart": 824,
+  "estimatedRemaining": 3708,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-08.csv",
-  "csvFresh": false,
-  "csvStatus": "stale_after_download_failure",
-  "sourceLineCount": 10417,
+  "csvFresh": true,
+  "csvStatus": "recovered_crdownload",
+  "sourceLineCount": 10419,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 127,
+      "count": 128,
+      "target": 100,
+      "gap": 0
+    },
+    {
+      "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
+      "displayName": "Shahrul Zaman",
+      "hasShortName": true,
+      "count": 108,
       "target": 100,
       "gap": 0
     },
@@ -51,44 +59,36 @@
       "gap": 0
     },
     {
-      "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
-      "displayName": "Shahrul Zaman",
-      "hasShortName": true,
-      "count": 100,
-      "target": 100,
-      "gap": 0
-    },
-    {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 69,
+      "count": 95,
       "target": 100,
-      "gap": 31
+      "gap": 5
     },
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 66,
+      "count": 75,
       "target": 100,
-      "gap": 34
+      "gap": 25
     },
     {
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
       "hasShortName": true,
-      "count": 60,
+      "count": 68,
       "target": 100,
-      "gap": 40
+      "gap": 32
     },
     {
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
       "displayName": "Firdzuan",
       "hasShortName": true,
-      "count": 24,
+      "count": 30,
       "target": 100,
-      "gap": 76
+      "gap": 70
     },
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
