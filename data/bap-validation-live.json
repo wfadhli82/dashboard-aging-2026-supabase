@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T03:00:25.223Z",
+  "generatedAt": "2026-09-08T03:15:26.698Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-08",
   "dataEnd": "2026-09-08",
@@ -10,45 +10,53 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 4532,
-  "completedToday": 124,
-  "completedSinceStart": 124,
-  "estimatedRemaining": 4408,
+  "completedToday": 166,
+  "completedSinceStart": 166,
+  "estimatedRemaining": 4366,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-08.csv",
   "csvFresh": true,
-  "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10418,
+  "csvStatus": "downloaded",
+  "sourceLineCount": 10417,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 44,
+      "count": 50,
       "target": 100,
-      "gap": 56
+      "gap": 50
+    },
+    {
+      "name": "MUHAMMAD FARHAN BIN DARUS",
+      "displayName": "Farhan",
+      "hasShortName": true,
+      "count": 26,
+      "target": 100,
+      "gap": 74
     },
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 18,
+      "count": 21,
       "target": 100,
-      "gap": 82
+      "gap": 79
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
       "displayName": "Putra Mirza",
       "hasShortName": true,
-      "count": 14,
+      "count": 20,
       "target": 100,
-      "gap": 86
+      "gap": 80
     },
     {
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
       "hasShortName": true,
-      "count": 13,
+      "count": 14,
       "target": 100,
-      "gap": 87
+      "gap": 86
     },
     {
       "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
@@ -59,20 +67,20 @@
       "gap": 87
     },
     {
-      "name": "MUHAMMAD FARHAN BIN DARUS",
-      "displayName": "Farhan",
-      "hasShortName": true,
+      "name": "MOHD YASIER BIN ZANIL",
+      "displayName": "MOHD YASIER BIN ZANIL",
+      "hasShortName": false,
       "count": 10,
       "target": 100,
       "gap": 90
     },
     {
-      "name": "MOHD YASIER BIN ZANIL",
-      "displayName": "MOHD YASIER BIN ZANIL",
-      "hasShortName": false,
-      "count": 7,
+      "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
+      "displayName": "Ali Hussini",
+      "hasShortName": true,
+      "count": 8,
       "target": 100,
-      "gap": 93
+      "gap": 92
     },
     {
       "name": "MISLIA BINTI MISNON",
@@ -81,14 +89,6 @@
       "count": 3,
       "target": 100,
       "gap": 97
-    },
-    {
-      "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
-      "displayName": "Ali Hussini",
-      "hasShortName": true,
-      "count": 1,
-      "target": 100,
-      "gap": 99
     },
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
