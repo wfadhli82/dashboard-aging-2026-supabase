@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T10:00:24.757Z",
+  "generatedAt": "2026-09-08T10:15:23.869Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-08",
   "dataEnd": "2026-09-08",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 4532,
-  "completedToday": 828,
-  "completedSinceStart": 828,
-  "estimatedRemaining": 3704,
+  "completedToday": 836,
+  "completedSinceStart": 836,
+  "estimatedRemaining": 3696,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-08.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -70,9 +70,9 @@
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 78,
+      "count": 86,
       "target": 100,
-      "gap": 22
+      "gap": 14
     },
     {
       "name": "MOHD IZHAM BIN BAHAROM",
