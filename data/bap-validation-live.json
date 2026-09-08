@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T05:30:24.349Z",
+  "generatedAt": "2026-09-08T05:45:24.599Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-08",
   "dataEnd": "2026-09-08",
@@ -10,13 +10,13 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 4532,
-  "completedToday": 402,
-  "completedSinceStart": 402,
-  "estimatedRemaining": 4130,
+  "completedToday": 424,
+  "completedSinceStart": 424,
+  "estimatedRemaining": 4108,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-08.csv",
-  "csvFresh": false,
-  "csvStatus": "stale_after_download_failure",
-  "sourceLineCount": 10419,
+  "csvFresh": true,
+  "csvStatus": "recovered_crdownload",
+  "sourceLineCount": 10418,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
@@ -43,28 +43,28 @@
       "gap": 46
     },
     {
+      "name": "MOHD YASIER BIN ZANIL",
+      "displayName": "MOHD YASIER BIN ZANIL",
+      "hasShortName": false,
+      "count": 53,
+      "target": 100,
+      "gap": 47
+    },
+    {
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 52,
+      "count": 53,
       "target": 100,
-      "gap": 48
+      "gap": 47
     },
     {
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
       "hasShortName": true,
-      "count": 40,
+      "count": 46,
       "target": 100,
-      "gap": 60
-    },
-    {
-      "name": "MOHD YASIER BIN ZANIL",
-      "displayName": "MOHD YASIER BIN ZANIL",
-      "hasShortName": false,
-      "count": 39,
-      "target": 100,
-      "gap": 61
+      "gap": 54
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
@@ -86,9 +86,9 @@
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
       "displayName": "Faiz Ikmal",
       "hasShortName": true,
-      "count": 6,
+      "count": 7,
       "target": 100,
-      "gap": 94
+      "gap": 93
     },
     {
       "name": "MISLIA BINTI MISNON",
