@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T01:03:28.334Z",
+  "generatedAt": "2026-09-08T01:15:24.887Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-08",
   "dataEnd": "2026-09-08",
@@ -10,13 +10,13 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 4532,
-  "completedToday": 28,
-  "completedSinceStart": 28,
-  "estimatedRemaining": 4504,
+  "completedToday": 35,
+  "completedSinceStart": 35,
+  "estimatedRemaining": 4497,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-08.csv",
   "csvFresh": true,
-  "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10419,
+  "csvStatus": "downloaded",
+  "sourceLineCount": 10418,
   "officers": [
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
@@ -35,16 +35,16 @@
       "gap": 87
     },
     {
-      "name": "FAIZ IKMAL BIN AHMAD RAFIE",
-      "displayName": "Faiz Ikmal",
-      "hasShortName": true,
-      "count": 1,
-      "target": 100,
-      "gap": 99
-    },
-    {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
+      "hasShortName": true,
+      "count": 8,
+      "target": 100,
+      "gap": 92
+    },
+    {
+      "name": "FAIZ IKMAL BIN AHMAD RAFIE",
+      "displayName": "Faiz Ikmal",
       "hasShortName": true,
       "count": 1,
       "target": 100,
