@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T00:16:51.506Z",
+  "generatedAt": "2026-09-08T00:30:23.938Z",
   "dataStart": "2026-09-07",
   "dataEnd": "2026-09-08",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
@@ -9,12 +9,12 @@
   "targetDays": 2,
   "cumulativeTarget": 200,
   "startingBacklog": 5267,
-  "completedSinceStart": 750,
-  "estimatedRemaining": 4517,
+  "completedSinceStart": 756,
+  "estimatedRemaining": 4511,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-08.csv",
   "csvFresh": true,
-  "csvStatus": "downloaded",
-  "sourceLineCount": 10419,
+  "csvStatus": "recovered_crdownload",
+  "sourceLineCount": 10418,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
@@ -60,9 +60,9 @@
       "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
       "displayName": "Shahrul Zaman",
       "hasShortName": true,
-      "count": 62,
+      "count": 66,
       "target": 200,
-      "gap": 138
+      "gap": 134
     },
     {
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
@@ -84,9 +84,9 @@
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 39,
+      "count": 41,
       "target": 200,
-      "gap": 161
+      "gap": 159
     },
     {
       "name": "MOHD YASIER BIN ZANIL",
