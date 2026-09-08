@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T05:45:24.599Z",
+  "generatedAt": "2026-09-08T06:00:26.962Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-08",
   "dataEnd": "2026-09-08",
@@ -10,13 +10,13 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 4532,
-  "completedToday": 424,
-  "completedSinceStart": 424,
-  "estimatedRemaining": 4108,
+  "completedToday": 451,
+  "completedSinceStart": 451,
+  "estimatedRemaining": 4081,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-08.csv",
   "csvFresh": true,
-  "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10418,
+  "csvStatus": "downloaded",
+  "sourceLineCount": 10419,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
@@ -35,6 +35,22 @@
       "gap": 30
     },
     {
+      "name": "MOHD YASIER BIN ZANIL",
+      "displayName": "MOHD YASIER BIN ZANIL",
+      "hasShortName": false,
+      "count": 59,
+      "target": 100,
+      "gap": 41
+    },
+    {
+      "name": "AHMAD SAFWAN BIN AZHAR",
+      "displayName": "Safwan Azhar",
+      "hasShortName": true,
+      "count": 57,
+      "target": 100,
+      "gap": 43
+    },
+    {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
       "displayName": "Putra Mirza",
       "hasShortName": true,
@@ -43,28 +59,12 @@
       "gap": 46
     },
     {
-      "name": "MOHD YASIER BIN ZANIL",
-      "displayName": "MOHD YASIER BIN ZANIL",
-      "hasShortName": false,
-      "count": 53,
-      "target": 100,
-      "gap": 47
-    },
-    {
-      "name": "AHMAD SAFWAN BIN AZHAR",
-      "displayName": "Safwan Azhar",
-      "hasShortName": true,
-      "count": 53,
-      "target": 100,
-      "gap": 47
-    },
-    {
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
       "hasShortName": true,
-      "count": 46,
+      "count": 48,
       "target": 100,
-      "gap": 54
+      "gap": 52
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
@@ -78,9 +78,9 @@
       "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
       "displayName": "Shahrul Zaman",
       "hasShortName": true,
-      "count": 13,
+      "count": 28,
       "target": 100,
-      "gap": 87
+      "gap": 72
     },
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
