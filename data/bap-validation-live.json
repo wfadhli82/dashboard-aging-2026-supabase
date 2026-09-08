@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T09:15:25.366Z",
+  "generatedAt": "2026-09-08T09:30:24.597Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-08",
   "dataEnd": "2026-09-08",
@@ -10,12 +10,12 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 4532,
-  "completedToday": 824,
-  "completedSinceStart": 824,
-  "estimatedRemaining": 3708,
+  "completedToday": 825,
+  "completedSinceStart": 825,
+  "estimatedRemaining": 3707,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-08.csv",
   "csvFresh": true,
-  "csvStatus": "downloaded",
+  "csvStatus": "recovered_crdownload",
   "sourceLineCount": 10419,
   "officers": [
     {
@@ -30,7 +30,7 @@
       "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
       "displayName": "Shahrul Zaman",
       "hasShortName": true,
-      "count": 108,
+      "count": 109,
       "target": 100,
       "gap": 0
     },
