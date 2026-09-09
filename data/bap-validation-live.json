@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-09T06:45:28.361Z",
+  "generatedAt": "2026-09-09T07:00:30.376Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-09",
   "dataEnd": "2026-09-09",
@@ -10,37 +10,45 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 3679,
-  "completedToday": 433,
-  "completedSinceStart": 433,
-  "estimatedRemaining": 3246,
+  "completedToday": 485,
+  "completedSinceStart": 485,
+  "estimatedRemaining": 3194,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-09.csv",
-  "csvFresh": false,
-  "csvStatus": "stale_after_download_failure",
-  "sourceLineCount": 10419,
+  "csvFresh": true,
+  "csvStatus": "downloaded",
+  "sourceLineCount": 10418,
   "officers": [
     {
       "name": "MOHD YASIER BIN ZANIL",
       "displayName": "MOHD YASIER BIN ZANIL",
       "hasShortName": false,
-      "count": 136,
+      "count": 140,
       "target": 100,
       "gap": 0
-    },
-    {
-      "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
-      "displayName": "Putra Mirza",
-      "hasShortName": true,
-      "count": 49,
-      "target": 100,
-      "gap": 51
     },
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 44,
+      "count": 56,
       "target": 100,
-      "gap": 56
+      "gap": 44
+    },
+    {
+      "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
+      "displayName": "Putra Mirza",
+      "hasShortName": true,
+      "count": 55,
+      "target": 100,
+      "gap": 45
+    },
+    {
+      "name": "MUHAMMAD SYAFIQ BIN SALLEH",
+      "displayName": "Syafiq",
+      "hasShortName": true,
+      "count": 47,
+      "target": 100,
+      "gap": 53
     },
     {
       "name": "MOHD IZHAM BIN BAHAROM",
@@ -49,14 +57,6 @@
       "count": 40,
       "target": 100,
       "gap": 60
-    },
-    {
-      "name": "MUHAMMAD SYAFIQ BIN SALLEH",
-      "displayName": "Syafiq",
-      "hasShortName": true,
-      "count": 38,
-      "target": 100,
-      "gap": 62
     },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
@@ -75,6 +75,14 @@
       "gap": 70
     },
     {
+      "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
+      "displayName": "Ali Hussini",
+      "hasShortName": true,
+      "count": 29,
+      "target": 100,
+      "gap": 71
+    },
+    {
       "name": "MUHAMMAD FARHAN BIN DARUS",
       "displayName": "Farhan",
       "hasShortName": true,
@@ -89,14 +97,6 @@
       "count": 20,
       "target": 100,
       "gap": 80
-    },
-    {
-      "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
-      "displayName": "Ali Hussini",
-      "hasShortName": true,
-      "count": 8,
-      "target": 100,
-      "gap": 92
     },
     {
       "name": "NORROL ASIKIN BINTI MD SHARIF",
