@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-09T01:45:27.091Z",
+  "generatedAt": "2026-09-09T02:00:31.538Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-09",
   "dataEnd": "2026-09-09",
@@ -10,21 +10,21 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 3679,
-  "completedToday": 64,
-  "completedSinceStart": 64,
-  "estimatedRemaining": 3615,
+  "completedToday": 95,
+  "completedSinceStart": 95,
+  "estimatedRemaining": 3584,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-09.csv",
-  "csvFresh": false,
-  "csvStatus": "stale_after_download_failure",
+  "csvFresh": true,
+  "csvStatus": "downloaded",
   "sourceLineCount": 10419,
   "officers": [
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
-      "count": 27,
+      "count": 30,
       "target": 100,
-      "gap": 73
+      "gap": 70
     },
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
@@ -35,28 +35,36 @@
       "gap": 80
     },
     {
-      "name": "MOHD YASIER BIN ZANIL",
-      "displayName": "MOHD YASIER BIN ZANIL",
-      "hasShortName": false,
-      "count": 7,
-      "target": 100,
-      "gap": 93
-    },
-    {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 5,
+      "count": 17,
       "target": 100,
-      "gap": 95
+      "gap": 83
+    },
+    {
+      "name": "MOHD YASIER BIN ZANIL",
+      "displayName": "MOHD YASIER BIN ZANIL",
+      "hasShortName": false,
+      "count": 14,
+      "target": 100,
+      "gap": 86
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
       "displayName": "Putra Mirza",
       "hasShortName": true,
-      "count": 5,
+      "count": 13,
       "target": 100,
-      "gap": 95
+      "gap": 87
+    },
+    {
+      "name": "MISLIA BINTI MISNON",
+      "displayName": "Mislia",
+      "hasShortName": true,
+      "count": 1,
+      "target": 100,
+      "gap": 99
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
@@ -93,14 +101,6 @@
     {
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
-      "hasShortName": true,
-      "count": 0,
-      "target": 100,
-      "gap": 100
-    },
-    {
-      "name": "MISLIA BINTI MISNON",
-      "displayName": "Mislia",
       "hasShortName": true,
       "count": 0,
       "target": 100,
