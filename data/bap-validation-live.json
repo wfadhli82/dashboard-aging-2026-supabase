@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-09T09:30:26.057Z",
+  "generatedAt": "2026-09-09T09:45:27.850Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-09",
   "dataEnd": "2026-09-09",
@@ -10,12 +10,12 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 3679,
-  "completedToday": 711,
-  "completedSinceStart": 711,
-  "estimatedRemaining": 2968,
+  "completedToday": 713,
+  "completedSinceStart": 713,
+  "estimatedRemaining": 2966,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-09.csv",
-  "csvFresh": false,
-  "csvStatus": "stale_after_download_failure",
+  "csvFresh": true,
+  "csvStatus": "downloaded",
   "sourceLineCount": 10419,
   "officers": [
     {
@@ -94,9 +94,9 @@
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 20,
+      "count": 22,
       "target": 100,
-      "gap": 80
+      "gap": 78
     },
     {
       "name": "NORROL ASIKIN BINTI MD SHARIF",
