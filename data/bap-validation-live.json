@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-09T10:46:25.376Z",
+  "generatedAt": "2026-09-09T11:00:29.845Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-09",
   "dataEnd": "2026-09-09",
@@ -10,13 +10,13 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 3679,
-  "completedToday": 728,
-  "completedSinceStart": 728,
-  "estimatedRemaining": 2951,
+  "completedToday": 737,
+  "completedSinceStart": 737,
+  "estimatedRemaining": 2942,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-09.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10419,
+  "sourceLineCount": 10418,
   "officers": [
     {
       "name": "MOHD YASIER BIN ZANIL",
@@ -38,9 +38,9 @@
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
       "displayName": "Putra Mirza",
       "hasShortName": true,
-      "count": 86,
+      "count": 95,
       "target": 100,
-      "gap": 14
+      "gap": 5
     },
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
