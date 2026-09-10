@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-10T04:15:24.760Z",
+  "generatedAt": "2026-09-10T04:30:24.786Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-10",
   "dataEnd": "2026-09-10",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2933,
-  "completedToday": 261,
-  "completedSinceStart": 261,
-  "estimatedRemaining": 2672,
+  "completedToday": 293,
+  "completedSinceStart": 293,
+  "estimatedRemaining": 2640,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-10.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -22,17 +22,17 @@
       "name": "MOHD YASIER BIN ZANIL",
       "displayName": "MOHD YASIER BIN ZANIL",
       "hasShortName": false,
-      "count": 63,
+      "count": 79,
       "target": 100,
-      "gap": 37
+      "gap": 21
     },
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 51,
+      "count": 54,
       "target": 100,
-      "gap": 49
+      "gap": 46
     },
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
@@ -41,6 +41,14 @@
       "count": 30,
       "target": 100,
       "gap": 70
+    },
+    {
+      "name": "MUHAMMAD SYAFIQ BIN SALLEH",
+      "displayName": "Syafiq",
+      "hasShortName": true,
+      "count": 27,
+      "target": 100,
+      "gap": 73
     },
     {
       "name": "MOHD IZHAM BIN BAHAROM",
@@ -75,14 +83,6 @@
       "gap": 79
     },
     {
-      "name": "MUHAMMAD SYAFIQ BIN SALLEH",
-      "displayName": "Syafiq",
-      "hasShortName": true,
-      "count": 17,
-      "target": 100,
-      "gap": 83
-    },
-    {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
       "displayName": "Putra Mirza",
       "hasShortName": true,
@@ -94,9 +94,9 @@
       "name": "NORROL ASIKIN BINTI MD SHARIF",
       "displayName": "Norrol Asikin",
       "hasShortName": true,
-      "count": 3,
+      "count": 6,
       "target": 100,
-      "gap": 97
+      "gap": 94
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
