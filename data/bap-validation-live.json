@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-10T08:30:24.029Z",
+  "generatedAt": "2026-09-10T08:45:23.737Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-10",
   "dataEnd": "2026-09-10",
@@ -10,13 +10,13 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2933,
-  "completedToday": 626,
-  "completedSinceStart": 626,
-  "estimatedRemaining": 2307,
+  "completedToday": 642,
+  "completedSinceStart": 642,
+  "estimatedRemaining": 2291,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-10.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10418,
+  "sourceLineCount": 10419,
   "officers": [
     {
       "name": "MOHD YASIER BIN ZANIL",
@@ -38,17 +38,17 @@
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
       "displayName": "Syafiq",
       "hasShortName": true,
-      "count": 72,
+      "count": 78,
       "target": 100,
-      "gap": 28
+      "gap": 22
     },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
-      "count": 64,
+      "count": 67,
       "target": 100,
-      "gap": 36
+      "gap": 33
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
@@ -78,9 +78,9 @@
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
       "hasShortName": true,
-      "count": 41,
+      "count": 46,
       "target": 100,
-      "gap": 59
+      "gap": 54
     },
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
@@ -91,20 +91,20 @@
       "gap": 69
     },
     {
+      "name": "FAIZ IKMAL BIN AHMAD RAFIE",
+      "displayName": "Faiz Ikmal",
+      "hasShortName": true,
+      "count": 22,
+      "target": 100,
+      "gap": 78
+    },
+    {
       "name": "NORROL ASIKIN BINTI MD SHARIF",
       "displayName": "Norrol Asikin",
       "hasShortName": true,
       "count": 21,
       "target": 100,
       "gap": 79
-    },
-    {
-      "name": "FAIZ IKMAL BIN AHMAD RAFIE",
-      "displayName": "Faiz Ikmal",
-      "hasShortName": true,
-      "count": 20,
-      "target": 100,
-      "gap": 80
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
