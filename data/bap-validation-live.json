@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-10T03:15:22.912Z",
+  "generatedAt": "2026-09-10T03:30:26.227Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-10",
   "dataEnd": "2026-09-10",
@@ -10,13 +10,13 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2933,
-  "completedToday": 151,
-  "completedSinceStart": 151,
-  "estimatedRemaining": 2782,
+  "completedToday": 171,
+  "completedSinceStart": 171,
+  "estimatedRemaining": 2762,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-10.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10418,
+  "sourceLineCount": 10419,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
@@ -27,20 +27,20 @@
       "gap": 67
     },
     {
+      "name": "MOHD YASIER BIN ZANIL",
+      "displayName": "MOHD YASIER BIN ZANIL",
+      "hasShortName": false,
+      "count": 31,
+      "target": 100,
+      "gap": 69
+    },
+    {
       "name": "MUHAMMAD FARHAN BIN DARUS",
       "displayName": "Farhan",
       "hasShortName": true,
       "count": 30,
       "target": 100,
       "gap": 70
-    },
-    {
-      "name": "MOHD YASIER BIN ZANIL",
-      "displayName": "MOHD YASIER BIN ZANIL",
-      "hasShortName": false,
-      "count": 23,
-      "target": 100,
-      "gap": 77
     },
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
@@ -54,17 +54,25 @@
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
       "hasShortName": true,
-      "count": 12,
+      "count": 15,
       "target": 100,
-      "gap": 88
+      "gap": 85
     },
     {
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
       "displayName": "Firdzuan",
       "hasShortName": true,
-      "count": 9,
+      "count": 14,
       "target": 100,
-      "gap": 91
+      "gap": 86
+    },
+    {
+      "name": "MUHAMMAD SHAHIR BIN JIMI",
+      "displayName": "Shahir Jimi",
+      "hasShortName": true,
+      "count": 10,
+      "target": 100,
+      "gap": 90
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
@@ -81,14 +89,6 @@
       "count": 7,
       "target": 100,
       "gap": 93
-    },
-    {
-      "name": "MUHAMMAD SHAHIR BIN JIMI",
-      "displayName": "Shahir Jimi",
-      "hasShortName": true,
-      "count": 6,
-      "target": 100,
-      "gap": 94
     },
     {
       "name": "NORROL ASIKIN BINTI MD SHARIF",
