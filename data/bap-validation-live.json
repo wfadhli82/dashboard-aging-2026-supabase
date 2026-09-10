@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-10T00:45:22.007Z",
+  "generatedAt": "2026-09-10T01:00:24.964Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-10",
   "dataEnd": "2026-09-10",
@@ -10,21 +10,21 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2933,
-  "completedToday": 26,
-  "completedSinceStart": 26,
-  "estimatedRemaining": 2907,
+  "completedToday": 28,
+  "completedSinceStart": 28,
+  "estimatedRemaining": 2905,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-10.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10420,
+  "sourceLineCount": 10419,
   "officers": [
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 20,
+      "count": 22,
       "target": 100,
-      "gap": 80
+      "gap": 78
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
