@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-10T04:30:24.786Z",
+  "generatedAt": "2026-09-10T04:45:24.046Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-10",
   "dataEnd": "2026-09-10",
@@ -10,29 +10,29 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2933,
-  "completedToday": 293,
-  "completedSinceStart": 293,
-  "estimatedRemaining": 2640,
+  "completedToday": 319,
+  "completedSinceStart": 319,
+  "estimatedRemaining": 2614,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-10.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10419,
+  "sourceLineCount": 10417,
   "officers": [
     {
       "name": "MOHD YASIER BIN ZANIL",
       "displayName": "MOHD YASIER BIN ZANIL",
       "hasShortName": false,
-      "count": 79,
+      "count": 91,
       "target": 100,
-      "gap": 21
+      "gap": 9
     },
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 54,
+      "count": 58,
       "target": 100,
-      "gap": 46
+      "gap": 42
     },
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
@@ -54,33 +54,33 @@
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
       "hasShortName": true,
-      "count": 23,
+      "count": 26,
       "target": 100,
-      "gap": 77
-    },
-    {
-      "name": "MUHAMMAD SHAHIR BIN JIMI",
-      "displayName": "Shahir Jimi",
-      "hasShortName": true,
-      "count": 23,
-      "target": 100,
-      "gap": 77
+      "gap": 74
     },
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 22,
+      "count": 25,
       "target": 100,
-      "gap": 78
+      "gap": 75
+    },
+    {
+      "name": "MUHAMMAD SHAHIR BIN JIMI",
+      "displayName": "Shahir Jimi",
+      "hasShortName": true,
+      "count": 25,
+      "target": 100,
+      "gap": 75
     },
     {
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
       "displayName": "Firdzuan",
       "hasShortName": true,
-      "count": 21,
+      "count": 22,
       "target": 100,
-      "gap": 79
+      "gap": 78
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
@@ -94,9 +94,9 @@
       "name": "NORROL ASIKIN BINTI MD SHARIF",
       "displayName": "Norrol Asikin",
       "hasShortName": true,
-      "count": 6,
+      "count": 7,
       "target": 100,
-      "gap": 94
+      "gap": 93
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
