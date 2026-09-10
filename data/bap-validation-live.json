@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-10T01:15:24.198Z",
+  "generatedAt": "2026-09-10T01:30:23.064Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-10",
   "dataEnd": "2026-09-10",
@@ -10,14 +10,22 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2933,
-  "completedToday": 37,
-  "completedSinceStart": 37,
-  "estimatedRemaining": 2896,
+  "completedToday": 57,
+  "completedSinceStart": 57,
+  "estimatedRemaining": 2876,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-10.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10419,
+  "sourceLineCount": 10418,
   "officers": [
+    {
+      "name": "MUHAMMAD FARHAN BIN DARUS",
+      "displayName": "Farhan",
+      "hasShortName": true,
+      "count": 29,
+      "target": 100,
+      "gap": 71
+    },
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
@@ -25,14 +33,6 @@
       "count": 22,
       "target": 100,
       "gap": 78
-    },
-    {
-      "name": "MUHAMMAD FARHAN BIN DARUS",
-      "displayName": "Farhan",
-      "hasShortName": true,
-      "count": 9,
-      "target": 100,
-      "gap": 91
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
