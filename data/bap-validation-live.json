@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-10T05:30:23.139Z",
+  "generatedAt": "2026-09-10T05:45:22.776Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-10",
   "dataEnd": "2026-09-10",
@@ -16,13 +16,13 @@
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-10.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10420,
+  "sourceLineCount": 10419,
   "officers": [
     {
       "name": "MOHD YASIER BIN ZANIL",
       "displayName": "MOHD YASIER BIN ZANIL",
       "hasShortName": false,
-      "count": 109,
+      "count": 108,
       "target": 100,
       "gap": 0
     },
@@ -43,16 +43,16 @@
       "gap": 59
     },
     {
-      "name": "MOHD IZHAM BIN BAHAROM",
-      "displayName": "Izham",
-      "hasShortName": true,
-      "count": 38,
-      "target": 100,
-      "gap": 62
-    },
-    {
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
+      "hasShortName": true,
+      "count": 39,
+      "target": 100,
+      "gap": 61
+    },
+    {
+      "name": "MOHD IZHAM BIN BAHAROM",
+      "displayName": "Izham",
       "hasShortName": true,
       "count": 38,
       "target": 100,
