@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-10T06:45:24.854Z",
+  "generatedAt": "2026-09-10T07:00:24.836Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-10",
   "dataEnd": "2026-09-10",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2933,
-  "completedToday": 450,
-  "completedSinceStart": 450,
-  "estimatedRemaining": 2483,
+  "completedToday": 464,
+  "completedSinceStart": 464,
+  "estimatedRemaining": 2469,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-10.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -30,25 +30,25 @@
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 71,
+      "count": 72,
       "target": 100,
-      "gap": 29
+      "gap": 28
     },
     {
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
       "displayName": "Syafiq",
       "hasShortName": true,
-      "count": 54,
+      "count": 58,
       "target": 100,
-      "gap": 46
+      "gap": 42
     },
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 48,
+      "count": 49,
       "target": 100,
-      "gap": 52
+      "gap": 51
     },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
@@ -78,9 +78,9 @@
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
       "displayName": "Firdzuan",
       "hasShortName": true,
-      "count": 26,
+      "count": 30,
       "target": 100,
-      "gap": 74
+      "gap": 70
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
@@ -102,9 +102,9 @@
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
       "displayName": "Faiz Ikmal",
       "hasShortName": true,
-      "count": 3,
+      "count": 7,
       "target": 100,
-      "gap": 97
+      "gap": 93
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
