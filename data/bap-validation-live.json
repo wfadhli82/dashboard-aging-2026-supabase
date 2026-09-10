@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-10T06:30:25.344Z",
+  "generatedAt": "2026-09-10T06:45:24.854Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-10",
   "dataEnd": "2026-09-10",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2933,
-  "completedToday": 434,
-  "completedSinceStart": 434,
-  "estimatedRemaining": 2499,
+  "completedToday": 450,
+  "completedSinceStart": 450,
+  "estimatedRemaining": 2483,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-10.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -30,9 +30,17 @@
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 70,
+      "count": 71,
       "target": 100,
-      "gap": 30
+      "gap": 29
+    },
+    {
+      "name": "MUHAMMAD SYAFIQ BIN SALLEH",
+      "displayName": "Syafiq",
+      "hasShortName": true,
+      "count": 54,
+      "target": 100,
+      "gap": 46
     },
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
@@ -41,14 +49,6 @@
       "count": 48,
       "target": 100,
       "gap": 52
-    },
-    {
-      "name": "MUHAMMAD SYAFIQ BIN SALLEH",
-      "displayName": "Syafiq",
-      "hasShortName": true,
-      "count": 43,
-      "target": 100,
-      "gap": 57
     },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
@@ -94,21 +94,21 @@
       "name": "NORROL ASIKIN BINTI MD SHARIF",
       "displayName": "Norrol Asikin",
       "hasShortName": true,
-      "count": 12,
+      "count": 13,
       "target": 100,
-      "gap": 88
-    },
-    {
-      "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
-      "displayName": "Ali Hussini",
-      "hasShortName": true,
-      "count": 0,
-      "target": 100,
-      "gap": 100
+      "gap": 87
     },
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
       "displayName": "Faiz Ikmal",
+      "hasShortName": true,
+      "count": 3,
+      "target": 100,
+      "gap": 97
+    },
+    {
+      "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
+      "displayName": "Ali Hussini",
       "hasShortName": true,
       "count": 0,
       "target": 100,
