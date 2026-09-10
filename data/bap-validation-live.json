@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-10T08:15:23.326Z",
+  "generatedAt": "2026-09-10T08:30:24.029Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-10",
   "dataEnd": "2026-09-10",
@@ -10,13 +10,13 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2933,
-  "completedToday": 609,
-  "completedSinceStart": 609,
-  "estimatedRemaining": 2324,
+  "completedToday": 626,
+  "completedSinceStart": 626,
+  "estimatedRemaining": 2307,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-10.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10419,
+  "sourceLineCount": 10418,
   "officers": [
     {
       "name": "MOHD YASIER BIN ZANIL",
@@ -30,7 +30,7 @@
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 101,
+      "count": 102,
       "target": 100,
       "gap": 0
     },
@@ -38,17 +38,17 @@
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
       "displayName": "Syafiq",
       "hasShortName": true,
-      "count": 68,
+      "count": 72,
       "target": 100,
-      "gap": 32
+      "gap": 28
     },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
-      "count": 60,
+      "count": 64,
       "target": 100,
-      "gap": 40
+      "gap": 36
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
@@ -70,17 +70,17 @@
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
       "displayName": "Firdzuan",
       "hasShortName": true,
-      "count": 47,
+      "count": 50,
       "target": 100,
-      "gap": 53
+      "gap": 50
     },
     {
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
       "hasShortName": true,
-      "count": 38,
+      "count": 41,
       "target": 100,
-      "gap": 62
+      "gap": 59
     },
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
@@ -91,20 +91,20 @@
       "gap": 69
     },
     {
+      "name": "NORROL ASIKIN BINTI MD SHARIF",
+      "displayName": "Norrol Asikin",
+      "hasShortName": true,
+      "count": 21,
+      "target": 100,
+      "gap": 79
+    },
+    {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
       "displayName": "Faiz Ikmal",
       "hasShortName": true,
       "count": 20,
       "target": 100,
       "gap": 80
-    },
-    {
-      "name": "NORROL ASIKIN BINTI MD SHARIF",
-      "displayName": "Norrol Asikin",
-      "hasShortName": true,
-      "count": 19,
-      "target": 100,
-      "gap": 81
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
