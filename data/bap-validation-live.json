@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-10T01:00:24.964Z",
+  "generatedAt": "2026-09-10T01:15:24.198Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-10",
   "dataEnd": "2026-09-10",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2933,
-  "completedToday": 28,
-  "completedSinceStart": 28,
-  "estimatedRemaining": 2905,
+  "completedToday": 37,
+  "completedSinceStart": 37,
+  "estimatedRemaining": 2896,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-10.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -25,6 +25,14 @@
       "count": 22,
       "target": 100,
       "gap": 78
+    },
+    {
+      "name": "MUHAMMAD FARHAN BIN DARUS",
+      "displayName": "Farhan",
+      "hasShortName": true,
+      "count": 9,
+      "target": 100,
+      "gap": 91
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
@@ -53,14 +61,6 @@
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
       "displayName": "Faiz Ikmal",
-      "hasShortName": true,
-      "count": 0,
-      "target": 100,
-      "gap": 100
-    },
-    {
-      "name": "MUHAMMAD FARHAN BIN DARUS",
-      "displayName": "Farhan",
       "hasShortName": true,
       "count": 0,
       "target": 100,
