@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T06:00:24.908Z",
+  "generatedAt": "2026-09-11T06:15:25.473Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,14 +10,22 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 371,
-  "completedSinceStart": 371,
-  "estimatedRemaining": 1898,
+  "completedToday": 386,
+  "completedSinceStart": 386,
+  "estimatedRemaining": 1883,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
   "sourceLineCount": 10420,
   "officers": [
+    {
+      "name": "MOHD YASIER BIN ZANIL",
+      "displayName": "MOHD YASIER BIN ZANIL",
+      "hasShortName": false,
+      "count": 87,
+      "target": 100,
+      "gap": 13
+    },
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
       "displayName": "Farhan",
@@ -33,14 +41,6 @@
       "count": 73,
       "target": 100,
       "gap": 27
-    },
-    {
-      "name": "MOHD YASIER BIN ZANIL",
-      "displayName": "MOHD YASIER BIN ZANIL",
-      "hasShortName": false,
-      "count": 72,
-      "target": 100,
-      "gap": 28
     },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
