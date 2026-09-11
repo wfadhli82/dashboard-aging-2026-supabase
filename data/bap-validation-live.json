@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T02:45:26.043Z",
+  "generatedAt": "2026-09-11T03:00:26.651Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,21 +10,29 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 207,
-  "completedSinceStart": 207,
-  "estimatedRemaining": 2062,
+  "completedToday": 227,
+  "completedSinceStart": 227,
+  "estimatedRemaining": 2042,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
   "sourceLineCount": 10419,
   "officers": [
     {
+      "name": "MUHAMMAD FARHAN BIN DARUS",
+      "displayName": "Farhan",
+      "hasShortName": true,
+      "count": 60,
+      "target": 100,
+      "gap": 40
+    },
+    {
       "name": "MOHD YASIER BIN ZANIL",
       "displayName": "MOHD YASIER BIN ZANIL",
       "hasShortName": false,
-      "count": 53,
+      "count": 54,
       "target": 100,
-      "gap": 47
+      "gap": 46
     },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
@@ -35,28 +43,20 @@
       "gap": 49
     },
     {
-      "name": "MUHAMMAD FARHAN BIN DARUS",
-      "displayName": "Farhan",
-      "hasShortName": true,
-      "count": 50,
-      "target": 100,
-      "gap": 50
-    },
-    {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 27,
+      "count": 33,
       "target": 100,
-      "gap": 73
+      "gap": 67
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 10,
+      "count": 13,
       "target": 100,
-      "gap": 90
+      "gap": 87
     },
     {
       "name": "NORROL ASIKIN BINTI MD SHARIF",
