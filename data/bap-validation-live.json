@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T04:30:25.426Z",
+  "generatedAt": "2026-09-11T04:45:23.611Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 356,
-  "completedSinceStart": 356,
-  "estimatedRemaining": 1913,
+  "completedToday": 363,
+  "completedSinceStart": 363,
+  "estimatedRemaining": 1906,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -54,9 +54,9 @@
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 28,
+      "count": 35,
       "target": 100,
-      "gap": 72
+      "gap": 65
     },
     {
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
