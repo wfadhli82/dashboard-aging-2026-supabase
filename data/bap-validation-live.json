@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T07:15:24.635Z",
+  "generatedAt": "2026-09-11T07:30:24.228Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,13 +10,13 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 411,
-  "completedSinceStart": 411,
-  "estimatedRemaining": 1858,
+  "completedToday": 427,
+  "completedSinceStart": 427,
+  "estimatedRemaining": 1842,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10420,
+  "sourceLineCount": 10421,
   "officers": [
     {
       "name": "MOHD YASIER BIN ZANIL",
@@ -27,20 +27,20 @@
       "gap": 0
     },
     {
-      "name": "MUHAMMAD FARHAN BIN DARUS",
-      "displayName": "Farhan",
-      "hasShortName": true,
-      "count": 80,
-      "target": 100,
-      "gap": 20
-    },
-    {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 76,
+      "count": 83,
       "target": 100,
-      "gap": 24
+      "gap": 17
+    },
+    {
+      "name": "MUHAMMAD FARHAN BIN DARUS",
+      "displayName": "Farhan",
+      "hasShortName": true,
+      "count": 81,
+      "target": 100,
+      "gap": 19
     },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
@@ -54,25 +54,25 @@
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 38,
+      "count": 42,
       "target": 100,
-      "gap": 62
+      "gap": 58
     },
     {
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
       "displayName": "Firdzuan",
       "hasShortName": true,
-      "count": 16,
+      "count": 17,
       "target": 100,
-      "gap": 84
+      "gap": 83
     },
     {
       "name": "NORROL ASIKIN BINTI MD SHARIF",
       "displayName": "Norrol Asikin",
       "hasShortName": true,
-      "count": 8,
+      "count": 9,
       "target": 100,
-      "gap": 92
+      "gap": 91
     },
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
@@ -86,9 +86,9 @@
       "name": "MISLIA BINTI MISNON",
       "displayName": "Mislia",
       "hasShortName": true,
-      "count": 5,
+      "count": 7,
       "target": 100,
-      "gap": 95
+      "gap": 93
     },
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
