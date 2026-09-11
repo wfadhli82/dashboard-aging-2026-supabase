@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T10:30:22.540Z",
+  "generatedAt": "2026-09-11T10:45:23.368Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,12 +10,12 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 592,
-  "completedSinceStart": 592,
-  "estimatedRemaining": 1677,
+  "completedToday": 595,
+  "completedSinceStart": 595,
+  "estimatedRemaining": 1674,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
-  "csvFresh": false,
-  "csvStatus": "stale_after_download_failure",
+  "csvFresh": true,
+  "csvStatus": "recovered_crdownload",
   "sourceLineCount": 10420,
   "officers": [
     {
@@ -62,9 +62,9 @@
       "name": "MISLIA BINTI MISNON",
       "displayName": "Mislia",
       "hasShortName": true,
-      "count": 37,
+      "count": 40,
       "target": 100,
-      "gap": 63
+      "gap": 60
     },
     {
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
