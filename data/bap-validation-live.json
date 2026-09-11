@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T05:45:23.909Z",
+  "generatedAt": "2026-09-11T06:00:24.908Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 366,
-  "completedSinceStart": 366,
-  "estimatedRemaining": 1903,
+  "completedToday": 371,
+  "completedSinceStart": 371,
+  "estimatedRemaining": 1898,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -35,20 +35,20 @@
       "gap": 27
     },
     {
+      "name": "MOHD YASIER BIN ZANIL",
+      "displayName": "MOHD YASIER BIN ZANIL",
+      "hasShortName": false,
+      "count": 72,
+      "target": 100,
+      "gap": 28
+    },
+    {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
       "count": 71,
       "target": 100,
       "gap": 29
-    },
-    {
-      "name": "MOHD YASIER BIN ZANIL",
-      "displayName": "MOHD YASIER BIN ZANIL",
-      "hasShortName": false,
-      "count": 67,
-      "target": 100,
-      "gap": 33
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
