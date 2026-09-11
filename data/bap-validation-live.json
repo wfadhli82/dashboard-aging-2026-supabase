@@ -1,114 +1,66 @@
 {
-  "generatedAt": "2026-09-10T12:00:23.688Z",
+  "generatedAt": "2026-09-11T00:01:06.269Z",
   "calculationMode": "daily",
-  "dataStart": "2026-09-10",
-  "dataEnd": "2026-09-10",
+  "dataStart": "2026-09-11",
+  "dataEnd": "2026-09-11",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
   "targetBranch": "KUALA LUMPUR",
   "sourceFilterKey": "scheme_bantuan_am_persekolahan",
   "targetPerDay": 100,
   "targetDays": 1,
   "cumulativeTarget": 100,
-  "startingBacklog": 2933,
-  "completedToday": 664,
-  "completedSinceStart": 664,
-  "estimatedRemaining": 2269,
-  "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-10.csv",
+  "startingBacklog": 2269,
+  "completedToday": 12,
+  "completedSinceStart": 12,
+  "estimatedRemaining": 2257,
+  "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
   "sourceLineCount": 10419,
   "officers": [
     {
-      "name": "MOHD YASIER BIN ZANIL",
-      "displayName": "MOHD YASIER BIN ZANIL",
-      "hasShortName": false,
-      "count": 115,
-      "target": 100,
-      "gap": 0
-    },
-    {
-      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
-      "displayName": "Najiha",
-      "hasShortName": true,
-      "count": 102,
-      "target": 100,
-      "gap": 0
-    },
-    {
-      "name": "MUHAMMAD SYAFIQ BIN SALLEH",
-      "displayName": "Syafiq",
-      "hasShortName": true,
-      "count": 78,
-      "target": 100,
-      "gap": 22
-    },
-    {
-      "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
-      "displayName": "Putra Mirza",
-      "hasShortName": true,
-      "count": 72,
-      "target": 100,
-      "gap": 28
-    },
-    {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
-      "count": 67,
+      "count": 12,
       "target": 100,
-      "gap": 33
+      "gap": 88
     },
     {
-      "name": "AHMAD SAFWAN BIN AZHAR",
-      "displayName": "Safwan Azhar",
+      "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
+      "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 55,
+      "count": 0,
       "target": 100,
-      "gap": 45
-    },
-    {
-      "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
-      "displayName": "Firdzuan",
-      "hasShortName": true,
-      "count": 50,
-      "target": 100,
-      "gap": 50
-    },
-    {
-      "name": "MOHD IZHAM BIN BAHAROM",
-      "displayName": "Izham",
-      "hasShortName": true,
-      "count": 50,
-      "target": 100,
-      "gap": 50
-    },
-    {
-      "name": "MUHAMMAD FARHAN BIN DARUS",
-      "displayName": "Farhan",
-      "hasShortName": true,
-      "count": 31,
-      "target": 100,
-      "gap": 69
+      "gap": 100
     },
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
       "displayName": "Faiz Ikmal",
       "hasShortName": true,
-      "count": 23,
+      "count": 0,
       "target": 100,
-      "gap": 77
+      "gap": 100
     },
     {
-      "name": "NORROL ASIKIN BINTI MD SHARIF",
-      "displayName": "Norrol Asikin",
+      "name": "MUHAMMAD FARHAN BIN DARUS",
+      "displayName": "Farhan",
       "hasShortName": true,
-      "count": 21,
+      "count": 0,
       "target": 100,
-      "gap": 79
+      "gap": 100
     },
     {
-      "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
-      "displayName": "Ali Hussini",
+      "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
+      "displayName": "Firdzuan",
+      "hasShortName": true,
+      "count": 0,
+      "target": 100,
+      "gap": 100
+    },
+    {
+      "name": "MOHD IZHAM BIN BAHAROM",
+      "displayName": "Izham",
       "hasShortName": true,
       "count": 0,
       "target": 100,
@@ -131,8 +83,40 @@
       "gap": 100
     },
     {
+      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
+      "displayName": "Najiha",
+      "hasShortName": true,
+      "count": 0,
+      "target": 100,
+      "gap": 100
+    },
+    {
+      "name": "NORROL ASIKIN BINTI MD SHARIF",
+      "displayName": "Norrol Asikin",
+      "hasShortName": true,
+      "count": 0,
+      "target": 100,
+      "gap": 100
+    },
+    {
       "name": "MUHAMMAD NUR IZZAT BIN KAMARUDDIN",
       "displayName": "Nur Izzat",
+      "hasShortName": true,
+      "count": 0,
+      "target": 100,
+      "gap": 100
+    },
+    {
+      "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
+      "displayName": "Putra Mirza",
+      "hasShortName": true,
+      "count": 0,
+      "target": 100,
+      "gap": 100
+    },
+    {
+      "name": "AHMAD SAFWAN BIN AZHAR",
+      "displayName": "Safwan Azhar",
       "hasShortName": true,
       "count": 0,
       "target": 100,
@@ -149,6 +133,14 @@
     {
       "name": "SITI AISHAH BINTI ALBASRI",
       "displayName": "Siti Aishah",
+      "hasShortName": true,
+      "count": 0,
+      "target": 100,
+      "gap": 100
+    },
+    {
+      "name": "MUHAMMAD SYAFIQ BIN SALLEH",
+      "displayName": "Syafiq",
       "hasShortName": true,
       "count": 0,
       "target": 100,
