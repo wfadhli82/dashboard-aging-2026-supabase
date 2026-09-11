@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T04:00:25.300Z",
+  "generatedAt": "2026-09-11T04:15:26.268Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,53 +10,53 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 300,
-  "completedSinceStart": 300,
-  "estimatedRemaining": 1969,
+  "completedToday": 336,
+  "completedSinceStart": 336,
+  "estimatedRemaining": 1933,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
   "sourceLineCount": 10420,
   "officers": [
     {
-      "name": "MOHD YASIER BIN ZANIL",
-      "displayName": "MOHD YASIER BIN ZANIL",
-      "hasShortName": false,
-      "count": 66,
-      "target": 100,
-      "gap": 34
-    },
-    {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
-      "count": 62,
+      "count": 71,
       "target": 100,
-      "gap": 38
+      "gap": 29
     },
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
       "displayName": "Farhan",
       "hasShortName": true,
-      "count": 60,
+      "count": 70,
       "target": 100,
-      "gap": 40
+      "gap": 30
     },
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 59,
+      "count": 68,
       "target": 100,
-      "gap": 41
+      "gap": 32
+    },
+    {
+      "name": "MOHD YASIER BIN ZANIL",
+      "displayName": "MOHD YASIER BIN ZANIL",
+      "hasShortName": false,
+      "count": 67,
+      "target": 100,
+      "gap": 33
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 21,
+      "count": 26,
       "target": 100,
-      "gap": 79
+      "gap": 74
     },
     {
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
@@ -86,9 +86,9 @@
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 3,
+      "count": 5,
       "target": 100,
-      "gap": 97
+      "gap": 95
     },
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
