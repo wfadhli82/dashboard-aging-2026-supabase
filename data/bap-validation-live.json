@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T03:30:25.676Z",
+  "generatedAt": "2026-09-11T03:45:24.236Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 255,
-  "completedSinceStart": 255,
-  "estimatedRemaining": 2014,
+  "completedToday": 275,
+  "completedSinceStart": 275,
+  "estimatedRemaining": 1994,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -22,9 +22,9 @@
       "name": "MOHD YASIER BIN ZANIL",
       "displayName": "MOHD YASIER BIN ZANIL",
       "hasShortName": false,
-      "count": 62,
+      "count": 66,
       "target": 100,
-      "gap": 38
+      "gap": 34
     },
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
@@ -38,33 +38,33 @@
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
-      "count": 52,
+      "count": 55,
       "target": 100,
-      "gap": 48
+      "gap": 45
     },
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 44,
+      "count": 49,
       "target": 100,
-      "gap": 56
+      "gap": 51
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 14,
+      "count": 17,
       "target": 100,
-      "gap": 86
+      "gap": 83
     },
     {
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
       "displayName": "Firdzuan",
       "hasShortName": true,
-      "count": 10,
+      "count": 15,
       "target": 100,
-      "gap": 90
+      "gap": 85
     },
     {
       "name": "NORROL ASIKIN BINTI MD SHARIF",
