@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T00:01:06.269Z",
+  "generatedAt": "2026-09-11T00:15:24.059Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,21 +10,21 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 12,
-  "completedSinceStart": 12,
-  "estimatedRemaining": 2257,
+  "completedToday": 23,
+  "completedSinceStart": 23,
+  "estimatedRemaining": 2246,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
-  "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10419,
+  "csvStatus": "downloaded",
+  "sourceLineCount": 10418,
   "officers": [
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
-      "count": 12,
+      "count": 23,
       "target": 100,
-      "gap": 88
+      "gap": 77
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
