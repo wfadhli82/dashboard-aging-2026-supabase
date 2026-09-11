@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T09:15:23.444Z",
+  "generatedAt": "2026-09-11T09:30:24.112Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 566,
-  "completedSinceStart": 566,
-  "estimatedRemaining": 1703,
+  "completedToday": 589,
+  "completedSinceStart": 589,
+  "estimatedRemaining": 1680,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -38,9 +38,9 @@
       "name": "MUHAMMAD FARHAN BIN DARUS",
       "displayName": "Farhan",
       "hasShortName": true,
-      "count": 88,
+      "count": 100,
       "target": 100,
-      "gap": 12
+      "gap": 0
     },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
@@ -54,9 +54,17 @@
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 70,
+      "count": 74,
       "target": 100,
-      "gap": 30
+      "gap": 26
+    },
+    {
+      "name": "MISLIA BINTI MISNON",
+      "displayName": "Mislia",
+      "hasShortName": true,
+      "count": 37,
+      "target": 100,
+      "gap": 63
     },
     {
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
@@ -67,12 +75,12 @@
       "gap": 65
     },
     {
-      "name": "MISLIA BINTI MISNON",
-      "displayName": "Mislia",
+      "name": "AHMAD SAFWAN BIN AZHAR",
+      "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 34,
+      "count": 15,
       "target": 100,
-      "gap": 66
+      "gap": 85
     },
     {
       "name": "NORROL ASIKIN BINTI MD SHARIF",
@@ -81,14 +89,6 @@
       "count": 13,
       "target": 100,
       "gap": 87
-    },
-    {
-      "name": "AHMAD SAFWAN BIN AZHAR",
-      "displayName": "Safwan Azhar",
-      "hasShortName": true,
-      "count": 11,
-      "target": 100,
-      "gap": 89
     },
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
