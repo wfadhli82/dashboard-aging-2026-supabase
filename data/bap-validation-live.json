@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T09:30:24.112Z",
+  "generatedAt": "2026-09-11T09:45:23.074Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 589,
-  "completedSinceStart": 589,
-  "estimatedRemaining": 1680,
+  "completedToday": 592,
+  "completedSinceStart": 592,
+  "estimatedRemaining": 1677,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -54,9 +54,9 @@
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 74,
+      "count": 77,
       "target": 100,
-      "gap": 26
+      "gap": 23
     },
     {
       "name": "MISLIA BINTI MISNON",
