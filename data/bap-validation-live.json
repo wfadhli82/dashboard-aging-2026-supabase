@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T02:30:24.683Z",
+  "generatedAt": "2026-09-11T02:45:26.043Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,14 +10,22 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 176,
-  "completedSinceStart": 176,
-  "estimatedRemaining": 2093,
+  "completedToday": 207,
+  "completedSinceStart": 207,
+  "estimatedRemaining": 2062,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10417,
+  "sourceLineCount": 10419,
   "officers": [
+    {
+      "name": "MOHD YASIER BIN ZANIL",
+      "displayName": "MOHD YASIER BIN ZANIL",
+      "hasShortName": false,
+      "count": 53,
+      "target": 100,
+      "gap": 47
+    },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
@@ -35,36 +43,28 @@
       "gap": 50
     },
     {
-      "name": "MOHD YASIER BIN ZANIL",
-      "displayName": "MOHD YASIER BIN ZANIL",
-      "hasShortName": false,
-      "count": 39,
-      "target": 100,
-      "gap": 61
-    },
-    {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 17,
+      "count": 27,
       "target": 100,
-      "gap": 83
-    },
-    {
-      "name": "NORROL ASIKIN BINTI MD SHARIF",
-      "displayName": "Norrol Asikin",
-      "hasShortName": true,
-      "count": 6,
-      "target": 100,
-      "gap": 94
+      "gap": 73
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 5,
+      "count": 10,
       "target": 100,
-      "gap": 95
+      "gap": 90
+    },
+    {
+      "name": "NORROL ASIKIN BINTI MD SHARIF",
+      "displayName": "Norrol Asikin",
+      "hasShortName": true,
+      "count": 8,
+      "target": 100,
+      "gap": 92
     },
     {
       "name": "MISLIA BINTI MISNON",
