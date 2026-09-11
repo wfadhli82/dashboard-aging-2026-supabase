@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T02:15:25.460Z",
+  "generatedAt": "2026-09-11T02:30:24.683Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,13 +10,13 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 162,
-  "completedSinceStart": 162,
-  "estimatedRemaining": 2107,
+  "completedToday": 176,
+  "completedSinceStart": 176,
+  "estimatedRemaining": 2093,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
-  "csvStatus": "downloaded",
-  "sourceLineCount": 10419,
+  "csvStatus": "recovered_crdownload",
+  "sourceLineCount": 10417,
   "officers": [
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
@@ -30,25 +30,25 @@
       "name": "MUHAMMAD FARHAN BIN DARUS",
       "displayName": "Farhan",
       "hasShortName": true,
-      "count": 49,
+      "count": 50,
       "target": 100,
-      "gap": 51
+      "gap": 50
     },
     {
       "name": "MOHD YASIER BIN ZANIL",
       "displayName": "MOHD YASIER BIN ZANIL",
       "hasShortName": false,
-      "count": 37,
+      "count": 39,
       "target": 100,
-      "gap": 63
+      "gap": 61
     },
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 8,
+      "count": 17,
       "target": 100,
-      "gap": 92
+      "gap": 83
     },
     {
       "name": "NORROL ASIKIN BINTI MD SHARIF",
@@ -59,20 +59,20 @@
       "gap": 94
     },
     {
-      "name": "MISLIA BINTI MISNON",
-      "displayName": "Mislia",
+      "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
+      "displayName": "Ali Hussini",
       "hasShortName": true,
       "count": 5,
       "target": 100,
       "gap": 95
     },
     {
-      "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
-      "displayName": "Ali Hussini",
+      "name": "MISLIA BINTI MISNON",
+      "displayName": "Mislia",
       "hasShortName": true,
-      "count": 3,
+      "count": 5,
       "target": 100,
-      "gap": 97
+      "gap": 95
     },
     {
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
