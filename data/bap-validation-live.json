@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T08:30:24.433Z",
+  "generatedAt": "2026-09-11T08:45:24.425Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 528,
-  "completedSinceStart": 528,
-  "estimatedRemaining": 1741,
+  "completedToday": 541,
+  "completedSinceStart": 541,
+  "estimatedRemaining": 1728,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -54,9 +54,9 @@
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 59,
+      "count": 63,
       "target": 100,
-      "gap": 41
+      "gap": 37
     },
     {
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
@@ -70,9 +70,9 @@
       "name": "MISLIA BINTI MISNON",
       "displayName": "Mislia",
       "hasShortName": true,
-      "count": 17,
+      "count": 25,
       "target": 100,
-      "gap": 83
+      "gap": 75
     },
     {
       "name": "NORROL ASIKIN BINTI MD SHARIF",
@@ -86,9 +86,9 @@
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 9,
+      "count": 10,
       "target": 100,
-      "gap": 91
+      "gap": 90
     },
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
