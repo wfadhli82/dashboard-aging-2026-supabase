@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T06:30:24.083Z",
+  "generatedAt": "2026-09-11T06:45:24.421Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 396,
-  "completedSinceStart": 396,
-  "estimatedRemaining": 1873,
+  "completedToday": 405,
+  "completedSinceStart": 405,
+  "estimatedRemaining": 1864,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -22,9 +22,9 @@
       "name": "MOHD YASIER BIN ZANIL",
       "displayName": "MOHD YASIER BIN ZANIL",
       "hasShortName": false,
-      "count": 97,
+      "count": 106,
       "target": 100,
-      "gap": 3
+      "gap": 0
     },
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
