@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T06:45:24.421Z",
+  "generatedAt": "2026-09-11T07:00:25.282Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-11",
   "dataEnd": "2026-09-11",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 2269,
-  "completedToday": 405,
-  "completedSinceStart": 405,
-  "estimatedRemaining": 1864,
+  "completedToday": 406,
+  "completedSinceStart": 406,
+  "estimatedRemaining": 1863,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-11.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -94,9 +94,9 @@
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
       "displayName": "Faiz Ikmal",
       "hasShortName": true,
-      "count": 0,
+      "count": 1,
       "target": 100,
-      "gap": 100
+      "gap": 99
     },
     {
       "name": "MOHD IZHAM BIN BAHAROM",
