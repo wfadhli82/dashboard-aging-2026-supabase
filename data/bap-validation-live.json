@@ -1,30 +1,30 @@
 {
-  "generatedAt": "2026-09-12T12:00:24.219Z",
+  "generatedAt": "2026-09-13T12:00:47.188Z",
   "calculationMode": "daily",
-  "dataStart": "2026-09-12",
-  "dataEnd": "2026-09-12",
+  "dataStart": "2026-09-13",
+  "dataEnd": "2026-09-13",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
   "targetBranch": "KUALA LUMPUR",
   "sourceFilterKey": "scheme_bantuan_am_persekolahan",
   "targetPerDay": 100,
   "targetDays": 1,
   "cumulativeTarget": 100,
-  "startingBacklog": 1662,
-  "completedToday": 1,
-  "completedSinceStart": 1,
-  "estimatedRemaining": 1661,
-  "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-12.csv",
+  "startingBacklog": 1661,
+  "completedToday": 11,
+  "completedSinceStart": 11,
+  "estimatedRemaining": 1650,
+  "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-13.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
   "sourceLineCount": 10420,
   "officers": [
     {
-      "name": "MISLIA BINTI MISNON",
-      "displayName": "Mislia",
+      "name": "MUHAMMAD SYAFIQ BIN SALLEH",
+      "displayName": "Syafiq",
       "hasShortName": true,
-      "count": 1,
+      "count": 11,
       "target": 100,
-      "gap": 99
+      "gap": 89
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
@@ -61,6 +61,14 @@
     {
       "name": "MOHD IZHAM BIN BAHAROM",
       "displayName": "Izham",
+      "hasShortName": true,
+      "count": 0,
+      "target": 100,
+      "gap": 100
+    },
+    {
+      "name": "MISLIA BINTI MISNON",
+      "displayName": "Mislia",
       "hasShortName": true,
       "count": 0,
       "target": 100,
@@ -133,14 +141,6 @@
     {
       "name": "SITI AISHAH BINTI ALBASRI",
       "displayName": "Siti Aishah",
-      "hasShortName": true,
-      "count": 0,
-      "target": 100,
-      "gap": 100
-    },
-    {
-      "name": "MUHAMMAD SYAFIQ BIN SALLEH",
-      "displayName": "Syafiq",
       "hasShortName": true,
       "count": 0,
       "target": 100,
