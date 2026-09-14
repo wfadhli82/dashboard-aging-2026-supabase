@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-14T09:30:30.383Z",
+  "generatedAt": "2026-09-14T09:45:24.124Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-14",
   "dataEnd": "2026-09-14",
@@ -10,12 +10,12 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 1430,
-  "completedToday": 910,
-  "completedSinceStart": 910,
-  "estimatedRemaining": 520,
+  "completedToday": 915,
+  "completedSinceStart": 915,
+  "estimatedRemaining": 515,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-14.csv",
-  "csvFresh": false,
-  "csvStatus": "stale_after_download_failure",
+  "csvFresh": true,
+  "csvStatus": "recovered_crdownload",
   "sourceLineCount": 10422,
   "officers": [
     {
@@ -54,9 +54,9 @@
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 95,
+      "count": 100,
       "target": 100,
-      "gap": 5
+      "gap": 0
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
