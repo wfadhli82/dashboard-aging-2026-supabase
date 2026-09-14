@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-13T23:01:24.356Z",
+  "generatedAt": "2026-09-14T00:00:24.869Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-14",
   "dataEnd": "2026-09-14",
@@ -10,14 +10,22 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 1430,
-  "completedToday": 0,
-  "completedSinceStart": 0,
-  "estimatedRemaining": 1430,
+  "completedToday": 1,
+  "completedSinceStart": 1,
+  "estimatedRemaining": 1429,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-14.csv",
   "csvFresh": true,
-  "csvStatus": "recovered_crdownload",
+  "csvStatus": "downloaded",
   "sourceLineCount": 10420,
   "officers": [
+    {
+      "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
+      "displayName": "Shahrul Zaman",
+      "hasShortName": true,
+      "count": 1,
+      "target": 100,
+      "gap": 99
+    },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
@@ -117,14 +125,6 @@
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
-      "hasShortName": true,
-      "count": 0,
-      "target": 100,
-      "gap": 100
-    },
-    {
-      "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
-      "displayName": "Shahrul Zaman",
       "hasShortName": true,
       "count": 0,
       "target": 100,
