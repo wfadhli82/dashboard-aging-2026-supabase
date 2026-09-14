@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-14T06:30:26.226Z",
+  "generatedAt": "2026-09-14T06:45:25.828Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-14",
   "dataEnd": "2026-09-14",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 1430,
-  "completedToday": 603,
-  "completedSinceStart": 603,
-  "estimatedRemaining": 827,
+  "completedToday": 616,
+  "completedSinceStart": 616,
+  "estimatedRemaining": 814,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-14.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -22,7 +22,7 @@
       "name": "MOHD YASIER BIN ZANIL",
       "displayName": "Yasier Zanil",
       "hasShortName": true,
-      "count": 103,
+      "count": 105,
       "target": 100,
       "gap": 0
     },
@@ -30,9 +30,9 @@
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
       "displayName": "Putra Mirza",
       "hasShortName": true,
-      "count": 96,
+      "count": 100,
       "target": 100,
-      "gap": 4
+      "gap": 0
     },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
@@ -46,9 +46,17 @@
       "name": "MUHAMMAD FARHAN BIN DARUS",
       "displayName": "Farhan",
       "hasShortName": true,
-      "count": 49,
+      "count": 50,
       "target": 100,
-      "gap": 51
+      "gap": 50
+    },
+    {
+      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
+      "displayName": "Najiha",
+      "hasShortName": true,
+      "count": 45,
+      "target": 100,
+      "gap": 55
     },
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
@@ -59,20 +67,12 @@
       "gap": 57
     },
     {
-      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
-      "displayName": "Najiha",
-      "hasShortName": true,
-      "count": 40,
-      "target": 100,
-      "gap": 60
-    },
-    {
       "name": "NORROL ASIKIN BINTI MD SHARIF",
       "displayName": "Norrol Asikin",
       "hasShortName": true,
-      "count": 37,
+      "count": 38,
       "target": 100,
-      "gap": 63
+      "gap": 62
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
