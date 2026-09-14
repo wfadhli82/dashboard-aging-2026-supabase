@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-14T09:00:24.795Z",
+  "generatedAt": "2026-09-14T09:15:24.495Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-14",
   "dataEnd": "2026-09-14",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 1430,
-  "completedToday": 895,
-  "completedSinceStart": 895,
-  "estimatedRemaining": 535,
+  "completedToday": 910,
+  "completedSinceStart": 910,
+  "estimatedRemaining": 520,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-14.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -54,9 +54,9 @@
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 84,
+      "count": 95,
       "target": 100,
-      "gap": 16
+      "gap": 5
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
@@ -94,9 +94,9 @@
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
       "displayName": "Syafiq",
       "hasShortName": true,
-      "count": 44,
+      "count": 48,
       "target": 100,
-      "gap": 56
+      "gap": 52
     },
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
