@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-14T05:45:24.424Z",
+  "generatedAt": "2026-09-14T06:00:24.736Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-14",
   "dataEnd": "2026-09-14",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 1430,
-  "completedToday": 583,
-  "completedSinceStart": 583,
-  "estimatedRemaining": 847,
+  "completedToday": 585,
+  "completedSinceStart": 585,
+  "estimatedRemaining": 845,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-14.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -75,6 +75,14 @@
       "gap": 68
     },
     {
+      "name": "NORROL ASIKIN BINTI MD SHARIF",
+      "displayName": "Norrol Asikin",
+      "hasShortName": true,
+      "count": 31,
+      "target": 100,
+      "gap": 69
+    },
+    {
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
       "displayName": "Syafiq",
       "hasShortName": true,
@@ -89,14 +97,6 @@
       "count": 30,
       "target": 100,
       "gap": 70
-    },
-    {
-      "name": "NORROL ASIKIN BINTI MD SHARIF",
-      "displayName": "Norrol Asikin",
-      "hasShortName": true,
-      "count": 29,
-      "target": 100,
-      "gap": 71
     },
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
