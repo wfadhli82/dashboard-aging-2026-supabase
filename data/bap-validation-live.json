@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-14T06:00:24.736Z",
+  "generatedAt": "2026-09-14T06:15:24.732Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-14",
   "dataEnd": "2026-09-14",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 1430,
-  "completedToday": 585,
-  "completedSinceStart": 585,
-  "estimatedRemaining": 845,
+  "completedToday": 589,
+  "completedSinceStart": 589,
+  "estimatedRemaining": 841,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-14.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -62,6 +62,14 @@
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
+      "count": 35,
+      "target": 100,
+      "gap": 65
+    },
+    {
+      "name": "NORROL ASIKIN BINTI MD SHARIF",
+      "displayName": "Norrol Asikin",
+      "hasShortName": true,
       "count": 34,
       "target": 100,
       "gap": 66
@@ -73,14 +81,6 @@
       "count": 32,
       "target": 100,
       "gap": 68
-    },
-    {
-      "name": "NORROL ASIKIN BINTI MD SHARIF",
-      "displayName": "Norrol Asikin",
-      "hasShortName": true,
-      "count": 31,
-      "target": 100,
-      "gap": 69
     },
     {
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
