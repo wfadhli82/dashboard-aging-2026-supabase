@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-14T00:30:22.127Z",
+  "generatedAt": "2026-09-14T00:45:21.927Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-14",
   "dataEnd": "2026-09-14",
@@ -10,14 +10,30 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 1430,
-  "completedToday": 9,
-  "completedSinceStart": 9,
-  "estimatedRemaining": 1421,
+  "completedToday": 20,
+  "completedSinceStart": 20,
+  "estimatedRemaining": 1410,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-14.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10421,
+  "sourceLineCount": 10420,
   "officers": [
+    {
+      "name": "AHMAD SAFWAN BIN AZHAR",
+      "displayName": "Safwan Azhar",
+      "hasShortName": true,
+      "count": 10,
+      "target": 100,
+      "gap": 90
+    },
+    {
+      "name": "NORROL ASIKIN BINTI MD SHARIF",
+      "displayName": "Norrol Asikin",
+      "hasShortName": true,
+      "count": 5,
+      "target": 100,
+      "gap": 95
+    },
     {
       "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
       "displayName": "Shahrul Zaman",
@@ -25,14 +41,6 @@
       "count": 5,
       "target": 100,
       "gap": 95
-    },
-    {
-      "name": "AHMAD SAFWAN BIN AZHAR",
-      "displayName": "Safwan Azhar",
-      "hasShortName": true,
-      "count": 4,
-      "target": 100,
-      "gap": 96
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
@@ -93,14 +101,6 @@
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
-      "hasShortName": true,
-      "count": 0,
-      "target": 100,
-      "gap": 100
-    },
-    {
-      "name": "NORROL ASIKIN BINTI MD SHARIF",
-      "displayName": "Norrol Asikin",
       "hasShortName": true,
       "count": 0,
       "target": 100,
