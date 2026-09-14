@@ -76,7 +76,7 @@ const officerShortNameOverrides = new Map([
     ['KHAIRUNNISAK BINTI ISMAIL', 'Khairunnisak'],
     ['MOHAMMAD FAIZAL BIN ZAINURDIN', 'Faizal Zainurdin'],
     ['MOHD IZHAM BIN BAHAROM', 'Izham'],
-    ['MOHD YASIER BIN ZANIL', 'Yasier'],
+    ['MOHD YASIER BIN ZANIL', 'Yasier Zanil'],
     ['MUHAMAD NOORFIRDAUS BIN ABU BAKAR', 'Noor Firdaus'],
     ['MUHAMMAD ALI HUSSINI BIN YAHYA', 'Ali Hussini'],
     ['MUHAMMAD FARHAN BIN DARUS', 'Farhan'],
