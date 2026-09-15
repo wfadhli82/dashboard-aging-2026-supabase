@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T08:15:24.637Z",
+  "generatedAt": "2026-09-15T08:30:24.875Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-15",
   "dataEnd": "2026-09-15",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 515,
-  "completedToday": 444,
-  "completedSinceStart": 444,
-  "estimatedRemaining": 71,
+  "completedToday": 445,
+  "completedSinceStart": 445,
+  "estimatedRemaining": 70,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-15.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -115,16 +115,16 @@
       "gap": 98
     },
     {
-      "name": "FAIZ IKMAL BIN AHMAD RAFIE",
-      "displayName": "Faiz Ikmal",
-      "hasShortName": true,
-      "count": 0,
-      "target": 100,
-      "gap": 100
-    },
-    {
       "name": "MISLIA BINTI MISNON",
       "displayName": "Mislia",
+      "hasShortName": true,
+      "count": 1,
+      "target": 100,
+      "gap": 99
+    },
+    {
+      "name": "FAIZ IKMAL BIN AHMAD RAFIE",
+      "displayName": "Faiz Ikmal",
       "hasShortName": true,
       "count": 0,
       "target": 100,
