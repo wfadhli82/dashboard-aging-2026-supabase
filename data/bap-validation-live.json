@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T06:30:25.235Z",
+  "generatedAt": "2026-09-15T06:45:26.098Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-15",
   "dataEnd": "2026-09-15",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 515,
-  "completedToday": 420,
-  "completedSinceStart": 420,
-  "estimatedRemaining": 95,
+  "completedToday": 423,
+  "completedSinceStart": 423,
+  "estimatedRemaining": 92,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-15.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -94,9 +94,9 @@
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
       "displayName": "Syafiq",
       "hasShortName": true,
-      "count": 14,
+      "count": 17,
       "target": 100,
-      "gap": 86
+      "gap": 83
     },
     {
       "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
