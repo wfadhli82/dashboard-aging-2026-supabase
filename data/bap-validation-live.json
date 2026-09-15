@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T01:45:25.982Z",
+  "generatedAt": "2026-09-15T02:00:25.724Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-15",
   "dataEnd": "2026-09-15",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 515,
-  "completedToday": 106,
-  "completedSinceStart": 106,
-  "estimatedRemaining": 409,
+  "completedToday": 139,
+  "completedSinceStart": 139,
+  "estimatedRemaining": 376,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-15.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -22,25 +22,33 @@
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 44,
+      "count": 50,
       "target": 100,
-      "gap": 56
+      "gap": 50
     },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
-      "count": 35,
+      "count": 43,
       "target": 100,
-      "gap": 65
+      "gap": 57
     },
     {
       "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
       "displayName": "Putra Mirza",
       "hasShortName": true,
-      "count": 18,
+      "count": 26,
       "target": 100,
-      "gap": 82
+      "gap": 74
+    },
+    {
+      "name": "MOHD IZHAM BIN BAHAROM",
+      "displayName": "Izham",
+      "hasShortName": true,
+      "count": 7,
+      "target": 100,
+      "gap": 93
     },
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
@@ -62,6 +70,22 @@
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
+      "count": 2,
+      "target": 100,
+      "gap": 98
+    },
+    {
+      "name": "MOHD YASIER BIN ZANIL",
+      "displayName": "Yasier Zanil",
+      "hasShortName": true,
+      "count": 2,
+      "target": 100,
+      "gap": 98
+    },
+    {
+      "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
+      "displayName": "Firdzuan",
+      "hasShortName": true,
       "count": 1,
       "target": 100,
       "gap": 99
@@ -77,22 +101,6 @@
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
       "displayName": "Faiz Ikmal",
-      "hasShortName": true,
-      "count": 0,
-      "target": 100,
-      "gap": 100
-    },
-    {
-      "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
-      "displayName": "Firdzuan",
-      "hasShortName": true,
-      "count": 0,
-      "target": 100,
-      "gap": 100
-    },
-    {
-      "name": "MOHD IZHAM BIN BAHAROM",
-      "displayName": "Izham",
       "hasShortName": true,
       "count": 0,
       "target": 100,
