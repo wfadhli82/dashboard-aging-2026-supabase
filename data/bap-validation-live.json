@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T04:45:24.979Z",
+  "generatedAt": "2026-09-15T05:00:25.988Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-15",
   "dataEnd": "2026-09-15",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 515,
-  "completedToday": 406,
-  "completedSinceStart": 406,
-  "estimatedRemaining": 109,
+  "completedToday": 410,
+  "completedSinceStart": 410,
+  "estimatedRemaining": 105,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-15.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -86,9 +86,9 @@
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
       "hasShortName": true,
-      "count": 19,
+      "count": 23,
       "target": 100,
-      "gap": 81
+      "gap": 77
     },
     {
       "name": "MUHAMMAD SYAFIQ BIN SALLEH",
