@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T01:00:04.496Z",
+  "generatedAt": "2026-09-15T01:15:26.398Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-15",
   "dataEnd": "2026-09-15",
@@ -10,29 +10,53 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 515,
-  "completedToday": 17,
-  "completedSinceStart": 17,
-  "estimatedRemaining": 498,
+  "completedToday": 64,
+  "completedSinceStart": 64,
+  "estimatedRemaining": 451,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-15.csv",
-  "csvFresh": false,
-  "csvStatus": "stale_after_download_failure",
-  "sourceLineCount": 10424,
+  "csvFresh": true,
+  "csvStatus": "downloaded",
+  "sourceLineCount": 10422,
   "officers": [
     {
       "name": "AHMAD SAFWAN BIN AZHAR",
       "displayName": "Safwan Azhar",
       "hasShortName": true,
-      "count": 15,
+      "count": 34,
       "target": 100,
-      "gap": 85
+      "gap": 66
     },
     {
       "name": "MUHAMMAD SHAHIR BIN JIMI",
       "displayName": "Shahir Jimi",
       "hasShortName": true,
-      "count": 2,
+      "count": 17,
       "target": 100,
-      "gap": 98
+      "gap": 83
+    },
+    {
+      "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
+      "displayName": "Putra Mirza",
+      "hasShortName": true,
+      "count": 9,
+      "target": 100,
+      "gap": 91
+    },
+    {
+      "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
+      "displayName": "Shahrul Zaman",
+      "hasShortName": true,
+      "count": 3,
+      "target": 100,
+      "gap": 97
+    },
+    {
+      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
+      "displayName": "Najiha",
+      "hasShortName": true,
+      "count": 1,
+      "target": 100,
+      "gap": 99
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
@@ -91,14 +115,6 @@
       "gap": 100
     },
     {
-      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
-      "displayName": "Najiha",
-      "hasShortName": true,
-      "count": 0,
-      "target": 100,
-      "gap": 100
-    },
-    {
       "name": "NORROL ASIKIN BINTI MD SHARIF",
       "displayName": "Norrol Asikin",
       "hasShortName": true,
@@ -109,22 +125,6 @@
     {
       "name": "MUHAMMAD NUR IZZAT BIN KAMARUDDIN",
       "displayName": "Nur Izzat",
-      "hasShortName": true,
-      "count": 0,
-      "target": 100,
-      "gap": 100
-    },
-    {
-      "name": "PUTRA MIRZA MIFZAL BIN MOHD FAFLI",
-      "displayName": "Putra Mirza",
-      "hasShortName": true,
-      "count": 0,
-      "target": 100,
-      "gap": 100
-    },
-    {
-      "name": "SHAHRUL ZAMAN BIN SHAHRUDIN",
-      "displayName": "Shahrul Zaman",
       "hasShortName": true,
       "count": 0,
       "target": 100,
