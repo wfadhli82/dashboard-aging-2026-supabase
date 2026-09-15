@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T06:15:26.542Z",
+  "generatedAt": "2026-09-15T06:30:25.235Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-15",
   "dataEnd": "2026-09-15",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 515,
-  "completedToday": 416,
-  "completedSinceStart": 416,
-  "estimatedRemaining": 99,
+  "completedToday": 420,
+  "completedSinceStart": 420,
+  "estimatedRemaining": 95,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-15.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -59,20 +59,20 @@
       "gap": 55
     },
     {
+      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
+      "displayName": "Najiha",
+      "hasShortName": true,
+      "count": 32,
+      "target": 100,
+      "gap": 68
+    },
+    {
       "name": "MUHAMMAD FIRDZUAN BIN AHMAD AZIZI",
       "displayName": "Firdzuan",
       "hasShortName": true,
       "count": 30,
       "target": 100,
       "gap": 70
-    },
-    {
-      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
-      "displayName": "Najiha",
-      "hasShortName": true,
-      "count": 28,
-      "target": 100,
-      "gap": 72
     },
     {
       "name": "MOHD IZHAM BIN BAHAROM",
