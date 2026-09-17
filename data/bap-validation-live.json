@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-17T01:15:24.817Z",
+  "generatedAt": "2026-09-17T01:30:25.628Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-17",
   "dataEnd": "2026-09-17",
@@ -10,14 +10,22 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 69,
-  "completedToday": 0,
-  "completedSinceStart": 0,
-  "estimatedRemaining": 69,
+  "completedToday": 3,
+  "completedSinceStart": 3,
+  "estimatedRemaining": 66,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-17.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
   "sourceLineCount": 10423,
   "officers": [
+    {
+      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
+      "displayName": "Najiha",
+      "hasShortName": true,
+      "count": 3,
+      "target": 100,
+      "gap": 97
+    },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
@@ -69,14 +77,6 @@
     {
       "name": "MUHAMMAD MUADZ BIN ROSLI",
       "displayName": "Muadz",
-      "hasShortName": true,
-      "count": 0,
-      "target": 100,
-      "gap": 100
-    },
-    {
-      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
-      "displayName": "Najiha",
       "hasShortName": true,
       "count": 0,
       "target": 100,
