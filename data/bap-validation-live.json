@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-09-16T12:00:21.006Z",
+  "generatedAt": "2026-09-17T00:01:45.085Z",
   "calculationMode": "daily",
-  "dataStart": "2026-09-16",
-  "dataEnd": "2026-09-16",
+  "dataStart": "2026-09-17",
+  "dataEnd": "2026-09-17",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
   "targetBranch": "KUALA LUMPUR",
   "sourceFilterKey": "scheme_bantuan_am_persekolahan",
@@ -13,9 +13,9 @@
   "completedToday": 0,
   "completedSinceStart": 0,
   "estimatedRemaining": 69,
-  "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-16.csv",
+  "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-17.csv",
   "csvFresh": true,
-  "csvStatus": "recovered_crdownload",
+  "csvStatus": "downloaded",
   "sourceLineCount": 10423,
   "officers": [
     {
