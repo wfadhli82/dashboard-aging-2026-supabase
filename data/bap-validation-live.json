@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-17T01:30:25.628Z",
+  "generatedAt": "2026-09-17T01:45:25.399Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-17",
   "dataEnd": "2026-09-17",
@@ -10,9 +10,9 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 69,
-  "completedToday": 3,
-  "completedSinceStart": 3,
-  "estimatedRemaining": 66,
+  "completedToday": 7,
+  "completedSinceStart": 7,
+  "estimatedRemaining": 62,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-17.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
@@ -22,9 +22,9 @@
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 3,
+      "count": 7,
       "target": 100,
-      "gap": 97
+      "gap": 93
     },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
