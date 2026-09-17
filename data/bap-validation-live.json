@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-17T04:30:24.489Z",
+  "generatedAt": "2026-09-17T04:45:25.483Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-17",
   "dataEnd": "2026-09-17",
@@ -16,7 +16,7 @@
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-17.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10424,
+  "sourceLineCount": 10423,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
