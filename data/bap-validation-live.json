@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-17T04:00:26.086Z",
+  "generatedAt": "2026-09-17T04:15:30.097Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-17",
   "dataEnd": "2026-09-17",
@@ -10,21 +10,21 @@
   "targetDays": 1,
   "cumulativeTarget": 100,
   "startingBacklog": 69,
-  "completedToday": 12,
-  "completedSinceStart": 12,
-  "estimatedRemaining": 57,
+  "completedToday": 14,
+  "completedSinceStart": 14,
+  "estimatedRemaining": 55,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-17.csv",
   "csvFresh": true,
-  "csvStatus": "recovered_crdownload",
+  "csvStatus": "downloaded",
   "sourceLineCount": 10423,
   "officers": [
     {
       "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
       "displayName": "Najiha",
       "hasShortName": true,
-      "count": 11,
+      "count": 13,
       "target": 100,
-      "gap": 89
+      "gap": 87
     },
     {
       "name": "MUHAMMAD FARHAN BIN DARUS",
