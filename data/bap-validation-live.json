@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-18T07:15:26.196Z",
+  "generatedAt": "2026-09-18T07:31:24.321Z",
   "calculationMode": "daily",
   "dataStart": "2026-09-18",
   "dataEnd": "2026-09-18",
@@ -15,7 +15,7 @@
   "estimatedRemaining": 46,
   "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-18.csv",
   "csvFresh": true,
-  "csvStatus": "downloaded",
+  "csvStatus": "recovered_crdownload",
   "sourceLineCount": 10435,
   "officers": [
     {
