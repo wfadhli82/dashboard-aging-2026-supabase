@@ -1,39 +1,23 @@
 {
-  "generatedAt": "2026-09-17T12:00:24.051Z",
+  "generatedAt": "2026-09-18T00:01:44.034Z",
   "calculationMode": "daily",
-  "dataStart": "2026-09-17",
-  "dataEnd": "2026-09-17",
+  "dataStart": "2026-09-18",
+  "dataEnd": "2026-09-18",
   "targetScheme": "BANTUAN AM PERSEKOLAHAN",
   "targetBranch": "KUALA LUMPUR",
   "sourceFilterKey": "scheme_bantuan_am_persekolahan",
   "targetPerDay": 100,
   "targetDays": 1,
   "cumulativeTarget": 100,
-  "startingBacklog": 69,
-  "completedToday": 23,
-  "completedSinceStart": 23,
+  "startingBacklog": 46,
+  "completedToday": 0,
+  "completedSinceStart": 0,
   "estimatedRemaining": 46,
-  "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-17.csv",
+  "csvFile": "bap_belum_diperaku_2026-01-01_to_2026-09-18.csv",
   "csvFresh": true,
   "csvStatus": "recovered_crdownload",
-  "sourceLineCount": 10423,
+  "sourceLineCount": 10435,
   "officers": [
-    {
-      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
-      "displayName": "Najiha",
-      "hasShortName": true,
-      "count": 22,
-      "target": 100,
-      "gap": 78
-    },
-    {
-      "name": "MUHAMMAD FARHAN BIN DARUS",
-      "displayName": "Farhan",
-      "hasShortName": true,
-      "count": 1,
-      "target": 100,
-      "gap": 99
-    },
     {
       "name": "MUHAMMAD ALI HUSSINI BIN YAHYA",
       "displayName": "Ali Hussini",
@@ -45,6 +29,14 @@
     {
       "name": "FAIZ IKMAL BIN AHMAD RAFIE",
       "displayName": "Faiz Ikmal",
+      "hasShortName": true,
+      "count": 0,
+      "target": 100,
+      "gap": 100
+    },
+    {
+      "name": "MUHAMMAD FARHAN BIN DARUS",
+      "displayName": "Farhan",
       "hasShortName": true,
       "count": 0,
       "target": 100,
@@ -77,6 +69,14 @@
     {
       "name": "MUHAMMAD MUADZ BIN ROSLI",
       "displayName": "Muadz",
+      "hasShortName": true,
+      "count": 0,
+      "target": 100,
+      "gap": 100
+    },
+    {
+      "name": "NUR NAJIHAH BINTI ABDULLAH SAMPIT",
+      "displayName": "Najiha",
       "hasShortName": true,
       "count": 0,
       "target": 100,
