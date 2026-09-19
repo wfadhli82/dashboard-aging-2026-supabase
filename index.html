@@ -233,9 +233,9 @@
                                 <label><input type="checkbox" value="2025" data-comparison-year checked><span>2025</span></label>
                                 <label><input type="checkbox" value="2026" data-comparison-year checked><span>2026</span></label>
                             </fieldset>
-                            <label class="field-label"><span>Cawangan</span><select id="comparisonBranchFilter"><option value="all">Semua cawangan</option></select></label>
-                            <label class="field-label"><span>Skim Rasmi</span><select id="comparisonSchemeFilter"><option value="all">Semua skim rasmi</option></select></label>
-                            <label class="field-label"><span>Jenis</span><select id="comparisonTypeFilter"><option value="all">Semua jenis</option></select></label>
+                            <label class="field-label"><span>Cawangan</span><div class="multi-select" id="comparisonBranchFilter"><button type="button" class="multi-select-toggle" id="comparisonBranchFilterToggle" aria-expanded="false" aria-controls="comparisonBranchFilterMenu">Semua cawangan</button><div class="multi-select-menu" id="comparisonBranchFilterMenu" hidden><input type="search" class="select-search" id="comparisonBranchFilterSearch" placeholder="Cari cawangan..."><div class="multi-select-actions"><button type="button" id="comparisonBranchFilterSelectAllBtn">Pilih Semua</button><button type="button" id="comparisonBranchFilterClearBtn">Kosongkan</button></div><div class="multi-select-options" id="comparisonBranchFilterOptions"></div></div></div></label>
+                            <label class="field-label"><span>Skim Rasmi</span><div class="multi-select" id="comparisonSchemeFilter"><button type="button" class="multi-select-toggle" id="comparisonSchemeFilterToggle" aria-expanded="false" aria-controls="comparisonSchemeFilterMenu">Semua skim rasmi</button><div class="multi-select-menu" id="comparisonSchemeFilterMenu" hidden><input type="search" class="select-search" id="comparisonSchemeFilterSearch" placeholder="Cari skim rasmi..."><div class="multi-select-actions"><button type="button" id="comparisonSchemeFilterSelectAllBtn">Pilih Semua</button><button type="button" id="comparisonSchemeFilterClearBtn">Kosongkan</button></div><div class="multi-select-options" id="comparisonSchemeFilterOptions"></div></div></div></label>
+                            <label class="field-label"><span>Jenis</span><div class="multi-select" id="comparisonTypeFilter"><button type="button" class="multi-select-toggle" id="comparisonTypeFilterToggle" aria-expanded="false" aria-controls="comparisonTypeFilterMenu">Semua jenis</button><div class="multi-select-menu" id="comparisonTypeFilterMenu" hidden><input type="search" class="select-search" id="comparisonTypeFilterSearch" placeholder="Cari jenis..."><div class="multi-select-actions"><button type="button" id="comparisonTypeFilterSelectAllBtn">Pilih Semua</button><button type="button" id="comparisonTypeFilterClearBtn">Kosongkan</button></div><div class="multi-select-options" id="comparisonTypeFilterOptions"></div></div></div></label>
                         </div>
                     </section>
                     <section class="comparison-kpis" id="comparisonKpis"></section>
@@ -828,6 +828,6 @@
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="template-data.js"></script>
-    <script src="script.js?v=20260919-threshold-comparison"></script>
+    <script src="script.js?v=20260919-comparison-multiselect"></script>
 </body>
 </html>

@@ -210,6 +210,12 @@ let mappingsBySystemScheme = new Map();
 let comparisonRuns = new Map();
 let comparisonAggregates = new Map();
 let comparisonAgingMode = 'count';
+let comparisonBranchOptions = [];
+let comparisonSchemeOptions = [];
+let comparisonTypeOptions = [];
+let selectedComparisonBranches = [];
+let selectedComparisonSchemes = [];
+let selectedComparisonTypes = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.working-day-count').forEach(element => {
@@ -237,9 +243,6 @@ document.addEventListener('DOMContentLoaded', () => {
             comparisonAgingMode = event.target.value;
             updateComparisonDashboard();
         });
-    });
-    ['comparisonBranchFilter', 'comparisonSchemeFilter', 'comparisonTypeFilter'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', updateComparisonDashboard);
     });
     document.getElementById('drawerToggle').addEventListener('click', toggleDashboardDrawer);
 
@@ -955,24 +958,19 @@ function setupComparisonFilters() {
             applicationType: item.application_type || 'lain-lain'
         };
     });
-    setSelectOptions('comparisonBranchFilter', getUniqueValues(normalized.map(item => item.branch)), 'Semua cawangan');
-    setSelectOptions('comparisonSchemeFilter', getUniqueValues(normalized.map(item => item.officialScheme)), 'Semua skim rasmi');
-    setSelectOptions('comparisonTypeFilter', getUniqueValues(normalized.map(item => item.applicationType)), 'Semua jenis', value => typeLabels[value] || titleCase(value));
-}
-
-function setSelectOptions(id, values, allLabel, labeler = value => value) {
-    const select = document.getElementById(id);
-    if (!select) return;
-    select.innerHTML = [`<option value="all">${escapeHtml(allLabel)}</option>`, ...values.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(labeler(value))}</option>`)].join('');
+    comparisonBranchOptions = getUniqueValues(normalized.map(item => item.branch));
+    comparisonSchemeOptions = getUniqueValues(normalized.map(item => item.officialScheme));
+    comparisonTypeOptions = getUniqueValues(normalized.map(item => item.applicationType));
+    selectedComparisonBranches = [...comparisonBranchOptions];
+    selectedComparisonSchemes = [...comparisonSchemeOptions];
+    selectedComparisonTypes = [...comparisonTypeOptions];
+    getMultiSelectConfigs().filter(config => config.selectedKey.startsWith('comparison')).forEach(renderMultiSelect);
 }
 
 function updateComparisonDashboard() {
     const panel = document.getElementById('comparisonPanel');
     if (!panel || !comparisonAggregates.size) return;
     const selectedYears = new Set([...document.querySelectorAll('[data-comparison-year]:checked')].map(input => Number(input.value)));
-    const branch = document.getElementById('comparisonBranchFilter')?.value || 'all';
-    const scheme = document.getElementById('comparisonSchemeFilter')?.value || 'all';
-    const type = document.getElementById('comparisonTypeFilter')?.value || 'all';
     const yearly = [];
     const tableRows = [];
 
@@ -981,9 +979,9 @@ function updateComparisonDashboard() {
         const months = Array.from({ length: 12 }, () => ({ total: 0, approved: 0, onTime: 0, late: 0, agingDays: 0, agingCount: 0 }));
         source.forEach(item => {
             const mapping = mappingsBySystemScheme.get(item.scheme);
-            if (branch !== 'all' && item.branch !== branch) return;
-            if (scheme !== 'all' && mapping?.official_scheme !== scheme) return;
-            if (type !== 'all' && item.application_type !== type) return;
+            if (!selectedComparisonBranches.includes(item.branch)) return;
+            if (!selectedComparisonSchemes.includes(mapping?.official_scheme || '')) return;
+            if (!selectedComparisonTypes.includes(item.application_type || 'lain-lain')) return;
             const index = Number(item.month) - 1;
             if (index < 0 || index > 11) return;
             months[index].total += Number(item.total_applications || 0);
@@ -1534,7 +1532,10 @@ function getMultiSelectConfigs() {
         multiConfig('applicationBranch', 'Semua cawangan', 'applicationBranchFilter', updateApplicationDashboard),
         multiConfig('applicationScheme', schemeLabels.allLabel, 'applicationSchemeFilter', updateApplicationDashboard, preserveSchemeCase),
         multiConfig('applicationType', 'Semua jenis', 'applicationTypeFilter', updateApplicationDashboard),
-        multiConfig('pendingValidationBranch', 'Semua cawangan', 'pendingValidationBranchFilter', updatePendingValidationDashboard, true)
+        multiConfig('pendingValidationBranch', 'Semua cawangan', 'pendingValidationBranchFilter', updatePendingValidationDashboard, true),
+        multiConfig('comparisonBranch', 'Semua cawangan', 'comparisonBranchFilter', updateComparisonDashboard, true),
+        multiConfig('comparisonScheme', 'Semua skim rasmi', 'comparisonSchemeFilter', updateComparisonDashboard, true),
+        multiConfig('comparisonType', 'Semua jenis', 'comparisonTypeFilter', updateComparisonDashboard)
     ];
 }
 
@@ -4032,7 +4033,10 @@ function getMultiSelectOptions(key) {
         applicationBranch: applicationBranchOptions,
         applicationScheme: applicationSchemeOptions,
         applicationType: applicationTypeOptions,
-        pendingValidationBranch: pendingValidationBranchOptions
+        pendingValidationBranch: pendingValidationBranchOptions,
+        comparisonBranch: comparisonBranchOptions,
+        comparisonScheme: comparisonSchemeOptions,
+        comparisonType: comparisonTypeOptions
     };
     return options[key] || [];
 }
@@ -4048,7 +4052,10 @@ function getMultiSelectSelection(key) {
         applicationBranch: selectedApplicationBranches,
         applicationScheme: selectedApplicationSchemes,
         applicationType: selectedApplicationTypes,
-        pendingValidationBranch: selectedPendingValidationBranches
+        pendingValidationBranch: selectedPendingValidationBranches,
+        comparisonBranch: selectedComparisonBranches,
+        comparisonScheme: selectedComparisonSchemes,
+        comparisonType: selectedComparisonTypes
     };
     return selections[key] || [];
 }
@@ -4065,6 +4072,9 @@ function setMultiSelectSelection(key, selected) {
     else if (key === 'applicationScheme') selectedApplicationSchemes = values;
     else if (key === 'applicationType') selectedApplicationTypes = values;
     else if (key === 'pendingValidationBranch') selectedPendingValidationBranches = values;
+    else if (key === 'comparisonBranch') selectedComparisonBranches = values;
+    else if (key === 'comparisonScheme') selectedComparisonSchemes = values;
+    else if (key === 'comparisonType') selectedComparisonTypes = values;
 }
 
 function updateMultiSelectToggle(toggleId, selected, options, allLabel, preserveCase = false, emptyLabel = 'Tiada skim dipilih') {
@@ -4100,7 +4110,10 @@ function closeMultiSelectMenus() {
         ['applicationBranchFilterMenu', 'applicationBranchFilterToggle'],
         ['applicationSchemeFilterMenu', 'applicationSchemeFilterToggle'],
         ['applicationTypeFilterMenu', 'applicationTypeFilterToggle'],
-        ['pendingValidationBranchFilterMenu', 'pendingValidationBranchFilterToggle']
+        ['pendingValidationBranchFilterMenu', 'pendingValidationBranchFilterToggle'],
+        ['comparisonBranchFilterMenu', 'comparisonBranchFilterToggle'],
+        ['comparisonSchemeFilterMenu', 'comparisonSchemeFilterToggle'],
+        ['comparisonTypeFilterMenu', 'comparisonTypeFilterToggle']
     ].forEach(([menuId, toggleId]) => {
         const menu = document.getElementById(menuId);
         const toggle = document.getElementById(toggleId);
