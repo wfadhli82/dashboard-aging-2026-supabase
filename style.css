@@ -762,6 +762,73 @@ select:focus {
     min-height: 520px;
 }
 
+.comparison-header {
+    align-items: end;
+}
+
+.comparison-controls {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    gap: 12px;
+    width: 100%;
+}
+
+.year-toggle-group {
+    display: flex;
+    align-items: end;
+    gap: 8px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.year-toggle-group legend {
+    width: 100%;
+    margin-bottom: 7px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.year-toggle-group label {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 10px;
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-weight: 800;
+}
+
+.comparison-kpis {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.comparison-year-summary {
+    padding: 16px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-left: 5px solid #0f6bce;
+    border-radius: 8px;
+    box-shadow: 0 12px 26px rgba(20, 35, 52, 0.08);
+}
+
+.comparison-year-summary:nth-child(2) { border-left-color: #d72657; }
+.comparison-year-summary h3 { margin: 0 0 14px; font-size: 1.1rem; }
+.comparison-year-summary dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.comparison-year-summary dl div { min-width: 0; }
+.comparison-year-summary dt { color: var(--muted); font-size: 0.75rem; font-weight: 900; text-transform: uppercase; }
+.comparison-year-summary dd { margin: 6px 0 0; font-size: 1.35rem; font-weight: 900; overflow-wrap: anywhere; }
+.comparison-charts { margin-top: 14px; }
+.comparison-charts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.comparison-charts .chart-card:last-child { grid-column: 1 / -1; }
+
 .chart-split,
 .leaderboard-grid {
     display: grid;
@@ -1587,6 +1654,20 @@ tfoot td {
     .chart-card,
     .table-card {
         padding: 14px;
+    }
+
+    .comparison-controls,
+    .comparison-kpis,
+    .comparison-year-summary dl {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .comparison-charts {
+        grid-template-columns: 1fr;
+    }
+
+    .comparison-charts .chart-card:last-child {
+        grid-column: auto;
     }
 
     .calendar-chip,

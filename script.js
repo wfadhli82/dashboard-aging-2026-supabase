@@ -207,6 +207,8 @@ let officerFilterState = {
 };
 let officialSchemes = [];
 let mappingsBySystemScheme = new Map();
+let comparisonRuns = new Map();
+let comparisonAggregates = new Map();
 
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.working-day-count').forEach(element => {
@@ -227,6 +229,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.tab-button').forEach(button => {
         button.addEventListener('click', () => switchTab(button.dataset.tab));
+    });
+    document.querySelectorAll('[data-comparison-year]').forEach(input => input.addEventListener('change', updateComparisonDashboard));
+    ['comparisonBranchFilter', 'comparisonSchemeFilter', 'comparisonTypeFilter'].forEach(id => {
+        document.getElementById(id)?.addEventListener('change', updateComparisonDashboard);
     });
     document.getElementById('drawerToggle').addEventListener('click', toggleDashboardDrawer);
 
@@ -509,10 +515,10 @@ async function loadSupabaseDataInternal(loadToken) {
 
     const { data: runRows, error: runError } = await supabaseClient
         .from('dashboard_aging_runs')
-        .select('run_id,data_start_date,data_end_date,generated_at,source_record_count,status')
+        .select('run_id,data_start_date,data_end_date,generated_at,source_record_count,status,report_year,is_historical,included_record_count,excluded_record_count')
         .eq('status', 'success')
         .order('generated_at', { ascending: false })
-        .limit(1);
+        .limit(100);
 
     if (runError) {
         showAuthMessage(`Data tidak dapat dibaca: ${runError.message}`, true);
@@ -523,7 +529,8 @@ async function loadSupabaseDataInternal(loadToken) {
         return;
     }
 
-    latestRun = runRows[0];
+    comparisonRuns = selectLatestRunsByYear(runRows);
+    latestRun = runRows.find(run => !run.is_historical) || runRows[0];
     const [aggregateResult, dailyAggregateResult, officerDailyResult, officialResult, mappingResult, pendingTemplateResult, pendingRowsResult] = await Promise.all([
         fetchAllAggregates(latestRun.run_id),
         fetchAllDailyApplicationAggregates(latestRun.run_id),
@@ -553,6 +560,13 @@ async function loadSupabaseDataInternal(loadToken) {
 
     officialSchemes = officialResult.data || [];
     mappingsBySystemScheme = new Map((mappingResult.data || []).map(item => [item.system_scheme, item]));
+    const comparisonResults = await Promise.all([...comparisonRuns.entries()].map(async ([year, run]) => {
+        if (run.run_id === latestRun.run_id) return [year, aggregates || []];
+        const result = await fetchAllAggregates(run.run_id);
+        if (result.error) throw result.error;
+        return [year, result.data || []];
+    }));
+    comparisonAggregates = new Map(comparisonResults);
     pendingValidationTemplateRows = pendingTemplateResult.error ? [] : (pendingTemplateResult.data || []);
     pendingValidationRows = pendingRowsResult.error ? [] : normalizePendingValidationRows(pendingRowsResult.data || []);
     const visitorResult = await fetchLatestVisitorData();
@@ -580,6 +594,7 @@ async function loadSupabaseDataInternal(loadToken) {
     updateSchemeViewLabels();
     setupOfficerFilters();
     setupPendingValidationFilters();
+    setupComparisonFilters();
     updateDashboard();
     updateSummaryTable();
     updateApplicationDashboard();
@@ -587,6 +602,7 @@ async function loadSupabaseDataInternal(loadToken) {
     updateOfficerDashboard('approver');
     updatePendingValidationDashboard();
     updateVisitorDashboard();
+    updateComparisonDashboard();
     updateAllDataRangeLabels();
 
     document.getElementById('fileStatus').textContent = `Data Supabase dimuatkan (${Number(latestRun.source_record_count || rows.length).toLocaleString('ms-MY')} rekod sumber).`;
@@ -595,6 +611,15 @@ async function loadSupabaseDataInternal(loadToken) {
     showAuthMessage(optionalErrors.length
         ? `Data Supabase berjaya dimuatkan. Nota: sebahagian data tambahan belum tersedia (${optionalErrors.map(error => error.message).join('; ')}).`
         : 'Data Supabase berjaya dimuatkan.', false);
+}
+
+function selectLatestRunsByYear(runRows) {
+    const selected = new Map();
+    runRows.forEach(run => {
+        const year = Number(run.report_year || String(run.data_start_date || '').slice(0, 4));
+        if ((year === 2025 || year === 2026) && !selected.has(year)) selected.set(year, run);
+    });
+    return selected;
 }
 
 async function fetchLatestVisitorData() {
@@ -680,6 +705,7 @@ async function fetchAllAggregates(runId, includeAgingDayCounts = true) {
         'pending_count',
         'approved_5_days_count',
         'approved_over_5_days_count',
+        'status_migrated_count',
         includeAgingDayCounts ? 'approved_aging_day_counts' : ''
     ].filter(Boolean).join(',');
 
@@ -910,6 +936,92 @@ function applySchemeMappings(sourceRows) {
             cluster: official.cluster
         };
     }).filter(Boolean);
+}
+
+function setupComparisonFilters() {
+    const normalized = [...comparisonAggregates.values()].flat().map(item => {
+        const mapping = mappingsBySystemScheme.get(item.scheme);
+        return {
+            branch: item.branch || '(Tiada cawangan)',
+            officialScheme: mapping?.official_scheme || '',
+            applicationType: item.application_type || 'lain-lain'
+        };
+    });
+    setSelectOptions('comparisonBranchFilter', getUniqueValues(normalized.map(item => item.branch)), 'Semua cawangan');
+    setSelectOptions('comparisonSchemeFilter', getUniqueValues(normalized.map(item => item.officialScheme)), 'Semua skim rasmi');
+    setSelectOptions('comparisonTypeFilter', getUniqueValues(normalized.map(item => item.applicationType)), 'Semua jenis', value => typeLabels[value] || titleCase(value));
+}
+
+function setSelectOptions(id, values, allLabel, labeler = value => value) {
+    const select = document.getElementById(id);
+    if (!select) return;
+    select.innerHTML = [`<option value="all">${escapeHtml(allLabel)}</option>`, ...values.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(labeler(value))}</option>`)].join('');
+}
+
+function updateComparisonDashboard() {
+    const panel = document.getElementById('comparisonPanel');
+    if (!panel || !comparisonAggregates.size) return;
+    const selectedYears = new Set([...document.querySelectorAll('[data-comparison-year]:checked')].map(input => Number(input.value)));
+    const branch = document.getElementById('comparisonBranchFilter')?.value || 'all';
+    const scheme = document.getElementById('comparisonSchemeFilter')?.value || 'all';
+    const type = document.getElementById('comparisonTypeFilter')?.value || 'all';
+    const yearly = [];
+    const tableRows = [];
+
+    [...comparisonAggregates.entries()].sort(([a], [b]) => a - b).forEach(([year, source]) => {
+        if (!selectedYears.has(year)) return;
+        const months = Array.from({ length: 12 }, () => ({ total: 0, approved: 0, onTime: 0, late: 0, agingDays: 0, agingCount: 0 }));
+        source.forEach(item => {
+            const mapping = mappingsBySystemScheme.get(item.scheme);
+            if (branch !== 'all' && item.branch !== branch) return;
+            if (scheme !== 'all' && mapping?.official_scheme !== scheme) return;
+            if (type !== 'all' && item.application_type !== type) return;
+            const index = Number(item.month) - 1;
+            if (index < 0 || index > 11) return;
+            months[index].total += Number(item.total_applications || 0);
+            months[index].approved += Number(item.approved_count || 0);
+            months[index].onTime += Number(item.approved_5_days_count || 0);
+            months[index].late += Number(item.approved_over_5_days_count || 0);
+            normalizeAgingDayCounts(item.approved_aging_day_counts).forEach(([days, count]) => {
+                months[index].agingDays += days * count;
+                months[index].agingCount += count;
+            });
+        });
+        const run = comparisonRuns.get(year);
+        const lastMonth = year === 2026 ? Math.max(0, Number(String(run?.data_end_date || '').slice(5, 7))) : 12;
+        const visibleMonths = months.slice(0, lastMonth || 12);
+        yearly.push({ year, months: visibleMonths, totals: visibleMonths.reduce((sum, month) => ({
+            total: sum.total + month.total,
+        approved: sum.approved + month.approved,
+        onTime: sum.onTime + month.onTime,
+            late: sum.late + month.late,
+            agingDays: sum.agingDays + month.agingDays,
+            agingCount: sum.agingCount + month.agingCount
+        }), { total: 0, approved: 0, onTime: 0, late: 0, agingDays: 0, agingCount: 0 }) });
+        visibleMonths.forEach((month, index) => tableRows.push({ year, month: index, ...month }));
+    });
+
+    renderComparisonKpis(yearly);
+    renderMultiSeriesLineChart('comparisonVolumeChart', monthLabels, yearly.map(item => ({ label: String(item.year), color: item.year === 2025 ? '#0f6bce' : '#d72657', data: item.months.map(month => month.total) })), { tooltipId: 'comparisonVolumeTooltip', valueLabels: 'none' });
+    renderMultiSeriesLineChart('comparisonRateChart', monthLabels, yearly.map(item => ({ label: String(item.year), color: item.year === 2025 ? '#0f6bce' : '#d72657', data: item.months.map(month => month.approved ? (month.onTime / month.approved) * 100 : 0) })), { tooltipId: 'comparisonRateTooltip', valueLabels: 'none' });
+    renderMultiSeriesLineChart('comparisonAgingChart', monthLabels, yearly.map(item => ({ label: String(item.year), color: item.year === 2025 ? '#0f6bce' : '#d72657', data: item.months.map(month => month.agingCount ? month.agingDays / month.agingCount : 0) })), { tooltipId: 'comparisonAgingTooltip', valueLabels: 'none' });
+    renderComparisonTable(tableRows);
+    const note = [...comparisonRuns.entries()].sort(([a], [b]) => a - b).map(([year, run]) => `${year}: ${formatShortDate(parseAppDate(run.data_start_date))} hingga ${formatShortDate(parseAppDate(run.data_end_date))}`).join(' | ');
+    document.getElementById('comparisonDataNote').textContent = note || 'Data perbandingan belum tersedia.';
+}
+
+function renderComparisonKpis(yearly) {
+    const target = document.getElementById('comparisonKpis');
+    target.innerHTML = yearly.length ? yearly.map(item => {
+        const rate = item.totals.approved ? (item.totals.onTime / item.totals.approved) * 100 : 0;
+        return `<article class="comparison-year-summary"><h3>${item.year}</h3><dl><div><dt>Permohonan</dt><dd>${item.totals.total.toLocaleString('ms-MY')}</dd></div><div><dt>Lulus</dt><dd>${item.totals.approved.toLocaleString('ms-MY')}</dd></div><div><dt>5 hari</dt><dd>${item.totals.onTime.toLocaleString('ms-MY')}</dd></div><div><dt>Kadar 5 hari</dt><dd>${rate.toLocaleString('ms-MY', { maximumFractionDigits: 1 })}%</dd></div></dl></article>`;
+    }).join('') : '<p class="muted">Pilih sekurang-kurangnya satu tahun.</p>';
+}
+
+function renderComparisonTable(rowsToRender) {
+    const body = document.getElementById('comparisonTableBody');
+    body.innerHTML = rowsToRender.map(row => `<tr><td>${row.year}</td><td>${monthLabels[row.month]}</td><td>${row.total.toLocaleString('ms-MY')}</td><td>${row.approved.toLocaleString('ms-MY')}</td><td>${row.onTime.toLocaleString('ms-MY')}</td><td>${row.late.toLocaleString('ms-MY')}</td><td>${(row.approved ? row.onTime / row.approved * 100 : 0).toLocaleString('ms-MY', { maximumFractionDigits: 1 })}%</td><td>${(row.agingCount ? row.agingDays / row.agingCount : 0).toLocaleString('ms-MY', { maximumFractionDigits: 1 })}</td></tr>`).join('');
+    document.getElementById('comparisonVisibleRows').textContent = `${rowsToRender.length} baris dipapar`;
 }
 
 function normalizeDailyApplicationRows(aggregates) {
@@ -3799,6 +3911,7 @@ function switchTab(panelId) {
     if (panelId === 'certifierPerformancePanel') updateOfficerDashboard('certifier');
     if (panelId === 'approverPerformancePanel') updateOfficerDashboard('approver');
     if (panelId === 'visitorPanel') updateVisitorDashboard();
+    if (panelId === 'comparisonPanel') window.requestAnimationFrame(updateComparisonDashboard);
 }
 
 function toggleDashboardDrawer(event) {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Bahagian Agihan Zakat</title>
-    <link rel="stylesheet" href="style.css?v=20260807-officer-annual-table">
+    <link rel="stylesheet" href="style.css?v=20260919-year-comparison">
 </head>
 <body>
     <div class="app-shell">
@@ -82,6 +82,7 @@
                 <nav class="tabs" id="dashboardTabs" aria-label="Tab dashboard">
                     <button type="button" class="tab-button active" data-tab="applicationPanel">Analisis Permohonan</button>
                     <button type="button" class="tab-button" data-tab="fiveDayPanel" id="fiveDayTabButton">Dashboard Kelulusan 5 Hari</button>
+                    <button type="button" class="tab-button" data-tab="comparisonPanel">Perbandingan 2025/2026</button>
                     <button type="button" class="tab-button" data-tab="performancePanel">Jadual Prestasi Keseluruhan</button>
                     <button type="button" class="tab-button" data-tab="pendingValidationPanel">Permohonan Belum Diperaku</button>
                     <button type="button" class="tab-button" data-tab="certifierPerformancePanel">Prestasi Harian Peraku</button>
@@ -216,6 +217,45 @@
                                 <tbody id="rankingTableBody"></tbody>
                             </table>
                         </div>
+                    </section>
+                </section>
+
+                <section class="tab-panel" id="comparisonPanel">
+                    <section class="filter-card comparison-header">
+                        <div>
+                            <p class="section-kicker">Prestasi tahunan</p>
+                            <h2>Perbandingan Kelulusan 2025/2026</h2>
+                            <p class="muted" id="comparisonDataNote">Memuatkan data perbandingan...</p>
+                        </div>
+                        <div class="comparison-controls">
+                            <fieldset class="year-toggle-group">
+                                <legend>Tahun dipapar</legend>
+                                <label><input type="checkbox" value="2025" data-comparison-year checked><span>2025</span></label>
+                                <label><input type="checkbox" value="2026" data-comparison-year checked><span>2026</span></label>
+                            </fieldset>
+                            <label class="field-label"><span>Cawangan</span><select id="comparisonBranchFilter"><option value="all">Semua cawangan</option></select></label>
+                            <label class="field-label"><span>Skim Rasmi</span><select id="comparisonSchemeFilter"><option value="all">Semua skim rasmi</option></select></label>
+                            <label class="field-label"><span>Jenis</span><select id="comparisonTypeFilter"><option value="all">Semua jenis</option></select></label>
+                        </div>
+                    </section>
+                    <section class="comparison-kpis" id="comparisonKpis"></section>
+                    <section class="chart-split comparison-charts">
+                        <article class="chart-card">
+                            <div class="panel-heading"><div><h2>Permohonan Mengikut Bulan</h2><p>2026 dipapar sehingga bulan data semasa.</p></div></div>
+                            <div class="chart-canvas-wrap"><canvas id="comparisonVolumeChart" tabindex="0"></canvas><div class="chart-detail-tooltip" id="comparisonVolumeTooltip" hidden></div></div>
+                        </article>
+                        <article class="chart-card">
+                            <div class="panel-heading"><div><h2>Kelulusan Dalam 5 Hari</h2><p>Peratus daripada jumlah permohonan diluluskan.</p></div></div>
+                            <div class="chart-canvas-wrap"><canvas id="comparisonRateChart" tabindex="0"></canvas><div class="chart-detail-tooltip" id="comparisonRateTooltip" hidden></div></div>
+                        </article>
+                        <article class="chart-card">
+                            <div class="panel-heading"><div><h2>Purata Ageing Kelulusan</h2><p>Purata hari bekerja bagi permohonan diluluskan.</p></div></div>
+                            <div class="chart-canvas-wrap"><canvas id="comparisonAgingChart" tabindex="0"></canvas><div class="chart-detail-tooltip" id="comparisonAgingTooltip" hidden></div></div>
+                        </article>
+                    </section>
+                    <section class="table-card">
+                        <div class="panel-heading"><div><h2>Ringkasan Bulanan</h2><p id="comparisonVisibleRows">0 baris dipapar</p></div></div>
+                        <div class="table-wrap"><table><thead><tr><th>Tahun</th><th>Bulan</th><th>Permohonan</th><th>Lulus</th><th>5 Hari Ke Bawah</th><th>Lebih 5 Hari</th><th>Kadar 5 Hari</th><th>Purata Ageing</th></tr></thead><tbody id="comparisonTableBody"></tbody></table></div>
                     </section>
                 </section>
 
@@ -782,6 +822,6 @@
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="template-data.js"></script>
-    <script src="script.js?v=20260807-officer-annual-table"></script>
+    <script src="script.js?v=20260919-year-comparison"></script>
 </body>
 </html>
