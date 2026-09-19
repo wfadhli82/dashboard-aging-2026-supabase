@@ -209,6 +209,7 @@ let officialSchemes = [];
 let mappingsBySystemScheme = new Map();
 let comparisonRuns = new Map();
 let comparisonAggregates = new Map();
+let comparisonAgingMode = 'count';
 
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.working-day-count').forEach(element => {
@@ -231,6 +232,12 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', () => switchTab(button.dataset.tab));
     });
     document.querySelectorAll('[data-comparison-year]').forEach(input => input.addEventListener('change', updateComparisonDashboard));
+    document.querySelectorAll('input[name="comparisonAgingMode"]').forEach(input => {
+        input.addEventListener('change', event => {
+            comparisonAgingMode = event.target.value;
+            updateComparisonDashboard();
+        });
+    });
     ['comparisonBranchFilter', 'comparisonSchemeFilter', 'comparisonTypeFilter'].forEach(id => {
         document.getElementById(id)?.addEventListener('change', updateComparisonDashboard);
     });
@@ -336,6 +343,7 @@ function setupAgingThresholdControl() {
             // Ignore storage errors; the selected value still applies for this session.
         }
         refreshAgingThresholdViews();
+        updateComparisonDashboard();
     });
     updateAgingThresholdLabels();
 }
@@ -980,9 +988,14 @@ function updateComparisonDashboard() {
             if (index < 0 || index > 11) return;
             months[index].total += Number(item.total_applications || 0);
             months[index].approved += Number(item.approved_count || 0);
-            months[index].onTime += Number(item.approved_5_days_count || 0);
-            months[index].late += Number(item.approved_over_5_days_count || 0);
-            normalizeAgingDayCounts(item.approved_aging_day_counts).forEach(([days, count]) => {
+            const agingCounts = normalizeAgingDayCounts(item.approved_aging_day_counts);
+            if (!agingCounts.length) {
+                months[index].onTime += Number(item.approved_5_days_count || 0);
+                months[index].late += Number(item.approved_over_5_days_count || 0);
+            }
+            agingCounts.forEach(([days, count]) => {
+                if (days <= agingThreshold) months[index].onTime += count;
+                else months[index].late += count;
                 months[index].agingDays += days * count;
                 months[index].agingCount += count;
             });
@@ -992,8 +1005,8 @@ function updateComparisonDashboard() {
         const visibleMonths = months.slice(0, lastMonth || 12);
         yearly.push({ year, months: visibleMonths, totals: visibleMonths.reduce((sum, month) => ({
             total: sum.total + month.total,
-        approved: sum.approved + month.approved,
-        onTime: sum.onTime + month.onTime,
+            approved: sum.approved + month.approved,
+            onTime: sum.onTime + month.onTime,
             late: sum.late + month.late,
             agingDays: sum.agingDays + month.agingDays,
             agingCount: sum.agingCount + month.agingCount
@@ -1003,18 +1016,28 @@ function updateComparisonDashboard() {
 
     renderComparisonKpis(yearly);
     renderMultiSeriesLineChart('comparisonVolumeChart', monthLabels, yearly.map(item => ({ label: String(item.year), color: item.year === 2025 ? '#0f6bce' : '#d72657', data: item.months.map(month => month.total) })), { tooltipId: 'comparisonVolumeTooltip', valueLabels: 'none' });
-    renderMultiSeriesLineChart('comparisonRateChart', monthLabels, yearly.map(item => ({ label: String(item.year), color: item.year === 2025 ? '#0f6bce' : '#d72657', data: item.months.map(month => month.approved ? (month.onTime / month.approved) * 100 : 0) })), { tooltipId: 'comparisonRateTooltip', valueLabels: 'none' });
+    const thresholdData = month => comparisonAgingMode === 'percent'
+        ? (month.approved ? (month.onTime / month.approved) * 100 : 0)
+        : month.onTime;
+    renderMultiSeriesLineChart('comparisonRateChart', monthLabels, yearly.map(item => ({ label: String(item.year), color: item.year === 2025 ? '#0f6bce' : '#d72657', data: item.months.map(thresholdData) })), { tooltipId: 'comparisonRateTooltip', valueLabels: 'none' });
     renderMultiSeriesLineChart('comparisonAgingChart', monthLabels, yearly.map(item => ({ label: String(item.year), color: item.year === 2025 ? '#0f6bce' : '#d72657', data: item.months.map(month => month.agingCount ? month.agingDays / month.agingCount : 0) })), { tooltipId: 'comparisonAgingTooltip', valueLabels: 'none' });
     renderComparisonTable(tableRows);
     const note = [...comparisonRuns.entries()].sort(([a], [b]) => a - b).map(([year, run]) => `${year}: ${formatShortDate(parseAppDate(run.data_start_date))} hingga ${formatShortDate(parseAppDate(run.data_end_date))}`).join(' | ');
     document.getElementById('comparisonDataNote').textContent = note || 'Data perbandingan belum tersedia.';
+    document.getElementById('comparisonThresholdChartTitle').textContent = `Kelulusan Dalam ${agingThreshold} Hari`;
+    document.getElementById('comparisonThresholdChartNote').textContent = comparisonAgingMode === 'percent'
+        ? `Peratus kelulusan dalam ${agingThreshold} hari daripada jumlah diluluskan.`
+        : `Bilangan permohonan diluluskan dalam ${agingThreshold} hari.`;
+    document.getElementById('comparisonOnTimeHeader').textContent = `${agingThreshold} Hari Ke Bawah`;
+    document.getElementById('comparisonLateHeader').textContent = `${agingThreshold + 1} Hari Ke Atas`;
+    document.getElementById('comparisonRateHeader').textContent = `Kadar ${agingThreshold} Hari`;
 }
 
 function renderComparisonKpis(yearly) {
     const target = document.getElementById('comparisonKpis');
     target.innerHTML = yearly.length ? yearly.map(item => {
         const rate = item.totals.approved ? (item.totals.onTime / item.totals.approved) * 100 : 0;
-        return `<article class="comparison-year-summary"><h3>${item.year}</h3><dl><div><dt>Permohonan</dt><dd>${item.totals.total.toLocaleString('ms-MY')}</dd></div><div><dt>Lulus</dt><dd>${item.totals.approved.toLocaleString('ms-MY')}</dd></div><div><dt>5 hari</dt><dd>${item.totals.onTime.toLocaleString('ms-MY')}</dd></div><div><dt>Kadar 5 hari</dt><dd>${rate.toLocaleString('ms-MY', { maximumFractionDigits: 1 })}%</dd></div></dl></article>`;
+        return `<article class="comparison-year-summary"><h3>${item.year}</h3><dl><div><dt>Permohonan</dt><dd>${item.totals.total.toLocaleString('ms-MY')}</dd></div><div><dt>Lulus</dt><dd>${item.totals.approved.toLocaleString('ms-MY')}</dd></div><div><dt>${agingThreshold} hari</dt><dd>${item.totals.onTime.toLocaleString('ms-MY')}</dd></div><div><dt>Kadar ${agingThreshold} hari</dt><dd>${rate.toLocaleString('ms-MY', { maximumFractionDigits: 1 })}%</dd></div></dl></article>`;
     }).join('') : '<p class="muted">Pilih sekurang-kurangnya satu tahun.</p>';
 }
 

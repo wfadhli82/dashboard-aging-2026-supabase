@@ -245,7 +245,13 @@
                             <div class="chart-canvas-wrap"><canvas id="comparisonVolumeChart" tabindex="0"></canvas><div class="chart-detail-tooltip" id="comparisonVolumeTooltip" hidden></div></div>
                         </article>
                         <article class="chart-card">
-                            <div class="panel-heading"><div><h2>Kelulusan Dalam 5 Hari</h2><p>Peratus daripada jumlah permohonan diluluskan.</p></div></div>
+                            <div class="panel-heading">
+                                <div><h2 id="comparisonThresholdChartTitle">Kelulusan Dalam 5 Hari</h2><p id="comparisonThresholdChartNote">Bilangan permohonan diluluskan dalam tempoh dipilih.</p></div>
+                                <div class="segmented" role="radiogroup" aria-label="Metrik carta perbandingan ageing">
+                                    <label><input type="radio" name="comparisonAgingMode" value="count" checked><span>Bilangan</span></label>
+                                    <label><input type="radio" name="comparisonAgingMode" value="percent"><span>Peratus</span></label>
+                                </div>
+                            </div>
                             <div class="chart-canvas-wrap"><canvas id="comparisonRateChart" tabindex="0"></canvas><div class="chart-detail-tooltip" id="comparisonRateTooltip" hidden></div></div>
                         </article>
                         <article class="chart-card">
@@ -255,7 +261,7 @@
                     </section>
                     <section class="table-card">
                         <div class="panel-heading"><div><h2>Ringkasan Bulanan</h2><p id="comparisonVisibleRows">0 baris dipapar</p></div></div>
-                        <div class="table-wrap"><table><thead><tr><th>Tahun</th><th>Bulan</th><th>Permohonan</th><th>Lulus</th><th>5 Hari Ke Bawah</th><th>Lebih 5 Hari</th><th>Kadar 5 Hari</th><th>Purata Ageing</th></tr></thead><tbody id="comparisonTableBody"></tbody></table></div>
+                        <div class="table-wrap"><table><thead><tr><th>Tahun</th><th>Bulan</th><th>Permohonan</th><th>Lulus</th><th id="comparisonOnTimeHeader">5 Hari Ke Bawah</th><th id="comparisonLateHeader">Lebih 5 Hari</th><th id="comparisonRateHeader">Kadar 5 Hari</th><th>Purata Ageing</th></tr></thead><tbody id="comparisonTableBody"></tbody></table></div>
                     </section>
                 </section>
 
